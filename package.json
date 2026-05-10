@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html app.js game.js styles.css ultimate_tic_tac_toe_rules.pdf dist/"
+  }
+}

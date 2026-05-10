@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bored at Church Games</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="library/library.css">
+    <link rel="stylesheet" href="games/ultimate-tic-tac-toe/terminal.css">
+    <link rel="stylesheet" href="games/connect-four-plus/bauhaus.css">
+  </head>
+  <body class="library-mode">
+    <div class="vaporwave-backdrop" aria-hidden="true">
+      <div class="vaporwave-sun"></div>
+      <div class="vaporwave-grid"></div>
+    </div>
+    <div class="crt-overlay" id="crt-overlay" aria-hidden="true"></div>
+
+    <main class="app-shell" id="app-shell">
+      <header class="app-header" aria-labelledby="app-title">
+        <div class="brand-lockup">
+          <p class="system-line" id="shell-command">&gt; library.boot --select<span class="cursor">_</span></p>
+          <h1 id="app-title">Bored at Church Games</h1>
+          <p class="brand-subtitle" id="app-subtitle">A local web arcade for quick strategy games.</p>
+        </div>
+        <div class="header-actions">
+          <div class="session-chip" id="session-chip">LIBRARY: READY</div>
+          <button type="button" class="library-button library-button-ghost" id="header-settings">Settings</button>
+        </div>
+      </header>
+
+      <section class="view library-view" id="menu-view" aria-labelledby="menu-heading">
+        <div class="menu-grid">
+          <aside class="vapor-panel launcher-panel" aria-labelledby="launcher-heading">
+            <div class="vapor-titlebar" id="launcher-heading">
+              <span class="window-dot magenta"></span>
+              <span class="window-dot cyan"></span>
+              <span class="window-dot orange"></span>
+              <span>launcher.status</span>
+            </div>
+            <div class="vapor-panel-body">
+              <p class="library-status">Select a game, review its details, then launch a local session.</p>
+
+              <dl class="vapor-readout-grid">
+                <div>
+                  <dt>games</dt>
+                  <dd id="game-count">0</dd>
+                </div>
+                <div>
+                  <dt>storage</dt>
+                  <dd id="storage-status">LOCAL</dd>
+                </div>
+                <div>
+                  <dt>settings</dt>
+                  <dd id="settings-status">DEFAULT</dd>
+                </div>
+                <div>
+                  <dt>last played</dt>
+                  <dd id="last-played">NONE</dd>
+                </div>
+              </dl>
+
+              <div class="library-control-row">
+                <button type="button" class="library-button library-button-primary" id="open-settings">Settings</button>
+                <button type="button" class="library-button library-button-outline" id="refresh-library">Refresh</button>
+              </div>
+            </div>
+          </aside>
+
+          <section class="vapor-panel library-panel" aria-labelledby="menu-heading">
+            <div class="vapor-titlebar" id="menu-heading">
+              <span class="window-dot magenta"></span>
+              <span class="window-dot cyan"></span>
+              <span class="window-dot orange"></span>
+              <span>game.library</span>
+            </div>
+            <div class="vapor-panel-body library-body">
+              <div class="library-summary">
+                <p class="section-kicker">&gt; installed_games</p>
+                <h2>Choose Your Session</h2>
+                <p>New games can register themselves here without mixing their game files into the library shell.</p>
+              </div>
+              <div class="game-list" id="game-list" role="list"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view library-view" id="detail-view" aria-labelledby="detail-title" hidden>
+        <div class="detail-grid">
+          <section class="vapor-panel game-info-panel" aria-labelledby="detail-title">
+            <div class="vapor-titlebar">
+              <span class="window-dot magenta"></span>
+              <span class="window-dot cyan"></span>
+              <span class="window-dot orange"></span>
+              <span>game.info</span>
+            </div>
+            <div class="vapor-panel-body">
+              <div class="detail-actions">
+                <button type="button" class="library-button library-button-outline" id="back-to-menu">Back</button>
+                <button type="button" class="library-button library-button-primary" id="play-game">Play</button>
+              </div>
+
+              <p class="section-kicker" id="detail-command">&gt; game --info</p>
+              <h2 id="detail-title">game_title</h2>
+              <p class="detail-copy" id="detail-description"></p>
+
+              <dl class="vapor-readout-grid detail-meta" id="detail-meta"></dl>
+
+              <section aria-labelledby="detail-rules-heading">
+                <h2 id="detail-rules-heading">Ruleset</h2>
+                <ul class="vapor-list" id="detail-rules"></ul>
+              </section>
+            </div>
+          </section>
+
+          <aside class="vapor-panel leaderboard-panel" aria-labelledby="leaderboard-heading">
+            <div class="vapor-titlebar" id="leaderboard-heading">
+              <span class="window-dot magenta"></span>
+              <span class="window-dot cyan"></span>
+              <span class="window-dot orange"></span>
+              <span>leaderboard.local</span>
+            </div>
+            <div class="vapor-panel-body" id="leaderboard-body"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view library-view" id="settings-view" aria-labelledby="settings-heading" hidden>
+        <div class="settings-grid">
+          <section class="vapor-panel" aria-labelledby="settings-heading">
+            <div class="vapor-titlebar" id="settings-heading">
+              <span class="window-dot magenta"></span>
+              <span class="window-dot cyan"></span>
+              <span class="window-dot orange"></span>
+              <span>settings.local</span>
+            </div>
+            <div class="vapor-panel-body">
+              <div class="detail-actions">
+                <button type="button" class="library-button library-button-outline" id="settings-back">Back</button>
+              </div>
+
+              <div class="settings-list">
+                <label class="toggle-row">
+                  <input type="checkbox" id="setting-scanlines">
+                  <span>
+                    <strong>CRT scanlines</strong>
+                    <small>Show the global vaporwave and terminal scanline overlay.</small>
+                  </span>
+                </label>
+
+                <label class="toggle-row">
+                  <input type="checkbox" id="setting-remember-names">
+                  <span>
+                    <strong>Remember names</strong>
+                    <small>Keep game player names on this device when supported.</small>
+                  </span>
+                </label>
+              </div>
+
+              <div class="danger-zone">
+                <h2>Device Data</h2>
+                <p>Leaderboards and names are stored only in this browser.</p>
+                <button type="button" class="library-button library-button-danger" id="clear-device-data">Clear Device Data</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view game-view" id="game-view" aria-label="Selected game" hidden>
+        <div class="game-toolbar">
+          <button type="button" class="terminal-button" id="game-back">[ GAME INFO ]</button>
+          <button type="button" class="terminal-button" id="game-library">[ LIBRARY ]</button>
+        </div>
+        <div id="game-root"></div>
+      </section>
+    </main>
+
+    <script src="library/registry.js"></script>
+    <script src="games/ultimate-tic-tac-toe/logic.js"></script>
+    <script src="games/ultimate-tic-tac-toe/ui.js"></script>
+    <script src="games/connect-four-plus/logic.js"></script>
+    <script src="games/connect-four-plus/ui.js"></script>
+    <script src="library/app.js"></script>
+  </body>
+</html>

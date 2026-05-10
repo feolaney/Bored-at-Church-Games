@@ -1,0 +1,603 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap");
+
+body.game-mode[data-active-game="connect-four-plus"] {
+  background: #f0f0f0;
+  color: #121212;
+  font-family: "Outfit", var(--font-display);
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  border: 4px solid #121212;
+  background: #f0c020;
+  box-shadow: 8px 8px 0 0 #121212;
+  padding: 20px;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .system-line {
+  margin: 0 0 8px;
+  color: #121212;
+  font-family: "Outfit", var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] h1 {
+  margin: 0;
+  color: #121212;
+  font-family: "Outfit", var(--font-display);
+  font-size: clamp(2.2rem, 8vw, 5.8rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .brand-subtitle {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: #121212;
+  font-weight: 500;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .session-chip {
+  border: 4px solid #121212;
+  background: #1040c0;
+  color: #ffffff;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 10px 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .terminal-button {
+  min-height: 2.75rem;
+  border: 4px solid #121212;
+  border-radius: 0;
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 0 14px;
+  font-family: "Outfit", var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .terminal-button:hover,
+body.game-mode[data-active-game="connect-four-plus"] .terminal-button:focus-visible {
+  background: #d02020;
+  color: #ffffff;
+  outline: 3px solid #1040c0;
+  outline-offset: 3px;
+}
+
+body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
+  box-shadow: none;
+  transform: translate(3px, 3px);
+}
+
+.connect-four-plus {
+  display: grid;
+  gap: 20px;
+  font-family: "Outfit", var(--font-display);
+}
+
+.cfp-handoff {
+  position: relative;
+  min-height: min(66vh, 620px);
+  border: 4px solid #121212;
+  background: #ffffff;
+  box-shadow: 8px 8px 0 0 #121212;
+  padding: clamp(20px, 5vw, 56px);
+  overflow: hidden;
+}
+
+.cfp-handoff::before,
+.cfp-handoff::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  border: 4px solid #121212;
+}
+
+.cfp-handoff::before {
+  right: -72px;
+  top: 40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #d02020;
+}
+
+.cfp-handoff::after {
+  right: 110px;
+  bottom: -54px;
+  width: 150px;
+  height: 150px;
+  background: #1040c0;
+  transform: rotate(45deg);
+}
+
+.cfp-handoff > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cfp-shape-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cfp-circle,
+.cfp-square,
+.cfp-triangle {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #121212;
+}
+
+.cfp-circle {
+  border-radius: 50%;
+  background: #d02020;
+}
+
+.cfp-square {
+  background: #1040c0;
+}
+
+.cfp-triangle {
+  width: 0;
+  height: 0;
+  border-right: 14px solid transparent;
+  border-bottom: 24px solid #f0c020;
+  border-left: 14px solid transparent;
+  background: transparent;
+}
+
+.cfp-label {
+  margin: 0 0 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cfp-handoff h2 {
+  max-width: 780px;
+  margin: 0 0 16px;
+  font-size: clamp(2.5rem, 12vw, 7rem);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.cfp-handoff p {
+  max-width: 660px;
+  margin: 0 0 22px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.cfp-name-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 760px;
+  margin-bottom: 22px;
+}
+
+.cfp-name-grid label,
+.cfp-player-names label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cfp-name-grid span,
+.cfp-player-names span {
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cfp-name-grid input,
+.cfp-player-names input {
+  width: 100%;
+  min-width: 0;
+  border: 3px solid #121212;
+  border-radius: 0;
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 3px 3px 0 0 #121212;
+  padding: 10px;
+  font-weight: 700;
+}
+
+.cfp-name-grid input:disabled,
+.cfp-player-names input:disabled {
+  background: #e0e0e0;
+}
+
+.cfp-live-area {
+  display: grid;
+  grid-template-columns: 300px minmax(420px, 1fr) 330px;
+  gap: 16px;
+  align-items: start;
+}
+
+.cfp-panel,
+.cfp-board-panel {
+  min-width: 0;
+  border: 4px solid #121212;
+  background: #ffffff;
+  box-shadow: 6px 6px 0 0 #121212;
+}
+
+.cfp-status-panel {
+  background: #f0c020;
+}
+
+.cfp-power-panel {
+  background: #1040c0;
+  color: #ffffff;
+}
+
+.cfp-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 4px solid #121212;
+  background: #ffffff;
+  color: #121212;
+  padding: 10px 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cfp-panel-title .cfp-circle,
+.cfp-panel-title .cfp-square {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.cfp-panel-body {
+  padding: 14px;
+}
+
+.cfp-status {
+  min-height: 4rem;
+  margin: 0 0 14px;
+  border: 3px solid #121212;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 10px;
+  font-weight: 700;
+}
+
+.cfp-status.is-error {
+  background: #d02020;
+  color: #ffffff;
+}
+
+.cfp-readouts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0 0 14px;
+  border: 3px solid #121212;
+  background: #121212;
+}
+
+.cfp-readouts div {
+  min-width: 0;
+  border: 1px solid #121212;
+  background: #ffffff;
+  padding: 8px;
+}
+
+.cfp-readouts dt {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cfp-readouts dd {
+  margin: 2px 0 0;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.cfp-player-names,
+.cfp-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.cfp-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.cfp-button,
+.cfp-drop-button,
+.cfp-power-card {
+  border: 3px solid #121212;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 #121212;
+  font-family: "Outfit", var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cfp-button {
+  min-height: 2.8rem;
+  padding: 0 14px;
+}
+
+.cfp-button:hover:not(:disabled),
+.cfp-button:focus-visible:not(:disabled),
+.cfp-drop-button:hover:not(:disabled),
+.cfp-drop-button:focus-visible:not(:disabled),
+.cfp-power-card:hover:not(:disabled),
+.cfp-power-card:focus-visible:not(:disabled) {
+  outline: 3px solid #121212;
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+
+.cfp-button:active:not(:disabled),
+.cfp-drop-button:active:not(:disabled),
+.cfp-power-card:active:not(:disabled) {
+  box-shadow: none;
+  transform: translate(3px, 3px);
+}
+
+.cfp-button:disabled,
+.cfp-drop-button:disabled,
+.cfp-power-card:disabled {
+  opacity: 0.48;
+}
+
+.cfp-button-red {
+  background: #d02020;
+  color: #ffffff;
+}
+
+.cfp-button-yellow {
+  background: #f0c020;
+  color: #121212;
+}
+
+.cfp-button-outline {
+  background: #ffffff;
+  color: #121212;
+}
+
+.cfp-board-panel {
+  background: #d02020;
+  padding: 14px;
+}
+
+.cfp-drop-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cfp-drop-button {
+  min-width: 0;
+  min-height: 2.55rem;
+  background: #f0c020;
+  color: #121212;
+}
+
+.cfp-board {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  border: 4px solid #121212;
+  background: #121212;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.cfp-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 3px solid #121212;
+  border-radius: 0;
+  background: #ffffff;
+  padding: 5px;
+}
+
+.cfp-cell.is-playable-column {
+  cursor: pointer;
+}
+
+.cfp-cell.is-playable-column:hover,
+.cfp-cell.is-playable-column:focus-visible {
+  background: #e0e0e0;
+  outline: 3px solid #1040c0;
+  outline-offset: -3px;
+}
+
+.cfp-cell.is-winning {
+  background: #f0c020;
+}
+
+.cfp-disc {
+  position: relative;
+  display: block;
+  width: 82%;
+  height: 82%;
+  border: 3px solid #121212;
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 0 #121212;
+}
+
+.cfp-disc.red {
+  background: #d02020;
+}
+
+.cfp-disc.yellow {
+  background: #f0c020;
+}
+
+.cfp-disc.is-dropping {
+  animation: cfp-disc-drop 280ms cubic-bezier(0.2, 0.9, 0.25, 1);
+  will-change: transform;
+}
+
+.cfp-disc.shielded::after {
+  content: "";
+  position: absolute;
+  inset: 21%;
+  border: 3px solid #121212;
+  background: #1040c0;
+  transform: rotate(45deg);
+}
+
+@keyframes cfp-disc-drop {
+  0% {
+    transform: translateY(var(--cfp-drop-distance, -700%));
+  }
+
+  78% {
+    transform: translateY(8%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.cfp-hand {
+  display: grid;
+  gap: 10px;
+}
+
+.cfp-power-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  background: #ffffff;
+  color: #121212;
+  padding: 12px;
+  text-align: left;
+}
+
+.cfp-power-card strong {
+  font-size: 1rem;
+}
+
+.cfp-power-card span,
+.cfp-hand-empty {
+  font-size: 0.86rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.cfp-hand-empty {
+  margin: 0;
+  border: 3px solid #121212;
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 12px;
+}
+
+.cfp-rules-mini,
+.cfp-log-section {
+  margin-top: 16px;
+  border: 3px solid #121212;
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 12px;
+}
+
+.cfp-rules-mini h3,
+.cfp-log-section h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cfp-rules-mini ul,
+.cfp-log {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.3rem;
+}
+
+.cfp-rules-mini li,
+.cfp-log li {
+  font-weight: 500;
+}
+
+@media (max-width: 1180px) {
+  .cfp-live-area {
+    grid-template-columns: minmax(260px, 330px) minmax(420px, 1fr);
+  }
+
+  .cfp-power-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 820px) {
+  body.game-mode[data-active-game="connect-four-plus"] .app-header {
+    grid-template-columns: 1fr;
+  }
+
+  .cfp-name-grid,
+  .cfp-live-area,
+  .cfp-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .cfp-board-panel {
+    order: 1;
+  }
+
+  .cfp-status-panel {
+    order: 2;
+  }
+
+  .cfp-power-panel {
+    order: 3;
+  }
+
+  .cfp-drop-row,
+  .cfp-board {
+    gap: 5px;
+  }
+
+  .cfp-board {
+    padding: 5px;
+  }
+
+  .cfp-cell {
+    padding: 3px;
+  }
+}
