@@ -74,17 +74,18 @@ body.game-mode .vaporwave-backdrop {
 
 body.library-mode[data-active-view="menu"] .app-header,
 body.library-mode[data-active-view="detail"] .app-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  position: relative;
+  display: block;
 }
 
 body.library-mode[data-active-view="menu"] .header-actions,
 body.library-mode[data-active-view="detail"] .header-actions {
+  position: absolute;
+  top: 18px;
+  right: 18px;
   display: grid;
   gap: 6px;
   justify-items: end;
-  align-self: start;
   min-width: 0;
 }
 
@@ -118,6 +119,11 @@ body.library-mode[data-active-view="menu"] #header-settings:focus-visible,
 body.library-mode[data-active-view="detail"] #header-settings:hover,
 body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   transform: none;
+}
+
+body.library-mode[data-active-view="menu"] #app-title {
+  width: min-content;
+  max-width: 100%;
 }
 
 .brand-lockup {
@@ -738,6 +744,11 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   .library-mode .app-header {
     display: grid;
     align-items: start;
+  }
+
+  body.library-mode[data-active-view="menu"] .app-header,
+  body.library-mode[data-active-view="detail"] .app-header {
+    display: block;
   }
 }
 

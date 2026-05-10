@@ -1,5 +1,21 @@
 # Work History
 
+## 2026-05-10 - Prevent Homepage Title Clipping
+
+- Fixed the library/game-info header layout so the top-right controls no longer reduce the title column width.
+- Forced the homepage title to wrap by word width, preventing the `CHURCH` line from being clipped at intermediate screen widths.
+- Preserved the compact top-right Settings control behavior.
+
+What to test:
+- Resize the homepage through tablet/intermediate widths and confirm `CHURCH` is fully visible.
+- Confirm Settings and the status chip still sit at the top right.
+- Confirm game info headers still show their title and controls correctly.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Game Card Logo Spacing
 
 - Fixed main-page game card logos overlapping the title at narrow widths.
