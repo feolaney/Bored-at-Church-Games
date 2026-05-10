@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-10 - Game Logos In Library And Info
+
+- Added reusable game logo rendering in the library app.
+- Added custom CSS-built logos for Ultimate Tic Tac Toe and Connect Four Plus.
+- Updated main-page game cards to show the game logo next to title/details.
+- Updated game info pages to show a larger game logo beside the title/description.
+- Added a fallback initials logo for future registered games without custom logo art.
+
+What to test:
+- Load the main page and confirm each game card has a game-specific logo.
+- Open Ultimate Tic Tac Toe info and confirm it shows the terminal grid-style logo.
+- Open Connect Four Plus info and confirm it shows the token/power-style logo.
+- Confirm game card clicks and Play/Back controls still work.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Compact Library Settings Control
 
 - Added an active-view body hook so library-mode styling can distinguish the main menu, game info, and settings views.

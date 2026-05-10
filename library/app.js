@@ -32,6 +32,7 @@
     backToMenu: document.getElementById("back-to-menu"),
     playGame: document.getElementById("play-game"),
     detailCommand: document.getElementById("detail-command"),
+    detailLogo: document.getElementById("detail-logo"),
     detailTitle: document.getElementById("detail-title"),
     detailDescription: document.getElementById("detail-description"),
     detailMeta: document.getElementById("detail-meta"),
@@ -164,6 +165,64 @@
     var cell = document.createElement("span");
     cell.textContent = text;
     return cell;
+  }
+
+  function createGameLogo(game, variant) {
+    var logo = document.createElement("span");
+    var id = game && game.id ? game.id : "fallback";
+
+    logo.className = "game-logo game-logo-" + id + " game-logo-" + (variant || "card");
+    logo.setAttribute("aria-hidden", "true");
+
+    if (id === "ultimate-tic-tac-toe") {
+      renderUltimateLogo(logo);
+    } else if (id === "connect-four-plus") {
+      renderConnectFourLogo(logo);
+    } else {
+      logo.classList.add("game-logo-fallback");
+      logo.textContent = getGameInitials(game ? game.title : "Game");
+    }
+
+    return logo;
+  }
+
+  function renderUltimateLogo(logo) {
+    var marks = ["X", "", "O", "", "X", "", "O", "", "X"];
+
+    marks.forEach(function (mark) {
+      var cell = document.createElement("span");
+
+      cell.className = "logo-cell";
+      if (mark) {
+        cell.classList.add(mark === "X" ? "is-x" : "is-o");
+        cell.textContent = mark;
+      }
+      logo.appendChild(cell);
+    });
+  }
+
+  function renderConnectFourLogo(logo) {
+    var tokens = ["", "", "R", "", "", "Y", "R", "", "Y", "R", "Y", "", "R", "Y", "R", "P"];
+
+    tokens.forEach(function (token) {
+      var cell = document.createElement("span");
+
+      cell.className = "logo-token";
+      if (token === "R") {
+        cell.classList.add("is-red");
+      } else if (token === "Y") {
+        cell.classList.add("is-yellow");
+      } else if (token === "P") {
+        cell.classList.add("is-power");
+      }
+      logo.appendChild(cell);
+    });
+  }
+
+  function getGameInitials(title) {
+    return title.split(/\s+/).filter(Boolean).slice(0, 2).map(function (word) {
+      return word.charAt(0);
+    }).join("").toUpperCase() || "?";
   }
 
   function formatDateTime(value) {
@@ -312,6 +371,7 @@
     games.forEach(function (game) {
       var stats = getStats(game.id);
       var card = document.createElement("button");
+      var body = document.createElement("span");
       var title = document.createElement("span");
       var description = document.createElement("span");
       var meta = document.createElement("span");
@@ -321,6 +381,8 @@
       card.className = "game-card";
       card.dataset.gameId = game.id;
       card.setAttribute("role", "listitem");
+
+      body.className = "game-card-body";
 
       title.className = "game-card-title";
       title.textContent = game.title;
@@ -334,7 +396,8 @@
       metrics.className = "game-card-metrics";
       metrics.textContent = game.getLibraryMetrics ? game.getLibraryMetrics(stats) : "matches:" + ((stats && stats.matches) || 0);
 
-      card.append(title, description, meta, metrics);
+      body.append(title, description, meta, metrics);
+      card.append(createGameLogo(game, "card"), body);
       fragment.appendChild(card);
     });
 
@@ -359,6 +422,7 @@
     ];
 
     els.detailCommand.textContent = "> " + activeGame.command + " --about";
+    els.detailLogo.replaceChildren(createGameLogo(activeGame, "detail"));
     els.detailTitle.textContent = activeGame.title;
     els.detailDescription.textContent = activeGame.description;
     els.detailMeta.replaceChildren();

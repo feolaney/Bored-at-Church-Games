@@ -244,6 +244,19 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   grid-template-columns: minmax(0, 1fr) 430px;
 }
 
+.detail-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.detail-logo,
+.detail-heading {
+  min-width: 0;
+}
+
 .game-detail-actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -380,9 +393,120 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   padding-right: 4px;
 }
 
+.game-logo {
+  --logo-size: 4.35rem;
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: var(--logo-size);
+  aspect-ratio: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.game-logo-card {
+  --logo-size: clamp(3.6rem, 9vw, 4.5rem);
+}
+
+.game-logo-detail {
+  --logo-size: clamp(6rem, 18vw, 8.5rem);
+}
+
+.game-logo-ultimate-tic-tac-toe {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  border: 2px solid #33ff00;
+  background:
+    linear-gradient(90deg, rgba(51, 255, 0, 0.08), transparent 35%, rgba(51, 255, 0, 0.08)),
+    #020302;
+  box-shadow: 0 0 14px rgba(51, 255, 0, 0.34);
+  padding: 6px;
+}
+
+.game-logo-ultimate-tic-tac-toe::after {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border: 1px dashed rgba(51, 255, 0, 0.45);
+}
+
+.game-logo-ultimate-tic-tac-toe .logo-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  border: 1px solid rgba(51, 255, 0, 0.58);
+  color: #33ff00;
+  font-family: var(--font-mono);
+  font-size: calc(var(--logo-size) * 0.15);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 8px currentColor;
+}
+
+.game-logo-ultimate-tic-tac-toe .logo-cell.is-o {
+  color: #ffb000;
+}
+
+.game-logo-connect-four-plus {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  border: 3px solid #121212;
+  background: #f0c020;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 6px;
+}
+
+.game-logo-connect-four-plus .logo-token {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  border: 2px solid #121212;
+  background: #ffffff;
+}
+
+.game-logo-connect-four-plus .logo-token.is-red,
+.game-logo-connect-four-plus .logo-token.is-yellow {
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 0 #121212;
+}
+
+.game-logo-connect-four-plus .logo-token.is-red {
+  background: #d02020;
+}
+
+.game-logo-connect-four-plus .logo-token.is-yellow {
+  background: #f0c020;
+}
+
+.game-logo-connect-four-plus .logo-token.is-power {
+  background: #1040c0;
+  color: #ffffff;
+}
+
+.game-logo-connect-four-plus .logo-token.is-power::before {
+  content: "+";
+  font-family: var(--font-display);
+  font-size: calc(var(--logo-size) * 0.16);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.game-logo-fallback {
+  place-items: center;
+  border: 2px solid #00ffff;
+  background: rgba(9, 0, 20, 0.82);
+  color: #00ffff;
+  font-family: var(--font-display);
+  font-size: calc(var(--logo-size) * 0.28);
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.72);
+}
+
 .game-card {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
+  align-items: center;
   width: 100%;
   min-height: 0;
   border: 1px solid rgba(255, 0, 255, 0.38);
@@ -396,6 +520,12 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
 }
 
+.game-card-body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
 .game-card:hover,
 .game-card:focus-visible {
   border-color: #00ffff;
@@ -404,6 +534,11 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
   outline: 2px solid #ff00ff;
   outline-offset: 3px;
   transform: translateY(-2px);
+}
+
+.game-card:hover .game-logo,
+.game-card:focus-visible .game-logo {
+  transform: translateY(-1px);
 }
 
 .game-card-title {
@@ -610,8 +745,16 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
     font-size: clamp(2rem, 16vw, 3.8rem);
   }
 
+  .detail-hero {
+    grid-template-columns: 1fr;
+  }
+
   .game-list {
     max-height: 52vh;
+  }
+
+  .game-card {
+    grid-template-columns: 1fr;
   }
 
   .leaderboard-row {
