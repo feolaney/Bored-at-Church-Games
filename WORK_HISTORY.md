@@ -1,5 +1,21 @@
 # Work History
 
+## 2026-05-10 - Homepage Launcher Status Cleanup
+
+- Simplified the homepage `launcher.status` panel so it is informational only.
+- Removed the Settings readout plus the Settings and Refresh buttons from that panel.
+- Removed unused DOM lookups, event listeners, and CSS for the removed launcher controls.
+
+What to test:
+- Load the homepage and confirm `launcher.status` only shows game/storage/last-played information.
+- Confirm Settings is still reachable from the header control.
+- Confirm selecting a game from the library still opens the game info page.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Scroll To Top On Navigation
 
 - Added a shared library `scrollToTop()` helper and call it after app view changes.

@@ -300,12 +300,6 @@ body.game-mode .vaporwave-backdrop {
   overflow-wrap: anywhere;
 }
 
-.library-control-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
 .library-body {
   display: grid;
   gap: 14px;
@@ -502,10 +496,6 @@ body.game-mode .vaporwave-backdrop {
 @media (max-width: 760px) {
   .library-mode h1 {
     font-size: clamp(2rem, 16vw, 3.8rem);
-  }
-
-  .library-control-row {
-    grid-template-columns: 1fr;
   }
 
   .game-list {

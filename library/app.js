@@ -25,11 +25,8 @@
     sessionChip: document.getElementById("session-chip"),
     crtOverlay: document.getElementById("crt-overlay"),
     headerSettings: document.getElementById("header-settings"),
-    openSettings: document.getElementById("open-settings"),
-    refreshLibrary: document.getElementById("refresh-library"),
     gameCount: document.getElementById("game-count"),
     storageStatus: document.getElementById("storage-status"),
-    settingsStatus: document.getElementById("settings-status"),
     lastPlayed: document.getElementById("last-played"),
     gameList: document.getElementById("game-list"),
     backToMenu: document.getElementById("back-to-menu"),
@@ -300,7 +297,6 @@
 
     els.gameCount.textContent = String(games.length);
     els.storageStatus.textContent = storageAvailable ? "LOCAL" : "OFF";
-    els.settingsStatus.textContent = settings.scanlines ? "CRT_ON" : "CRT_OFF";
     els.lastPlayed.textContent = formatDateTime(getMostRecentPlay());
     els.gameList.replaceChildren();
 
@@ -452,8 +448,6 @@
   }
 
   els.headerSettings.addEventListener("click", openSettingsView);
-  els.openSettings.addEventListener("click", openSettingsView);
-  els.refreshLibrary.addEventListener("click", renderMenu);
 
   els.gameList.addEventListener("click", function (event) {
     var card;
