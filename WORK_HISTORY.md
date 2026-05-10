@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-10 - Scroll To Top On Navigation
+
+- Added a shared library `scrollToTop()` helper and call it after app view changes.
+- Exposed `scrollToTop` to game controllers so in-game controls can return the viewport to the top.
+- Updated Ultimate Tic Tac Toe and Connect Four Plus New Game resets to scroll to the top after resetting.
+
+What to test:
+- Scroll down on the library, click a game card, and confirm the game info page starts at the top.
+- Scroll down on a game info page, click Play, and confirm the game starts at the top.
+- Scroll down inside either game, click New Game, and confirm the viewport returns to the top of the game.
+- Use Game Info/Library navigation from inside a game after scrolling and confirm the new view starts at the top.
+
+Verification:
+- `node --check library/app.js`
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/connect-four-plus/ui.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Compact Game Header Controls
 
 - Moved the in-game `Game Info` and `Library` controls into the global header so they sit under Settings at the top right during game sessions.

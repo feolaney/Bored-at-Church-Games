@@ -202,6 +202,20 @@
     els.body.dataset.activeGame = viewName === "game" ? activeGameId || "" : "";
   }
 
+  function scrollToTop() {
+    if (typeof global.scrollTo !== "function") {
+      return;
+    }
+
+    global.requestAnimationFrame(function () {
+      global.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "auto"
+      });
+    });
+  }
+
   function updateHeader() {
     var activeGame = getGame(activeGameId);
 
@@ -253,6 +267,8 @@
     } else if (name === "game") {
       mountActiveGame();
     }
+
+    scrollToTop();
   }
 
   function openSettingsView() {
@@ -420,7 +436,8 @@
         },
         refreshLibraryStats: function () {
           renderMenu();
-        }
+        },
+        scrollToTop: scrollToTop
       };
       activeController = activeGame.createController({
         root: els.gameRoot,

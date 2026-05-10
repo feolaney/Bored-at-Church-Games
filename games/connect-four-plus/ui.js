@@ -358,6 +358,9 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       render();
+      if (services.scrollToTop) {
+        services.scrollToTop();
+      }
     }
 
     function getBoardColumnFromPointer(event) {

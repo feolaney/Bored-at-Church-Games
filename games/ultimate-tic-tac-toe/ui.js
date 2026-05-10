@@ -637,6 +637,9 @@
       matchRecorded = false;
       lastRecordStatus = null;
       render();
+      if (services.scrollToTop) {
+        services.scrollToTop();
+      }
     }
 
     function updatePlayerName(mark, value) {
