@@ -1,5 +1,20 @@
 # Work History
 
+## 2026-05-10 - Game Info Action Order
+
+- Reordered the game info page actions so `Play` appears above `Back`.
+- Added scoped game-info action styling so `Back` is smaller than the primary `Play` button without affecting Settings.
+
+What to test:
+- Click a game card and confirm the game info page shows `Play` above `Back`.
+- Confirm `Back` is visibly smaller than `Play`.
+- Confirm the Settings Back button still uses its normal size.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Move App Stats Into Settings
 
 - Removed the full `launcher.status` stats panel from the homepage so the main library view starts with the game library.

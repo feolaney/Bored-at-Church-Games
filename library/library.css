@@ -196,6 +196,25 @@ body.game-mode .vaporwave-backdrop {
   grid-template-columns: minmax(0, 1fr) 430px;
 }
 
+.game-detail-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: start;
+  margin-bottom: 14px;
+}
+
+.game-detail-actions #play-game {
+  width: min(100%, 24rem);
+  min-height: 3.15rem;
+}
+
+.game-detail-actions #back-to-menu {
+  width: min(100%, 11rem);
+  min-height: 2.1rem;
+  padding: 0 12px;
+  font-size: 0.76rem;
+}
+
 .settings-grid {
   max-width: 780px;
 }
