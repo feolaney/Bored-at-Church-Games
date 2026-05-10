@@ -1,5 +1,21 @@
 # Work History
 
+## 2026-05-10 - Compact Library Settings Control
+
+- Added an active-view body hook so library-mode styling can distinguish the main menu, game info, and settings views.
+- Made the header Settings control a small gear icon at the top right on the main page and game info pages.
+- Left the Settings page header behavior unchanged.
+
+What to test:
+- On the main page, confirm Settings is a small gear in the top-right header area.
+- Open any game info page and confirm Settings remains a small gear in the top-right header area.
+- Open Settings and confirm the page still works normally.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Game Info Action Order
 
 - Reordered the game info page actions so `Play` appears above `Back`.

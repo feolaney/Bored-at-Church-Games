@@ -199,6 +199,7 @@
   function setMode(viewName) {
     els.body.classList.toggle("game-mode", viewName === "game");
     els.body.classList.toggle("library-mode", viewName !== "game");
+    els.body.dataset.activeView = viewName;
     els.body.dataset.activeGame = viewName === "game" ? activeGameId || "" : "";
   }
 

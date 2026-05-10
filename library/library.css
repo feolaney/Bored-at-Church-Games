@@ -72,6 +72,54 @@ body.game-mode .vaporwave-backdrop {
   padding: 18px;
 }
 
+body.library-mode[data-active-view="menu"] .app-header,
+body.library-mode[data-active-view="detail"] .app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+body.library-mode[data-active-view="menu"] .header-actions,
+body.library-mode[data-active-view="detail"] .header-actions {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-self: start;
+  min-width: 0;
+}
+
+body.library-mode[data-active-view="menu"] .header-actions > *,
+body.library-mode[data-active-view="detail"] .header-actions > * {
+  width: auto;
+}
+
+body.library-mode[data-active-view="menu"] #header-settings,
+body.library-mode[data-active-view="detail"] #header-settings {
+  order: -1;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  min-height: 0;
+  height: 2rem;
+  padding: 0;
+  font-size: 0;
+  line-height: 1;
+  transform: none;
+}
+
+body.library-mode[data-active-view="menu"] #header-settings::before,
+body.library-mode[data-active-view="detail"] #header-settings::before {
+  content: "\2699";
+  font-size: 1rem;
+}
+
+body.library-mode[data-active-view="menu"] #header-settings:hover,
+body.library-mode[data-active-view="menu"] #header-settings:focus-visible,
+body.library-mode[data-active-view="detail"] #header-settings:hover,
+body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
+  transform: none;
+}
+
 .brand-lockup {
   min-width: 0;
 }
