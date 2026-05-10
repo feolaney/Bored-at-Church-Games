@@ -35,33 +35,6 @@
 
       <section class="view library-view" id="menu-view" aria-labelledby="menu-heading">
         <div class="menu-grid">
-          <aside class="vapor-panel launcher-panel" aria-labelledby="launcher-heading">
-            <div class="vapor-titlebar" id="launcher-heading">
-              <span class="window-dot magenta"></span>
-              <span class="window-dot cyan"></span>
-              <span class="window-dot orange"></span>
-              <span>launcher.status</span>
-            </div>
-            <div class="vapor-panel-body">
-              <p class="library-status">Select a game, review its details, then launch a local session.</p>
-
-              <dl class="vapor-readout-grid">
-                <div>
-                  <dt>games</dt>
-                  <dd id="game-count">0</dd>
-                </div>
-                <div>
-                  <dt>storage</dt>
-                  <dd id="storage-status">LOCAL</dd>
-                </div>
-                <div>
-                  <dt>last played</dt>
-                  <dd id="last-played">NONE</dd>
-                </div>
-              </dl>
-            </div>
-          </aside>
-
           <section class="vapor-panel library-panel" aria-labelledby="menu-heading">
             <div class="vapor-titlebar" id="menu-heading">
               <span class="window-dot magenta"></span>
@@ -151,7 +124,35 @@
                     <small>Keep game player names on this device when supported.</small>
                   </span>
                 </label>
+
+                <button type="button" class="settings-nav-row" id="open-app-stats" aria-expanded="false" aria-controls="app-stats-panel">
+                  <span>
+                    <strong>App stats</strong>
+                    <small>View installed games, local storage state, and recent play info.</small>
+                  </span>
+                  <span class="settings-row-action">View</span>
+                </button>
               </div>
+
+              <section class="settings-app-stats" id="app-stats-panel" aria-labelledby="app-stats-heading" hidden>
+                <h2 id="app-stats-heading">launcher.status</h2>
+                <p class="library-status">Select a game, review its details, then launch a local session.</p>
+
+                <dl class="vapor-readout-grid app-stats-readout">
+                  <div>
+                    <dt>games</dt>
+                    <dd id="game-count">0</dd>
+                  </div>
+                  <div>
+                    <dt>storage</dt>
+                    <dd id="storage-status">LOCAL</dd>
+                  </div>
+                  <div>
+                    <dt>last played</dt>
+                    <dd id="last-played">NONE</dd>
+                  </div>
+                </dl>
+              </section>
 
               <div class="danger-zone">
                 <h2>Device Data</h2>

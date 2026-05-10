@@ -40,6 +40,8 @@
     settingsBack: document.getElementById("settings-back"),
     settingScanlines: document.getElementById("setting-scanlines"),
     settingRememberNames: document.getElementById("setting-remember-names"),
+    openAppStats: document.getElementById("open-app-stats"),
+    appStatsPanel: document.getElementById("app-stats-panel"),
     clearDeviceData: document.getElementById("clear-device-data"),
     gameBack: document.getElementById("game-back"),
     gameLibrary: document.getElementById("game-library"),
@@ -52,6 +54,7 @@
   var previousView = "menu";
   var activeController = null;
   var activeMountedGameId = null;
+  var appStatsOpen = false;
 
   function canUseStorage() {
     var testKey = STORAGE_PREFIX + "storage-test";
@@ -295,9 +298,6 @@
   function renderMenu() {
     var fragment = document.createDocumentFragment();
 
-    els.gameCount.textContent = String(games.length);
-    els.storageStatus.textContent = storageAvailable ? "LOCAL" : "OFF";
-    els.lastPlayed.textContent = formatDateTime(getMostRecentPlay());
     els.gameList.replaceChildren();
 
     if (!games.length) {
@@ -398,6 +398,24 @@
 
   function renderSettings() {
     applySettings();
+    renderAppStats();
+    syncAppStatsPanel();
+  }
+
+  function renderAppStats() {
+    els.gameCount.textContent = String(games.length);
+    els.storageStatus.textContent = storageAvailable ? "LOCAL" : "OFF";
+    els.lastPlayed.textContent = formatDateTime(getMostRecentPlay());
+  }
+
+  function syncAppStatsPanel() {
+    var action = els.openAppStats.querySelector(".settings-row-action");
+
+    els.appStatsPanel.hidden = !appStatsOpen;
+    els.openAppStats.setAttribute("aria-expanded", appStatsOpen ? "true" : "false");
+    if (action) {
+      action.textContent = appStatsOpen ? "Hide" : "View";
+    }
   }
 
   function mountActiveGame() {
@@ -448,6 +466,12 @@
   }
 
   els.headerSettings.addEventListener("click", openSettingsView);
+
+  els.openAppStats.addEventListener("click", function () {
+    appStatsOpen = !appStatsOpen;
+    renderAppStats();
+    syncAppStatsPanel();
+  });
 
   els.gameList.addEventListener("click", function (event) {
     var card;

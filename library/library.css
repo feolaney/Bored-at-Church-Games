@@ -189,7 +189,7 @@ body.game-mode .vaporwave-backdrop {
 }
 
 .menu-grid {
-  grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .detail-grid {
@@ -436,14 +436,35 @@ body.game-mode .vaporwave-backdrop {
   gap: 10px;
 }
 
-.toggle-row {
+.toggle-row,
+.settings-nav-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   align-items: start;
+  width: 100%;
   border: 1px solid rgba(0, 255, 255, 0.42);
+  border-radius: 0;
   background: rgba(9, 0, 20, 0.66);
+  color: inherit;
   padding: 12px;
+  text-align: left;
+}
+
+.toggle-row {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.settings-nav-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.settings-nav-row:hover,
+.settings-nav-row:focus-visible {
+  border-color: #00ffff;
+  background: rgba(26, 16, 60, 0.94);
+  box-shadow: 0 0 18px rgba(0, 255, 255, 0.24);
+  outline: 2px solid #ff00ff;
+  outline-offset: 3px;
 }
 
 .toggle-row input {
@@ -453,20 +474,44 @@ body.game-mode .vaporwave-backdrop {
   accent-color: #ff00ff;
 }
 
-.toggle-row span {
+.toggle-row span,
+.settings-nav-row > span:first-child {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.toggle-row strong {
+.toggle-row strong,
+.settings-nav-row strong {
   color: #00ffff;
   text-transform: uppercase;
 }
 
-.toggle-row small {
+.toggle-row small,
+.settings-nav-row small {
   color: rgba(224, 224, 224, 0.76);
   overflow-wrap: anywhere;
+}
+
+.settings-row-action {
+  align-self: center;
+  color: #ff00ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.72);
+}
+
+.settings-app-stats {
+  margin-top: 18px;
+  border-top: 1px solid rgba(0, 255, 255, 0.42);
+  padding-top: 16px;
+}
+
+.app-stats-readout {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-bottom: 0;
 }
 
 .danger-zone {

@@ -1,5 +1,23 @@
 # Work History
 
+## 2026-05-10 - Move App Stats Into Settings
+
+- Removed the full `launcher.status` stats panel from the homepage so the main library view starts with the game library.
+- Added a clickable `App stats` item in Settings that expands to show the moved launcher/status readouts.
+- Updated the app stats rendering so game count, storage status, and last played are populated from the Settings panel instead of the homepage.
+- Adjusted the homepage grid to a single-column library layout and added styling for the new Settings stats row/panel.
+
+What to test:
+- Load the homepage and confirm the `launcher.status` section is gone from the main page.
+- Open Settings, click `App stats`, and confirm the stats section opens with games, storage, and last played.
+- Click `App stats` again and confirm the stats section collapses.
+- Confirm game cards still open their game info pages.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Homepage Launcher Status Cleanup
 
 - Simplified the homepage `launcher.status` panel so it is informational only.
