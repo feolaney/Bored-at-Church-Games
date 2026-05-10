@@ -505,7 +505,8 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
 .game-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px;
+  column-gap: 16px;
+  row-gap: 8px;
   align-items: center;
   width: 100%;
   min-height: 0;
@@ -753,8 +754,13 @@ body.library-mode[data-active-view="detail"] #header-settings:focus-visible {
     max-height: 52vh;
   }
 
+  .game-logo-card {
+    --logo-size: 3.25rem;
+  }
+
   .game-card {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 14px;
   }
 
   .leaderboard-row {

@@ -1,5 +1,20 @@
 # Work History
 
+## 2026-05-10 - Game Card Logo Spacing
+
+- Fixed main-page game card logos overlapping the title at narrow widths.
+- Kept card logos in a dedicated left column on mobile and reduced their mobile size.
+- Increased the card logo/text gap for clearer separation.
+
+What to test:
+- Load the main page on a narrow/mobile viewport and confirm logos no longer cross into game titles.
+- Confirm desktop card logo alignment still looks balanced.
+
+Verification:
+- `node --check library/app.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Game Logos In Library And Info
 
 - Added reusable game logo rendering in the library app.
