@@ -30,6 +30,7 @@ When the user asks to add a new game, follow this sequence:
 ## Work Tracking
 - During a pass, keep track of notable actions, decisions, manual checks, verification commands, commits, and unresolved limitations.
 - At the end of each pass, update `WORK_HISTORY.md` with a concise entry (newest at top). Include commit hash/status when available.
+- In the final console response, include what was committed: commit hash, commit message, and the committed files or key changes.
 - Each `WORK_HISTORY.md` entry should state:
   - Which goal(s) were accomplished.
   - What the user can test afterward (behavior checks, UI checks, specific game interactions).
@@ -37,6 +38,7 @@ When the user asks to add a new game, follow this sequence:
 - If work is investigative only and does not produce a commit, still add a `WORK_HISTORY.md` entry when the investigation changes project understanding or next-step recommendations.
 
 ## Commits and Pushes
+- Commit all changes from each implementation pass before the final response unless the user explicitly asks not to commit.
 - Commit all major changes with clear messages explaining what changed, why, and how it was verified.
 - Keep commits scoped to coherent units. Do not mix unrelated changes (e.g., don't bundle a new game with an unrelated library refactor).
 - Before committing, open `index.html` in a browser or otherwise verify the game loads and plays correctly, or document why verification could not be run.

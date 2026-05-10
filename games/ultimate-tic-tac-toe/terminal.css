@@ -84,7 +84,7 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 }
 
 .terminal-button:disabled,
-.terminal-panel button:disabled {
+.terminal-panel button:not(.cell):disabled {
   color: #1f521f;
   cursor: not-allowed;
   opacity: 0.62;
@@ -284,6 +284,16 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   background: rgba(0, 0, 0, 0.74);
 }
 
+.mini-board.is-closed .cell {
+  opacity: 0.34;
+  text-shadow: none;
+}
+
+.mini-board.is-closed .owner-mark.x,
+.mini-board.is-closed .owner-mark.o {
+  opacity: 0.94;
+}
+
 .mini-board.is-win-line {
   outline: 2px solid #ffb000;
   outline-offset: -4px;
@@ -304,6 +314,7 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   inset: 0;
   display: grid;
   place-items: center;
+  z-index: 2;
   pointer-events: none;
   font-size: 5rem;
   font-weight: 700;
@@ -358,6 +369,16 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 
 .cell:disabled {
   background: rgba(0, 0, 0, 0.5);
+  cursor: default;
+  opacity: 1;
+}
+
+.terminal-panel .cell.x:disabled {
+  color: #33ff00;
+}
+
+.terminal-panel .cell.o:disabled {
+  color: #ffb000;
 }
 
 .large-board-map {

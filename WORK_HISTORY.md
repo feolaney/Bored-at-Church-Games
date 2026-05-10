@@ -1,5 +1,51 @@
 # Work History
 
+## 2026-05-10 - Agent Commit Summary Workflow
+
+- Updated `AGENTS.md` so implementation passes should commit their changes before the final response unless explicitly told not to.
+- Added a final-response requirement to include what was committed: commit hash, commit message, and committed files or key changes.
+- Committed the current worktree changes from this pass and the prior Ultimate Tic Tac Toe visual adjustment.
+
+What to test:
+- Review `AGENTS.md` and confirm the commit/summary workflow matches the desired console behavior.
+
+Verification:
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/ultimate-tic-tac-toe/logic.js`
+- `git status --short`
+
+Manual browser verification was not run in this pass.
+
+## 2026-05-10 - Ultimate Tic Tac Toe Closed Board Emphasis
+
+- Updated completed mini-board styling so the large claimed X/O owner mark is bright and primary.
+- Dimmed the individual small-board cell marks after a mini-board is closed, since those cells are no longer playable.
+
+What to test:
+- Complete a mini-board for X or O and confirm the large owner mark is no longer washed out.
+- Confirm the small marks inside that completed board fade back while open boards keep normal mark contrast.
+
+Verification:
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/ultimate-tic-tac-toe/logic.js`
+
+Manual browser verification was not run in this pass.
+
+## 2026-05-10 - Ultimate Tic Tac Toe Mark Contrast
+
+- Fixed Ultimate Tic Tac Toe board marks being dimmed after placement by scoping disabled-button styling away from board cells.
+- Preserved disabled/non-playable cell behavior while restoring full green X and amber O colors for occupied cells.
+
+What to test:
+- Place several X and O moves across legal boards and confirm existing marks stay bright instead of turning muted gray/green.
+- Confirm occupied and illegal-route cells still cannot be clicked.
+
+Verification:
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/ultimate-tic-tac-toe/logic.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Plus Board Drop Controls
 
 - Updated Connect Four Plus so tapping/clicking the board column drops a piece when no powerup is selected.
