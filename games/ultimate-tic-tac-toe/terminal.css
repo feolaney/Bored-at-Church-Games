@@ -45,6 +45,41 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .brand-subtitle {
   color: #d7ffd0;
 }
 
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] .app-header {
+  align-items: start;
+  padding: 7px 9px;
+}
+
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] .system-line {
+  margin-bottom: 5px;
+  font-size: 0.68rem;
+}
+
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] h1 {
+  font-size: 0.75rem;
+}
+
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] .brand-subtitle {
+  margin-top: 4px;
+  font-size: 0.72rem;
+}
+
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] #header-settings {
+  border: 1px solid #1f521f;
+  background: #000000;
+  color: #33ff00;
+  text-shadow: 0 0 5px rgba(51, 255, 0, 0.45);
+}
+
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] #header-settings:hover,
+body.game-mode[data-active-game="ultimate-tic-tac-toe"] #header-settings:focus-visible {
+  background: #33ff00;
+  color: #000000;
+  outline: 1px solid #33ff00;
+  outline-offset: 2px;
+  text-shadow: none;
+}
+
 body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   flex: 0 0 auto;
   border: 1px solid #1f521f;

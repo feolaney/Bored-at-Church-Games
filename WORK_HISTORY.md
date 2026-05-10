@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-10 - Compact Game Header Controls
+
+- Moved the in-game `Game Info` and `Library` controls into the global header so they sit under Settings at the top right during game sessions.
+- Hid the `SESSION: ACTIVE` chip in game mode.
+- Converted the game-mode Settings control into a compact gear icon button.
+- Reduced the Ultimate Tic Tac Toe game header text and padding to make the title block roughly half-height compared with the previous screenshot.
+
+What to test:
+- Launch Ultimate Tic Tac Toe and confirm the title/header block is compact, the session chip is gone, Settings is a small gear at top right, and Game Info/Library appear smaller beneath it.
+- Confirm the same Game Info/Library buttons still navigate correctly.
+- Confirm the library/menu header still shows the normal Settings button and session/readiness chip.
+
+Verification:
+- `node --check library/app.js`
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/connect-four-plus/ui.js`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Agent Commit Summary Workflow
 
 - Updated `AGENTS.md` so implementation passes should commit their changes before the final response unless explicitly told not to.

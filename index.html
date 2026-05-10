@@ -25,7 +25,11 @@
         </div>
         <div class="header-actions">
           <div class="session-chip" id="session-chip">LIBRARY: READY</div>
-          <button type="button" class="library-button library-button-ghost" id="header-settings">Settings</button>
+          <button type="button" class="library-button library-button-ghost" id="header-settings" aria-label="Settings" title="Settings">Settings</button>
+          <nav class="game-toolbar header-game-toolbar" aria-label="Game navigation">
+            <button type="button" class="terminal-button" id="game-back">[ GAME INFO ]</button>
+            <button type="button" class="terminal-button" id="game-library">[ LIBRARY ]</button>
+          </nav>
         </div>
       </header>
 
@@ -169,10 +173,6 @@
       </section>
 
       <section class="view game-view" id="game-view" aria-label="Selected game" hidden>
-        <div class="game-toolbar">
-          <button type="button" class="terminal-button" id="game-back">[ GAME INFO ]</button>
-          <button type="button" class="terminal-button" id="game-library">[ LIBRARY ]</button>
-        </div>
         <div id="game-root"></div>
       </section>
     </main>

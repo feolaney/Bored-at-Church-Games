@@ -66,6 +66,10 @@ input:disabled {
   gap: 10px;
 }
 
+.header-game-toolbar {
+  display: none;
+}
+
 .cursor {
   display: inline-block;
   animation: blink 1s steps(2, start) infinite;
@@ -101,4 +105,60 @@ input:disabled {
   .game-toolbar > * {
     width: 100%;
   }
+}
+
+body.game-mode[data-active-game] .app-shell > .app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+body.game-mode .app-shell > .app-header .brand-lockup {
+  padding-right: 0;
+}
+
+body.game-mode .app-shell > .app-header .session-chip {
+  display: none;
+}
+
+body.game-mode .app-shell > .app-header .header-actions {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  align-self: start;
+  min-width: 0;
+}
+
+body.game-mode .app-shell > .app-header #header-settings {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  min-height: 0;
+  height: 2rem;
+  padding: 0;
+  font-size: 0;
+  line-height: 1;
+  transform: none;
+}
+
+body.game-mode .app-shell > .app-header #header-settings::before {
+  content: "\2699";
+  font-size: 1rem;
+}
+
+body.game-mode .app-shell > .app-header .header-game-toolbar {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+body.game-mode .app-shell > .app-header .header-game-toolbar > * {
+  width: auto;
+}
+
+body.game-mode .app-shell > .app-header .header-game-toolbar .terminal-button {
+  min-height: 1.5rem;
+  padding: 0 7px;
+  font-size: 0.62rem;
+  line-height: 1;
 }
