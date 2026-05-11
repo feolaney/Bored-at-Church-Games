@@ -387,7 +387,7 @@
 
         lane = Number(button.dataset.column);
 
-        if (state.pendingPower && state.pendingPower.name !== "Shield") {
+        if (state.pendingPower && state.pendingPower.name !== "Shield" && state.pendingPower.name !== "Bomb Piece") {
           state = engine.applyPowerToColumn(state, lane);
           clearActiveControlFocus();
           render();
@@ -422,7 +422,7 @@
             return;
           }
           state = engine.applyPowerToCell(state, row, col);
-        } else if (state.pendingPower) {
+        } else if (state.pendingPower && state.pendingPower.name !== "Bomb Piece") {
           state = engine.applyPowerToColumn(state, lane);
         } else {
           playColumn(lane);
@@ -1021,7 +1021,8 @@
       for (lane = 0; lane < laneCount; lane += 1) {
         var button = document.createElement("button");
         var landingPosition = engine.getLandingPosition(state, lane);
-        var columnPower = state.pendingPower && state.pendingPower.name !== "Shield";
+        var columnPower = state.pendingPower && state.pendingPower.name !== "Shield" && state.pendingPower.name !== "Bomb Piece";
+        var pendingDropTool = state.pendingDropKind !== "normal";
         var label = engine.getDropLaneLabel(state, lane);
         var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
 
@@ -1031,7 +1032,7 @@
         button.dataset.column = String(lane);
         button.textContent = lockedForActivePlayer ? "LOCK" : (label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1));
         button.setAttribute("aria-label", lockedForActivePlayer ? label + " locked" : "Play " + label);
-        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower) || (!columnPower && legalColumns.indexOf(lane) === -1);
+        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower && !pendingDropTool) || (!columnPower && legalColumns.indexOf(lane) === -1);
         fragment.appendChild(button);
       }
 
@@ -1123,7 +1124,7 @@
           var displayPiece = removed ? null : engine.getDisplayCell(state, row, col, state.currentPlayer);
           var actualPiece = state.board[row][col];
           var lane = getCellDropLane(row, col);
-          var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && !removed && legalColumns.indexOf(lane) !== -1;
+          var playableColumn = state.turnOpen && !state.pendingHandoff && (!state.pendingPower || state.pendingDropKind !== "normal") && !state.winner && !state.draw && !removed && legalColumns.indexOf(lane) !== -1;
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
           var winning = isWinningCell(row, col);
@@ -1740,6 +1741,9 @@
       if (power === "Shield") {
         return "Protect one of your pieces from removal.";
       }
+      if (power === "Bomb Piece") {
+        return "Drop a bomb that clears a 3x3 blast area.";
+      }
       if (power === "Double Drop") {
         return "Drop two pieces in different columns.";
       }
@@ -1950,11 +1954,11 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, gravity, bombs, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, bomb powerups, gravity, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
       "Current variants use public board play with no private handoff screen.",
-      "Power Duel and Draft Duel use one optional power before a normal drop.",
+      "Power Duel, Draft Duel, Token Hunt, and Hidden Objectives can award Bomb Piece as a one-use powerup.",
       "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, and Simultaneous Planning modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],

@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-11 - Connect Four Bomb Powerup
+
+- Added `Bomb Piece` to the Connect Four Plus power deck so Power Duel, Token Hunt, Hidden Objectives, and other deck-driven power modes can award bombs.
+- Updated Draft Duel starting kits so both players have one drafted `Bomb Piece`.
+- Made hand-based bombs select like a normal powerup, remain cancelable before use, consume the hand card only after a legal bomb drop, and reuse the existing bomb drop/explosion/cascade behavior.
+- Updated Connect Four Plus rules/help copy for bomb powerups.
+
+What to test:
+- In Power Duel or Draft Duel, activate a `Bomb Piece` from the tools area, cancel it once, then activate it again and drop it into a column.
+- In Token Hunt, collect tokens until `Bomb Piece` is awarded, then confirm it can be used as a bomb drop.
+- Confirm the original Bomb Pieces mode still gives bomb counters and the falling SVG/explosion behavior remains unchanged.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering hand bomb select/cancel/drop and Token Hunt token awarding `Bomb Piece`.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Bomb Drop Asset
 
 - Swapped the falling Bomb Pieces drop visual from a CSS-drawn disc to the supplied `Images/Connect 4 Bomb.svg` asset.

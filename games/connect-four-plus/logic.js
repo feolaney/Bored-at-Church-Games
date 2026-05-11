@@ -19,6 +19,7 @@
     "Swap Top",
     "Shield",
     "Shield",
+    "Bomb Piece",
     "Double Drop"
   ];
   var FOG_POWER_DECK = [
@@ -43,6 +44,7 @@
         "Use a standard 7-column by 6-row board.",
         "Each player starts with one powerup and may hold up to three.",
         "Use at most one powerup before dropping.",
+        "Bomb Piece powerups drop a bomb that clears a 3x3 blast area.",
         "After every fourth personal turn, draw one powerup unless your hand is full."
       ]
     },
@@ -57,12 +59,13 @@
       powerups: true,
       draft: true,
       startHands: {
-        R: ["Double Drop", "Swap Top", "Pop"],
-        Y: ["Lock", "Shield", "Pop"]
+        R: ["Bomb Piece", "Swap Top", "Pop"],
+        Y: ["Bomb Piece", "Shield", "Lock"]
       },
       rules: [
         "Each player starts with three one-use drafted powers.",
         "Use at most one drafted power before placing a piece.",
+        "Bomb Piece drops a bomb that clears a 3x3 blast area.",
         "Used powers are logged publicly.",
         "No random powerups are drawn during this mode."
       ]
@@ -178,7 +181,7 @@
         "Fifteen tokens are randomly placed on the board with no more than three per row.",
         "Only one token starts visible, and it appears at least three rows above the bottom.",
         "Hidden tokens are invisible until a piece lands on them.",
-        "Landing on any token grants one powerup."
+        "Landing on any token grants one powerup, including a chance at Bomb Piece."
       ]
     },
     {
@@ -937,6 +940,15 @@
       return next;
     }
 
+    if (power === "Bomb Piece") {
+      next.pendingPower = {
+        name: power,
+        handIndex: handIndex
+      };
+      next.pendingDropKind = "bomb";
+      return next;
+    }
+
     next.pendingPower = {
       name: power,
       handIndex: handIndex
@@ -1020,6 +1032,20 @@
       kind: "power",
       power: next.pendingPower.name
     };
+    next.pendingPower = null;
+  }
+
+  function consumePendingDropPower(next, activePlayer) {
+    if (!next.pendingPower) {
+      return;
+    }
+
+    if (next.pendingPower.handIndex !== null && next.pendingPower.handIndex !== undefined) {
+      next.players[activePlayer].hand.splice(next.pendingPower.handIndex, 1);
+    }
+
+    next.powerUsedThisTurn = true;
+    next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " used " + next.pendingPower.name + "."]);
     next.pendingPower = null;
   }
 
@@ -1428,6 +1454,7 @@
     var position;
     var activePlayer = next.currentPlayer;
     var result;
+    var pendingDropPower = next.pendingPower && next.pendingPower.name === "Bomb Piece" && next.pendingDropKind === "bomb";
 
     next.gravityShift = null;
 
@@ -1445,7 +1472,7 @@
       return next;
     }
 
-    if (next.pendingPower) {
+    if (next.pendingPower && !pendingDropPower) {
       next.lastError = "Resolve or cancel the selected tool before dropping.";
       return next;
     }
@@ -1462,6 +1489,7 @@
     }
 
     next.dropCount += 1;
+    consumePendingDropPower(next, activePlayer);
     updateObjective(next, activePlayer, position.row, position.col);
     collectToken(next, activePlayer, position.row, position.col);
     next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " dropped " + getDropKindLabel(next.lastMove.dropKind) + " in " + getDropLaneLabel(next, col) + "."]);
@@ -1513,7 +1541,7 @@
       return null;
     }
 
-    if (dropKind === "bomb") {
+    if (dropKind === "bomb" && !(next.pendingPower && next.pendingPower.name === "Bomb Piece")) {
       next.players[activePlayer].bombs -= 1;
     } else if (dropKind === "wild") {
       next.players[activePlayer].wilds -= 1;
