@@ -44,7 +44,7 @@
         "Use a standard 7-column by 6-row board.",
         "Each player starts with one powerup and may hold up to three.",
         "Use at most one powerup before dropping.",
-        "Bomb Piece powerups drop a bomb that clears a 3x3 blast area.",
+        "Bomb Piece powerups drop a bomb that clears unshielded pieces in a 3x3 blast area.",
         "After every fourth personal turn, draw one powerup unless your hand is full."
       ]
     },
@@ -65,7 +65,7 @@
       rules: [
         "Each player starts with three one-use drafted powers.",
         "Use at most one drafted power before placing a piece.",
-        "Bomb Piece drops a bomb that clears a 3x3 blast area.",
+        "Bomb Piece drops a bomb that clears unshielded pieces in a 3x3 blast area.",
         "Used powers are logged publicly.",
         "No random powerups are drawn during this mode."
       ]
@@ -91,7 +91,7 @@
       id: "bomb-pieces",
       title: "Bomb Pieces",
       bestFor: "Tactical disruption",
-      summary: "Each player has two bomb pieces that clear a 3x3 blast area.",
+      summary: "Each player has two bomb pieces that clear unshielded pieces in a 3x3 blast area.",
       rows: 6,
       cols: 7,
       connect: 4,
@@ -99,7 +99,7 @@
       rules: [
         "Each player gets two bombs for the game.",
         "Instead of a normal piece, drop a bomb piece.",
-        "A bomb destroys every occupied square in its 3x3 blast area, including the bomb square.",
+        "A bomb destroys every unshielded occupied square in its 3x3 blast area, including the bomb square.",
         "Pieces fall before win checks resolve."
       ]
     },
@@ -1118,13 +1118,13 @@
     }
 
     if (power === "Pop") {
-      if (!next.board[next.rows - 1][col] || next.board[next.rows - 1][col].player !== next.currentPlayer) {
-        next.lastError = "Pop can only remove your own bottom piece.";
+      if (!next.board[next.rows - 1][col]) {
+        next.lastError = "Pop needs a bottom piece in that column.";
         return next;
       }
 
       if (next.board[next.rows - 1][col].shielded || next.board[next.rows - 1][col].wild) {
-        next.lastError = "That piece cannot be popped.";
+        next.lastError = "That bottom piece is protected or wild.";
         return next;
       }
 
@@ -1664,13 +1664,18 @@
 
         cell = next.board[targetRow][targetCol];
         if (cell) {
+          if (cell.shielded) {
+            continue;
+          }
+
           cleared.push({
             row: targetRow,
             col: targetCol,
             id: cell.id === undefined ? null : cell.id,
             player: cell.player,
             wild: Boolean(cell.wild),
-            bomb: Boolean(cell.bomb)
+            bomb: Boolean(cell.bomb),
+            shielded: Boolean(cell.shielded)
           });
           next.board[targetRow][targetCol] = null;
         }

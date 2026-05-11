@@ -1740,7 +1740,7 @@
       }
 
       if (player.bombs > 0) {
-        fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears a 3x3 blast area."));
+        fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears unshielded pieces in a 3x3 blast area."));
         renderedTools = true;
       }
 
@@ -1812,7 +1812,7 @@
 
     function getPowerHelp(power) {
       if (power === "Pop") {
-        return "Remove your own bottom piece from a column.";
+        return "Remove the bottom piece from any column unless it is shielded or wild.";
       }
       if (power === "Lock") {
         return "Lock a non-full column for the opponent's next turn.";
@@ -1824,7 +1824,7 @@
         return "Protect one of your pieces from removal.";
       }
       if (power === "Bomb Piece") {
-        return "Drop a bomb that clears a 3x3 blast area.";
+        return "Drop a bomb that clears unshielded pieces in a 3x3 blast area.";
       }
       if (power === "Double Drop") {
         return "Drop two pieces in different columns.";

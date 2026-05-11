@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-11 - Connect Four Shielded Bombs and Pop Targeting
+
+- Changed bomb explosions so shielded pieces survive the 3x3 blast and are not included in bomb-cleared animation metadata.
+- Changed Pop so it can remove the bottom piece from any column regardless of owner, while still refusing shielded or wild bottom pieces.
+- Updated Bomb Piece and Pop help/rule text to describe shielded blast protection and any-column Pop targeting.
+
+What to test:
+- Shield a piece, then drop a bomb so the shielded piece is inside the blast area; confirm it survives while unshielded blast-area pieces are removed.
+- Use Pop on an opponent-owned bottom piece and confirm it pops, disappears, and the remaining column falls afterward.
+- Try Pop on a shielded bottom piece and confirm it is rejected.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering shielded bomb survival, unshielded bomb removal, opponent-piece Pop removal, and shielded Pop rejection.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Pop Animation
 
 - Added Pop-specific move metadata for the removed bottom piece and the surviving pieces that collapse afterward.
