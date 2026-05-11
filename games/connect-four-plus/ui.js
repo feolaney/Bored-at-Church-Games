@@ -1109,6 +1109,7 @@
       var battleDropReady = !battleKey || columnBattleDropReadyKey === battleKey;
       var animateDropBatch = Boolean(dropBatchKey && dropBatchKey !== animatedDropKey && battleDropReady);
       var hidePendingBattleDrops = Boolean(dropBatchKey && battleKey && !battleDropReady && dropBatchKey !== animatedDropKey);
+      var cellRects = getCurrentCellRects();
       var row;
       var col;
 
@@ -1144,7 +1145,7 @@
           }
 
           if (displayPiece) {
-            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning);
+            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects);
 
             if (disc) {
               if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
@@ -1176,6 +1177,16 @@
       if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
         animatedGravityShiftId = state.gravityShift.id;
       }
+    }
+
+    function getCurrentCellRects() {
+      var rects = {};
+
+      els.board.querySelectorAll(".cfp-cell").forEach(function (cell) {
+        rects[cell.dataset.row + ":" + cell.dataset.column] = cell.getBoundingClientRect();
+      });
+
+      return rects;
     }
 
     function getCellDropLane(row, col) {
@@ -1244,7 +1255,7 @@
       }) || null;
     }
 
-    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning) {
+    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
       var bombSettleMove = getBombSettleMove(actualPiece, row, col, dropBatch);
@@ -1273,7 +1284,7 @@
       if (gravityMove) {
         applyGravityShiftAnimation(disc, gravityMove);
       } else if (bombSettleMove && animateDropBatch) {
-        applyBombSettleAnimation(disc, bombSettleMove);
+        applyBombSettleAnimation(disc, bombSettleMove, cellRects);
       } else if (dropMove && animateDropBatch) {
         var dropAnimation = getDropAnimation(dropMove, row, col);
 
@@ -1314,8 +1325,8 @@
       }) || null;
     }
 
-    function applyBombSettleAnimation(disc, move) {
-      var animation = getBombSettleAnimation(move);
+    function applyBombSettleAnimation(disc, move, cellRects) {
+      var animation = getBombSettleAnimation(move, cellRects);
 
       disc.classList.add("is-dropping");
       disc.style.setProperty("--cfp-drop-x", animation.x);
@@ -1418,22 +1429,30 @@
       cell.appendChild(blast);
     }
 
-    function getBombSettleAnimation(move) {
+    function getBombSettleAnimation(move, cellRects) {
       var deltaCol = move.fromCol - move.toCol;
       var deltaRow = move.fromRow - move.toRow;
       var startX = deltaCol * 126;
       var startY = deltaRow * 126;
+      var measuredDelta = getCellCenterDelta(cellRects, move.fromRow, move.fromCol, move.toRow, move.toCol);
+      var startUnit = "%";
       var bounceX = deltaCol < 0 ? 10 : (deltaCol > 0 ? -10 : 0);
       var bounceY = deltaRow < 0 ? 10 : (deltaRow > 0 ? -10 : 0);
       var reboundX = bounceX ? bounceX * -0.4 : 0;
       var reboundY = bounceY ? bounceY * -0.4 : 0;
       var travelCells = Math.max(Math.abs(deltaCol), Math.abs(deltaRow), 1);
 
+      if (measuredDelta) {
+        startX = measuredDelta.x;
+        startY = measuredDelta.y;
+        startUnit = "px";
+      }
+
       return {
-        x: startX + "%",
-        y: startY + "%",
-        midX: (startX * 0.34) + "%",
-        midY: (startY * 0.34) + "%",
+        x: startX + startUnit,
+        y: startY + startUnit,
+        midX: (startX * 0.34) + startUnit,
+        midY: (startY * 0.34) + startUnit,
         bounceX: bounceX + "%",
         bounceY: bounceY + "%",
         reboundX: reboundX + "%",
@@ -1441,6 +1460,27 @@
         settleX: (bounceX * 0.28) + "%",
         settleY: (bounceY * 0.28) + "%",
         duration: Math.min(980, 430 + travelCells * 76) + "ms"
+      };
+    }
+
+    function getCellCenterDelta(cellRects, fromRow, fromCol, toRow, toCol) {
+      var fromRect;
+      var toRect;
+
+      if (!cellRects) {
+        return null;
+      }
+
+      fromRect = cellRects[fromRow + ":" + fromCol];
+      toRect = cellRects[toRow + ":" + toCol];
+
+      if (!fromRect || !toRect) {
+        return null;
+      }
+
+      return {
+        x: (fromRect.left + fromRect.width / 2) - (toRect.left + toRect.width / 2),
+        y: (fromRect.top + fromRect.height / 2) - (toRect.top + toRect.height / 2)
       };
     }
 

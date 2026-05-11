@@ -1,5 +1,21 @@
 # Work History
 
+## 2026-05-11 - Connect Four Bomb Cascade Alignment
+
+- Fixed delayed Bomb Pieces cascade discs so they use measured board-cell positions instead of an approximate percentage offset while waiting for the explosion to finish.
+- Kept the delayed settle behavior from the previous pass, but aligned the waiting pieces exactly over their original cells before they fall.
+
+What to test:
+- In Bomb Pieces, drop a bomb that clears lower pieces in a column while leaving pieces above them alive.
+- Confirm the surviving pieces above the blast do not shift a few pixels before the explosion, then fall normally after the explosion animation completes.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Bomb Cascade Timing
 
 - Added post-blast settle metadata for surviving Bomb Pieces discs that drop only because the explosion cleared pieces below them.
