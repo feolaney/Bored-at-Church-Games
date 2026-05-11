@@ -1006,8 +1006,15 @@
         disc.classList.add("is-dropping");
         disc.style.setProperty("--cfp-drop-x", dropAnimation.x);
         disc.style.setProperty("--cfp-drop-y", dropAnimation.y);
+        disc.style.setProperty("--cfp-drop-mid-x", dropAnimation.midX);
+        disc.style.setProperty("--cfp-drop-mid-y", dropAnimation.midY);
         disc.style.setProperty("--cfp-bounce-x", dropAnimation.bounceX);
         disc.style.setProperty("--cfp-bounce-y", dropAnimation.bounceY);
+        disc.style.setProperty("--cfp-rebound-x", dropAnimation.reboundX);
+        disc.style.setProperty("--cfp-rebound-y", dropAnimation.reboundY);
+        disc.style.setProperty("--cfp-settle-x", dropAnimation.settleX);
+        disc.style.setProperty("--cfp-settle-y", dropAnimation.settleY);
+        disc.style.setProperty("--cfp-drop-duration", dropAnimation.duration);
       }
 
       return disc;
@@ -1070,39 +1077,48 @@
     function getDropAnimation(lastDrop, row, col) {
       var mode = engine.getMode(state.modeId);
       var direction = mode.gravity ? lastDrop.gravityDirection : "down";
+      var startX = 0;
+      var startY = 0;
+      var bounceX = 0;
+      var bounceY = 0;
+      var reboundX = 0;
+      var reboundY = 0;
+      var travelCells;
 
       if (direction === "up") {
-        return {
-          x: "0",
-          y: ((state.rows - row) * 126) + "%",
-          bounceX: "0",
-          bounceY: "-8%"
-        };
-      }
-
-      if (direction === "left") {
-        return {
-          x: ((state.cols - col) * 126) + "%",
-          y: "0",
-          bounceX: "-8%",
-          bounceY: "0"
-        };
-      }
-
-      if (direction === "right") {
-        return {
-          x: "-" + ((col + 1) * 126) + "%",
-          y: "0",
-          bounceX: "8%",
-          bounceY: "0"
-        };
+        travelCells = state.rows - row;
+        startY = travelCells * 126;
+        bounceY = -10;
+        reboundY = 4;
+      } else if (direction === "left") {
+        travelCells = state.cols - col;
+        startX = travelCells * 126;
+        bounceX = -10;
+        reboundX = 4;
+      } else if (direction === "right") {
+        travelCells = col + 1;
+        startX = travelCells * -126;
+        bounceX = 10;
+        reboundX = -4;
+      } else {
+        travelCells = row + 1;
+        startY = travelCells * -126;
+        bounceY = 10;
+        reboundY = -4;
       }
 
       return {
-        x: "0",
-        y: "-" + ((row + 1) * 126) + "%",
-        bounceX: "0",
-        bounceY: "8%"
+        x: startX + "%",
+        y: startY + "%",
+        midX: (startX * 0.34) + "%",
+        midY: (startY * 0.34) + "%",
+        bounceX: bounceX + "%",
+        bounceY: bounceY + "%",
+        reboundX: reboundX + "%",
+        reboundY: reboundY + "%",
+        settleX: (bounceX * 0.28) + "%",
+        settleY: (bounceY * 0.28) + "%",
+        duration: Math.min(980, 430 + travelCells * 76) + "ms"
       };
     }
 

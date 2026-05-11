@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-10 - Connect Four Drop Animation Polish
+
+- Reworked the single-piece Connect Four Plus drop animation from a fixed fast `280ms` movement to a distance-based duration.
+- Added acceleration, impact overshoot, recoil, and final settle keyframes so drops feel less choppy and more weighty.
+- Kept gravity-mode entry direction support so pieces still enter from the current gravity's opposite edge.
+
+What to test:
+- Drop a piece into an empty column and confirm it falls more smoothly with a visible bounce.
+- Drop pieces after Gravity Connect rotates and confirm the slower bounce still comes from the correct edge.
+- Confirm short drops near the entry edge still feel responsive.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node smoke test across all 14 Connect Four Plus modes.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Gravity Connect Collapse Animation
 
 - Added piece IDs and gravity-shift metadata so Gravity Connect can animate every moved piece after gravity rotates.
