@@ -1,5 +1,26 @@
 # Work History
 
+## 2026-05-10 - Gravity Connect Collapse Animation
+
+- Added piece IDs and gravity-shift metadata so Gravity Connect can animate every moved piece after gravity rotates.
+- Added a slow accelerating collapse animation for all pieces that slide into new positions when gravity changes.
+- Kept new-piece entry animation aligned with the current gravity direction: left gravity enters from the right, up gravity enters from the bottom, right gravity enters from the left, and down gravity enters from the top.
+
+What to test:
+- In Gravity Connect, play until the sixth turn triggers a gravity rotation.
+- Confirm all shifted pieces animate slowly at first, accelerate, and settle into the new gravity position.
+- After rotation, place a new piece and confirm it enters from the current gravity's opposite edge.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node gravity-shift test confirming moved pieces are recorded after rotation.
+- Node entry-side metadata test for all four gravity directions.
+- Node smoke test across all 14 Connect Four Plus modes.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Token Hunt Hidden Tokens
 
 - Reworked Token Hunt token placement from three public tokens to fifteen randomly placed tokens.

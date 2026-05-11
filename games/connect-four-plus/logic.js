@@ -323,10 +323,12 @@
       winner: null,
       draw: false,
       winningLine: null,
+      nextPieceId: 1,
       turnCount: 0,
       dropCount: 0,
       lastError: null,
       lastMove: null,
+      gravityShift: null,
       pendingPower: null,
       pendingDropKind: "normal",
       powerUsedThisTurn: false,
@@ -478,6 +480,20 @@
     };
   }
 
+  function cloneGravityShift(shift) {
+    if (!shift) {
+      return null;
+    }
+
+    return {
+      id: shift.id,
+      direction: shift.direction,
+      moves: shift.moves.map(function (move) {
+        return Object.assign({}, move);
+      })
+    };
+  }
+
   function cloneState(state) {
     return {
       modeId: state.modeId,
@@ -491,10 +507,12 @@
       winner: state.winner,
       draw: state.draw,
       winningLine: state.winningLine ? state.winningLine.map(function (cell) { return cell.slice(); }) : null,
+      nextPieceId: state.nextPieceId,
       turnCount: state.turnCount,
       dropCount: state.dropCount,
       lastError: state.lastError,
       lastMove: state.lastMove ? Object.assign({}, state.lastMove) : null,
+      gravityShift: cloneGravityShift(state.gravityShift),
       pendingPower: state.pendingPower ? Object.assign({}, state.pendingPower) : null,
       pendingDropKind: state.pendingDropKind,
       powerUsedThisTurn: state.powerUsedThisTurn,
@@ -740,6 +758,65 @@
         }
       }
     }
+  }
+
+  function capturePiecePositions(state) {
+    var positions = {};
+    var row;
+    var col;
+    var cell;
+
+    for (row = 0; row < state.rows; row += 1) {
+      for (col = 0; col < state.cols; col += 1) {
+        cell = state.board[row][col];
+        if (cell && cell.id !== undefined && cell.id !== null) {
+          positions[cell.id] = {
+            row: row,
+            col: col
+          };
+        }
+      }
+    }
+
+    return positions;
+  }
+
+  function createGravityShift(beforePositions, state) {
+    var moves = [];
+    var row;
+    var col;
+    var cell;
+    var before;
+
+    for (row = 0; row < state.rows; row += 1) {
+      for (col = 0; col < state.cols; col += 1) {
+        cell = state.board[row][col];
+        if (!cell || cell.id === undefined || cell.id === null) {
+          continue;
+        }
+
+        before = beforePositions[cell.id];
+        if (before && (before.row !== row || before.col !== col)) {
+          moves.push({
+            pieceId: cell.id,
+            fromRow: before.row,
+            fromCol: before.col,
+            toRow: row,
+            toCol: col
+          });
+        }
+      }
+    }
+
+    if (!moves.length) {
+      return null;
+    }
+
+    return {
+      id: state.turnCount + ":" + state.gravityDirection,
+      direction: state.gravityDirection,
+      moves: moves
+    };
   }
 
   function rotateGravity(direction) {
@@ -1257,9 +1334,11 @@
   function finishTurn(next, activePlayer) {
     var mode = getCurrentMode(next);
     var playerState = next.players[activePlayer];
+    var gravityBefore;
 
     playerState.personalTurns += 1;
     next.turnCount += 1;
+    next.gravityShift = null;
 
     if (mode.randomPowerups && playerState.personalTurns % DRAW_EVERY_PERSONAL_TURNS === 0 && playerState.hand.length < MAX_HAND_SIZE) {
       playerState.hand.push(drawPowerup(null, mode.fog ? ["Scan Column", "Lock", "Shield", "Swap Top"] : POWER_DECK));
@@ -1290,7 +1369,9 @@
 
     if (mode.gravity && next.turnCount % 6 === 0) {
       next.gravityDirection = rotateGravity(next.gravityDirection);
+      gravityBefore = capturePiecePositions(next);
       collapseGravity(next);
+      next.gravityShift = createGravityShift(gravityBefore, next);
       next.publicLog = next.publicLog.concat(["Gravity rotated " + next.gravityDirection + "; new pieces enter from the " + getGravityEntrySide(next.gravityDirection) + "."]);
     }
 
@@ -1334,6 +1415,8 @@
     var position;
     var activePlayer = next.currentPlayer;
     var result;
+
+    next.gravityShift = null;
 
     if (mode.simultaneous) {
       return planSimultaneousDrop(next, col);
@@ -1421,11 +1504,13 @@
     }
 
     next.board[row][landingCol] = {
+      id: next.nextPieceId,
       player: activePlayer,
       shielded: false,
       wild: dropKind === "wild",
       bomb: dropKind === "bomb"
     };
+    next.nextPieceId += 1;
 
     next.lastMove = {
       kind: "drop",

@@ -718,6 +718,11 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   will-change: transform;
 }
 
+.cfp-disc.is-gravity-shifting {
+  animation: cfp-gravity-settle 1450ms cubic-bezier(0.74, 0.02, 0.42, 1) both;
+  will-change: transform;
+}
+
 .cfp-disc.shielded::after {
   content: "";
   position: absolute;
@@ -801,6 +806,28 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
   78% {
     transform: translate(var(--cfp-bounce-x, 0), var(--cfp-bounce-y, 8%));
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes cfp-gravity-settle {
+  0% {
+    transform: translate(var(--cfp-gravity-start-x, 0), var(--cfp-gravity-start-y, 0));
+  }
+
+  38% {
+    transform: translate(var(--cfp-gravity-start-x, 0), var(--cfp-gravity-start-y, 0));
+  }
+
+  78% {
+    transform: translate(var(--cfp-gravity-mid-x, 0), var(--cfp-gravity-mid-y, 0));
+  }
+
+  92% {
+    transform: translate(var(--cfp-gravity-bounce-x, 0), var(--cfp-gravity-bounce-y, 0));
   }
 
   100% {

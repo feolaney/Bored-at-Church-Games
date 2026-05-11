@@ -178,6 +178,7 @@
     var matchRecorded = false;
     var lastRecordStatus = null;
     var animatedDropKey = null;
+    var animatedGravityShiftId = null;
     var tokenRevealAnimations = [];
 
     function mount() {
@@ -343,6 +344,7 @@
         matchRecorded = false;
         lastRecordStatus = null;
         animatedDropKey = null;
+        animatedGravityShiftId = null;
         tokenRevealAnimations = [];
         render();
         scrollGameToTop();
@@ -456,6 +458,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      animatedGravityShiftId = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -475,6 +478,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      animatedGravityShiftId = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -942,6 +946,9 @@
       if (lastDropKey && lastDropKey !== animatedDropKey) {
         animatedDropKey = lastDropKey;
       }
+      if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
+        animatedGravityShiftId = state.gravityShift.id;
+      }
     }
 
     function getCellDropLane(row, col) {
@@ -976,6 +983,7 @@
 
     function createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col) {
       var disc = document.createElement("span");
+      var gravityMove = getGravityShiftMove(actualPiece, row, col);
 
       if (displayPiece.mystery) {
         disc.className = "cfp-disc mystery";
@@ -989,7 +997,10 @@
       if (actualPiece && actualPiece.bomb) {
         disc.classList.add("bomb");
       }
-      if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
+
+      if (gravityMove) {
+        applyGravityShiftAnimation(disc, gravityMove);
+      } else if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
         var dropAnimation = getDropAnimation(lastDrop, row, col);
 
         disc.classList.add("is-dropping");
@@ -1000,6 +1011,60 @@
       }
 
       return disc;
+    }
+
+    function getGravityShiftMove(piece, row, col) {
+      var shift = state.gravityShift;
+
+      if (!piece || !shift || shift.id === animatedGravityShiftId) {
+        return null;
+      }
+
+      return shift.moves.find(function (move) {
+        return move.pieceId === piece.id && move.toRow === row && move.toCol === col;
+      }) || null;
+    }
+
+    function applyGravityShiftAnimation(disc, move) {
+      var animation = getGravityShiftAnimation(move, state.gravityShift.direction);
+
+      disc.classList.add("is-gravity-shifting");
+      disc.style.setProperty("--cfp-gravity-start-x", animation.startX);
+      disc.style.setProperty("--cfp-gravity-start-y", animation.startY);
+      disc.style.setProperty("--cfp-gravity-mid-x", animation.midX);
+      disc.style.setProperty("--cfp-gravity-mid-y", animation.midY);
+      disc.style.setProperty("--cfp-gravity-bounce-x", animation.bounceX);
+      disc.style.setProperty("--cfp-gravity-bounce-y", animation.bounceY);
+    }
+
+    function getGravityShiftAnimation(move, direction) {
+      var deltaCol = move.fromCol - move.toCol;
+      var deltaRow = move.fromRow - move.toRow;
+      var startX = deltaCol * 126;
+      var startY = deltaRow * 126;
+      var midX = deltaCol * 26;
+      var midY = deltaRow * 26;
+      var bounceX = 0;
+      var bounceY = 0;
+
+      if (direction === "left") {
+        bounceX = -10;
+      } else if (direction === "right") {
+        bounceX = 10;
+      } else if (direction === "up") {
+        bounceY = -10;
+      } else {
+        bounceY = 10;
+      }
+
+      return {
+        startX: startX + "%",
+        startY: startY + "%",
+        midX: midX + "%",
+        midY: midY + "%",
+        bounceX: bounceX + "%",
+        bounceY: bounceY + "%"
+      };
     }
 
     function getDropAnimation(lastDrop, row, col) {
