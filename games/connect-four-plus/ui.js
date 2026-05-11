@@ -356,21 +356,21 @@
 
       els.dropRow.addEventListener("click", function (event) {
         var button = event.target;
-        var col;
+        var lane;
 
         if (!state || !(button instanceof HTMLButtonElement) || button.dataset.column === undefined) {
           return;
         }
 
-        col = Number(button.dataset.column);
+        lane = Number(button.dataset.column);
 
         if (state.pendingPower && state.pendingPower.name !== "Shield") {
-          state = engine.applyPowerToColumn(state, col);
+          state = engine.applyPowerToColumn(state, lane);
           render();
           return;
         }
 
-        playColumn(col);
+        playColumn(lane);
       });
 
       els.board.addEventListener("click", function (event) {
@@ -378,6 +378,7 @@
         var cell;
         var row;
         var col;
+        var lane;
 
         if (!state || !(target instanceof Element)) {
           return;
@@ -385,9 +386,10 @@
 
         cell = target.closest(".cfp-cell");
         row = cell ? Number(cell.dataset.row) : NaN;
-        col = cell ? Number(cell.dataset.column) : getBoardColumnFromPointer(event);
+        col = cell ? Number(cell.dataset.column) : NaN;
+        lane = cell ? getCellDropLane(row, col) : getBoardColumnFromPointer(event);
 
-        if (!Number.isInteger(col)) {
+        if (!Number.isInteger(lane)) {
           return;
         }
 
@@ -397,9 +399,9 @@
           }
           state = engine.applyPowerToCell(state, row, col);
         } else if (state.pendingPower) {
-          state = engine.applyPowerToColumn(state, col);
+          state = engine.applyPowerToColumn(state, lane);
         } else {
-          playColumn(col);
+          playColumn(lane);
           return;
         }
 
@@ -483,13 +485,20 @@
     function getBoardColumnFromPointer(event) {
       var rect = els.board.getBoundingClientRect();
       var x = event.clientX - rect.left;
-      var cols = state ? state.cols : engine.COLS;
+      var y = event.clientY - rect.top;
+      var mode = state ? engine.getMode(state.modeId) : null;
+      var horizontalGravity = mode && mode.gravity && (state.gravityDirection === "left" || state.gravityDirection === "right");
+      var laneCount = state ? engine.getDropLaneCount(state) : engine.COLS;
 
-      if (x < 0 || x > rect.width) {
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
         return NaN;
       }
 
-      return Math.max(0, Math.min(cols - 1, Math.floor((x / rect.width) * cols)));
+      if (horizontalGravity) {
+        return Math.max(0, Math.min(laneCount - 1, Math.floor((y / rect.height) * laneCount)));
+      }
+
+      return Math.max(0, Math.min(laneCount - 1, Math.floor((x / rect.width) * laneCount)));
     }
 
     function playColumn(col) {
@@ -715,7 +724,7 @@
       }
 
       if (mode.gravity) {
-        return "Gravity " + state.gravityDirection;
+        return "Gravity " + state.gravityDirection + " | enter " + engine.getGravityEntrySide(state.gravityDirection);
       }
 
       if (mode.shrinking) {
@@ -740,8 +749,15 @@
     }
 
     function renderBoardTheme() {
+      var mode = engine.getMode(state.modeId);
+      var directions = ["down", "left", "up", "right"];
+
       els.boardPanel.classList.toggle("is-red-turn", state.currentPlayer === "R");
       els.boardPanel.classList.toggle("is-yellow-turn", state.currentPlayer === "Y");
+      els.board.classList.toggle("is-gravity-board", Boolean(mode.gravity));
+      directions.forEach(function (direction) {
+        els.board.classList.toggle("gravity-" + direction, mode.gravity && state.gravityDirection === direction);
+      });
     }
 
     function renderHandSummary() {
@@ -803,21 +819,27 @@
     function renderDropButtons() {
       var fragment = document.createDocumentFragment();
       var legalColumns = engine.getLegalDropColumns(state);
-      var col;
+      var lane;
+      var laneCount = engine.getDropLaneCount(state);
+      var mode = engine.getMode(state.modeId);
+      var laneType = mode.gravity && (state.gravityDirection === "left" || state.gravityDirection === "right") ? "row" : "column";
 
       els.dropRow.replaceChildren();
-      els.dropRow.style.setProperty("--cfp-cols", String(state.cols));
+      els.dropRow.style.setProperty("--cfp-cols", String(laneCount));
+      els.dropRow.setAttribute("aria-label", "Drop by " + laneType);
 
-      for (col = 0; col < state.cols; col += 1) {
+      for (lane = 0; lane < laneCount; lane += 1) {
         var button = document.createElement("button");
-        var removed = engine.isRemovedColumn(state, col);
+        var landingPosition = engine.getLandingPosition(state, lane);
         var columnPower = state.pendingPower && state.pendingPower.name !== "Shield";
+        var label = engine.getDropLaneLabel(state, lane);
 
         button.type = "button";
         button.className = "cfp-drop-button";
-        button.dataset.column = String(col);
-        button.textContent = String(col + 1);
-        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || removed || (state.pendingPower && !columnPower) || (!columnPower && legalColumns.indexOf(col) === -1);
+        button.dataset.column = String(lane);
+        button.textContent = label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1);
+        button.setAttribute("aria-label", "Play " + label);
+        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower) || (!columnPower && legalColumns.indexOf(lane) === -1);
         fragment.appendChild(button);
       }
 
@@ -847,7 +869,8 @@
           var removed = engine.isRemovedColumn(state, col);
           var displayPiece = removed ? null : engine.getDisplayCell(state, row, col, state.currentPlayer);
           var actualPiece = state.board[row][col];
-          var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && !removed && legalColumns.indexOf(col) !== -1;
+          var lane = getCellDropLane(row, col);
+          var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && !removed && legalColumns.indexOf(lane) !== -1;
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
 
@@ -887,6 +910,16 @@
       }
     }
 
+    function getCellDropLane(row, col) {
+      var mode = engine.getMode(state.modeId);
+
+      if (mode.gravity && (state.gravityDirection === "left" || state.gravityDirection === "right")) {
+        return row;
+      }
+
+      return col;
+    }
+
     function getCellLabel(label, piece, removed) {
       if (removed) {
         return label + " removed";
@@ -923,11 +956,55 @@
         disc.classList.add("bomb");
       }
       if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
+        var dropAnimation = getDropAnimation(lastDrop, row, col);
+
         disc.classList.add("is-dropping");
-        disc.style.setProperty("--cfp-drop-distance", "-" + ((row + 1) * 126) + "%");
+        disc.style.setProperty("--cfp-drop-x", dropAnimation.x);
+        disc.style.setProperty("--cfp-drop-y", dropAnimation.y);
+        disc.style.setProperty("--cfp-bounce-x", dropAnimation.bounceX);
+        disc.style.setProperty("--cfp-bounce-y", dropAnimation.bounceY);
       }
 
       return disc;
+    }
+
+    function getDropAnimation(lastDrop, row, col) {
+      var mode = engine.getMode(state.modeId);
+      var direction = mode.gravity ? lastDrop.gravityDirection : "down";
+
+      if (direction === "up") {
+        return {
+          x: "0",
+          y: ((state.rows - row) * 126) + "%",
+          bounceX: "0",
+          bounceY: "-8%"
+        };
+      }
+
+      if (direction === "left") {
+        return {
+          x: ((state.cols - col) * 126) + "%",
+          y: "0",
+          bounceX: "-8%",
+          bounceY: "0"
+        };
+      }
+
+      if (direction === "right") {
+        return {
+          x: "-" + ((col + 1) * 126) + "%",
+          y: "0",
+          bounceX: "8%",
+          bounceY: "0"
+        };
+      }
+
+      return {
+        x: "0",
+        y: "-" + ((row + 1) * 126) + "%",
+        bounceX: "0",
+        bounceY: "8%"
+      };
     }
 
     function createToken() {

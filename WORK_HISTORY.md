@@ -1,5 +1,28 @@
 # Work History
 
+## 2026-05-10 - Gravity Connect Directional Drops
+
+- Updated Gravity Connect so gravity direction changes the playable entry lanes: columns for up/down gravity and rows for left/right gravity.
+- New pieces now enter from the opposite side of the active gravity direction, such as right-side entry when gravity pulls left and bottom entry when gravity pulls up.
+- Added continuous particle-flow animation over the Gravity Connect board to show the current pull direction.
+- Updated drop animation so new pieces visually come from the correct entry edge after gravity rotates.
+
+What to test:
+- Start Gravity Connect and confirm particles flow downward at the start.
+- Play six turns, confirm gravity rotates left, particles flow left, and row buttons appear.
+- After gravity rotates left, play a row and confirm the new piece enters from the right and settles toward the left.
+- Continue rotations and confirm up gravity uses bottom entry and right gravity uses left entry.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node isolated direction tests for down, left, up, and right gravity entries.
+- Node rotation test confirming lane controls switch after gravity rotates.
+- Node smoke test across all 14 Connect Four Plus modes.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Board Powerup Strip
 
 - Added a compact powerup/tool summary strip above the Connect Four Plus board.

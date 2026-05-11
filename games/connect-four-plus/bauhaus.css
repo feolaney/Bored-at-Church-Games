@@ -576,15 +576,59 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 }
 
 .cfp-board {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(var(--cfp-cols, 7), minmax(44px, 1fr));
   gap: 8px;
   border: 4px solid #121212;
   background: #121212;
   padding: 8px;
+  overflow: hidden;
+}
+
+.cfp-board.is-gravity-board::before,
+.cfp-board.is-gravity-board::after {
+  content: "";
+  position: absolute;
+  inset: -56px;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 3px, transparent 4px),
+    radial-gradient(circle, rgba(240, 192, 32, 0.8) 0 2px, transparent 3px);
+  background-position: 0 0, 28px 28px;
+  background-size: 56px 56px;
+  opacity: 0.34;
+}
+
+.cfp-board.is-gravity-board::after {
+  background-size: 84px 84px;
+  opacity: 0.18;
+}
+
+.cfp-board.gravity-down::before,
+.cfp-board.gravity-down::after {
+  animation: cfp-gravity-flow-down 900ms linear infinite;
+}
+
+.cfp-board.gravity-up::before,
+.cfp-board.gravity-up::after {
+  animation: cfp-gravity-flow-up 900ms linear infinite;
+}
+
+.cfp-board.gravity-left::before,
+.cfp-board.gravity-left::after {
+  animation: cfp-gravity-flow-left 900ms linear infinite;
+}
+
+.cfp-board.gravity-right::before,
+.cfp-board.gravity-right::after {
+  animation: cfp-gravity-flow-right 900ms linear infinite;
 }
 
 .cfp-cell {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   min-width: 0;
@@ -698,15 +742,55 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 @keyframes cfp-disc-drop {
   0% {
-    transform: translateY(var(--cfp-drop-distance, -700%));
+    transform: translate(var(--cfp-drop-x, 0), var(--cfp-drop-y, -700%));
   }
 
   78% {
-    transform: translateY(8%);
+    transform: translate(var(--cfp-bounce-x, 0), var(--cfp-bounce-y, 8%));
   }
 
   100% {
-    transform: translateY(0);
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes cfp-gravity-flow-down {
+  from {
+    transform: translateY(-56px);
+  }
+
+  to {
+    transform: translateY(56px);
+  }
+}
+
+@keyframes cfp-gravity-flow-up {
+  from {
+    transform: translateY(56px);
+  }
+
+  to {
+    transform: translateY(-56px);
+  }
+}
+
+@keyframes cfp-gravity-flow-left {
+  from {
+    transform: translateX(56px);
+  }
+
+  to {
+    transform: translateX(-56px);
+  }
+}
+
+@keyframes cfp-gravity-flow-right {
+  from {
+    transform: translateX(-56px);
+  }
+
+  to {
+    transform: translateX(56px);
   }
 }
 

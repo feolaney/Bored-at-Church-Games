@@ -120,7 +120,8 @@
         "Use a 7-column by 7-row board.",
         "After every sixth total turn, gravity rotates clockwise.",
         "Check for wins before gravity rotates.",
-        "When gravity shifts, all pieces slide in the new direction."
+        "When gravity shifts, all pieces slide in the new direction.",
+        "New pieces enter from the opposite edge of the current gravity direction."
       ]
     },
     {
@@ -499,13 +500,92 @@
     return null;
   }
 
-  function getNonFullColumns(state) {
-    var columns = [];
+  function getDropLaneCount(state) {
+    var mode = getCurrentMode(state);
+
+    if (mode.gravity && (state.gravityDirection === "left" || state.gravityDirection === "right")) {
+      return state.rows;
+    }
+
+    return state.cols;
+  }
+
+  function getDropLaneLabel(state, lane) {
+    var mode = getCurrentMode(state);
+
+    if (mode.gravity && (state.gravityDirection === "left" || state.gravityDirection === "right")) {
+      return "Row " + (lane + 1);
+    }
+
+    return "Column " + (lane + 1);
+  }
+
+  function getGravityEntrySide(direction) {
+    if (direction === "up") {
+      return "bottom";
+    }
+    if (direction === "left") {
+      return "right";
+    }
+    if (direction === "right") {
+      return "left";
+    }
+    return "top";
+  }
+
+  function getLandingPosition(state, lane) {
+    var mode = getCurrentMode(state);
+    var direction = mode.gravity ? state.gravityDirection : "down";
+    var row;
     var col;
 
-    for (col = 0; col < state.cols; col += 1) {
-      if (!isRemovedColumn(state, col) && !isColumnFull(state.board, col)) {
-        columns.push(col);
+    if (direction === "left" || direction === "right") {
+      if (lane < 0 || lane >= state.rows) {
+        return null;
+      }
+
+      if (direction === "left") {
+        for (col = 0; col < state.cols; col += 1) {
+          if (!isRemovedColumn(state, col) && !state.board[lane][col]) {
+            return { row: lane, col: col };
+          }
+        }
+      } else {
+        for (col = state.cols - 1; col >= 0; col -= 1) {
+          if (!isRemovedColumn(state, col) && !state.board[lane][col]) {
+            return { row: lane, col: col };
+          }
+        }
+      }
+
+      return null;
+    }
+
+    if (lane < 0 || lane >= state.cols || isRemovedColumn(state, lane)) {
+      return null;
+    }
+
+    if (direction === "up") {
+      for (row = 0; row < state.rows; row += 1) {
+        if (!state.board[row][lane]) {
+          return { row: row, col: lane };
+        }
+      }
+      return null;
+    }
+
+    row = getDropRow(state.board, lane);
+    return row === null ? null : { row: row, col: lane };
+  }
+
+  function getNonFullColumns(state) {
+    var columns = [];
+    var lane;
+    var laneCount = getDropLaneCount(state);
+
+    for (lane = 0; lane < laneCount; lane += 1) {
+      if (getLandingPosition(state, lane)) {
+        columns.push(lane);
       }
     }
 
@@ -1148,7 +1228,7 @@
     if (mode.gravity && next.turnCount % 6 === 0) {
       next.gravityDirection = rotateGravity(next.gravityDirection);
       collapseGravity(next);
-      next.publicLog = next.publicLog.concat(["Gravity rotated " + next.gravityDirection + "."]);
+      next.publicLog = next.publicLog.concat(["Gravity rotated " + next.gravityDirection + "; new pieces enter from the " + getGravityEntrySide(next.gravityDirection) + "."]);
     }
 
     next.currentPlayer = otherPlayer(activePlayer);
@@ -1188,7 +1268,7 @@
     var next = cloneState(state);
     var mode = getCurrentMode(next);
     var legalColumns = getLegalDropColumns(next);
-    var row;
+    var position;
     var activePlayer = next.currentPlayer;
     var result;
 
@@ -1216,16 +1296,16 @@
       return next;
     }
 
-    row = placePiece(next, activePlayer, col, next.pendingDropKind);
-    if (row === null) {
-      next.lastError = "That column is not playable.";
+    position = placePiece(next, activePlayer, col, next.pendingDropKind);
+    if (!position) {
+      next.lastError = "That lane is not playable.";
       return next;
     }
 
     next.dropCount += 1;
-    updateObjective(next, activePlayer, row, col);
-    collectToken(next, activePlayer, row, col);
-    next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " dropped " + getDropKindLabel(next.lastMove.dropKind) + " in column " + (col + 1) + "."]);
+    updateObjective(next, activePlayer, position.row, position.col);
+    collectToken(next, activePlayer, position.row, position.col);
+    next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " dropped " + getDropKindLabel(next.lastMove.dropKind) + " in " + getDropLaneLabel(next, col) + "."]);
 
     result = findWinner(next, activePlayer);
     if (result.winner) {
@@ -1262,10 +1342,12 @@
   }
 
   function placePiece(next, activePlayer, col, kind) {
-    var row = getDropRow(next.board, col);
+    var position = getLandingPosition(next, col);
+    var row = position && position.row;
+    var landingCol = position && position.col;
     var dropKind = kind || "normal";
 
-    if (row === null || isRemovedColumn(next, col)) {
+    if (!position) {
       return null;
     }
 
@@ -1275,7 +1357,7 @@
       next.players[activePlayer].wilds -= 1;
     }
 
-    next.board[row][col] = {
+    next.board[row][landingCol] = {
       player: activePlayer,
       shielded: false,
       wild: dropKind === "wild",
@@ -1287,15 +1369,18 @@
       dropKind: dropKind,
       player: activePlayer,
       row: row,
-      col: col
+      col: landingCol,
+      lane: col,
+      gravityDirection: next.gravityDirection,
+      entrySide: getGravityEntrySide(next.gravityDirection)
     };
 
     if (dropKind === "bomb") {
-      explodeBomb(next, row, col);
+      explodeBomb(next, row, landingCol);
       collapseAllColumns(next);
     }
 
-    return row;
+    return position;
   }
 
   function getDropKindLabel(kind) {
@@ -1579,6 +1664,10 @@
     dropPiece: dropPiece,
     getLegalDropColumns: getLegalDropColumns,
     getNonFullColumns: getNonFullColumns,
+    getDropLaneCount: getDropLaneCount,
+    getDropLaneLabel: getDropLaneLabel,
+    getGravityEntrySide: getGravityEntrySide,
+    getLandingPosition: getLandingPosition,
     getTokenAt: getTokenAt,
     getDisplayCell: getDisplayCell,
     isRemovedColumn: isRemovedColumn,
