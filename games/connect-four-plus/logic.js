@@ -131,7 +131,7 @@
       rules: [
         "Each player has two locks.",
         "Before placing, lock a non-full column for the opponent's next turn.",
-        "You must place in a different column after locking.",
+        "The locking player may still place in that column on the same turn.",
         "You cannot lock the only playable column or the same column twice in a row."
       ]
     },

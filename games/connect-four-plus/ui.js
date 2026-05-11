@@ -833,7 +833,11 @@
 
     function getConstraintText(mode) {
       if (state.lockedColumn !== null) {
-        return "Column " + (state.lockedColumn + 1) + " locked for " + engine.PLAYER_LABELS[state.lockedFor];
+        if (state.lockedFor !== state.currentPlayer) {
+          return engine.getDropLaneLabel(state, state.lockedColumn) + " prelocked for " + engine.PLAYER_LABELS[state.lockedFor];
+        }
+
+        return engine.getDropLaneLabel(state, state.lockedColumn) + " locked for " + engine.PLAYER_LABELS[state.lockedFor];
       }
 
       if (state.pendingDropKind !== "normal") {
@@ -1034,18 +1038,39 @@
         var pendingDropTool = state.pendingDropKind !== "normal";
         var label = engine.getDropLaneLabel(state, lane);
         var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
+        var prelockedForOpponent = isPrelockedLane(lane);
 
         button.type = "button";
         button.className = "cfp-drop-button";
         button.classList.toggle("is-locked", lockedForActivePlayer);
+        button.classList.toggle("is-prelocked", prelockedForOpponent);
         button.dataset.column = String(lane);
         button.textContent = lockedForActivePlayer ? "LOCK" : (label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1));
-        button.setAttribute("aria-label", lockedForActivePlayer ? label + " locked" : "Play " + label);
+        button.setAttribute("aria-label", getDropButtonLabel(label, lockedForActivePlayer, prelockedForOpponent));
+        if (prelockedForOpponent) {
+          button.title = label + " will lock for " + engine.PLAYER_LABELS[state.lockedFor] + " after this turn.";
+        }
         button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower && !pendingDropTool) || (!columnPower && legalColumns.indexOf(lane) === -1);
         fragment.appendChild(button);
       }
 
       els.dropRow.appendChild(fragment);
+    }
+
+    function isPrelockedLane(lane) {
+      return state.lockedColumn === lane && state.lockedFor !== null && state.lockedFor !== state.currentPlayer;
+    }
+
+    function getDropButtonLabel(label, lockedForActivePlayer, prelockedForOpponent) {
+      if (lockedForActivePlayer) {
+        return label + " locked";
+      }
+
+      if (prelockedForOpponent) {
+        return "Play " + label + "; lock queued for " + engine.PLAYER_LABELS[state.lockedFor];
+      }
+
+      return "Play " + label;
     }
 
     function renderWinBanner() {
@@ -1141,6 +1166,7 @@
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
           var winning = isWinningCell(row, col);
+          var prelockedForOpponent = isPrelockedLane(lane);
 
           cell.type = "button";
           cell.className = "cfp-cell";
@@ -1156,6 +1182,9 @@
 
           if (playableColumn) {
             cell.classList.add("is-playable-column");
+          }
+          if (prelockedForOpponent) {
+            cell.classList.add("is-prelocked-column");
           }
 
           if (displayPiece) {

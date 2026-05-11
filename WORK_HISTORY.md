@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-11 - Connect Four Prelock Indicator
+
+- Added a distinct prelock visual state for columns that have been locked for the opponent but are still playable by the locking player.
+- Marked the prelocked top drop button with a pulsing dashed lock indicator and highlighted the queued board column.
+- Updated the lock status text and Column Locks rules so they distinguish prelocked-for-opponent from actively locked-for-you behavior.
+
+What to test:
+- In Column Locks or with a Lock power, choose a column to lock and confirm the current player sees the queued/prelock marker immediately.
+- Confirm the locking player can still drop in that marked column on the same turn.
+- Confirm the next player sees the same lane as actually locked and cannot play there.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering prelocked lane legality for the locking player, opponent lock enforcement, and lock clearing afterward.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Swap Animation
 
 - Added Swap Top move metadata for both pieces involved in the top-piece swap.
