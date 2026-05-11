@@ -180,6 +180,7 @@
     var animatedDropKey = null;
     var animatedGravityShiftId = null;
     var animatedColumnBattleKey = null;
+    var columnBattleDropReadyKey = null;
     var tokenRevealAnimations = [];
 
     function mount() {
@@ -387,6 +388,7 @@
 
         if (state.pendingPower && state.pendingPower.name !== "Shield") {
           state = engine.applyPowerToColumn(state, lane);
+          clearActiveControlFocus();
           render();
           return;
         }
@@ -426,6 +428,7 @@
           return;
         }
 
+        clearActiveControlFocus();
         render();
       });
 
@@ -499,6 +502,7 @@
       animatedDropKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
+      columnBattleDropReadyKey = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -512,6 +516,7 @@
       animatedDropKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
+      columnBattleDropReadyKey = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -533,6 +538,7 @@
       animatedDropKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
+      columnBattleDropReadyKey = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -541,6 +547,14 @@
     function scrollGameToTop() {
       if (services.scrollToTop) {
         services.scrollToTop();
+      }
+    }
+
+    function clearActiveControlFocus() {
+      var active = document.activeElement;
+
+      if (active instanceof HTMLElement && root.contains(active)) {
+        active.blur();
       }
     }
 
@@ -568,6 +582,7 @@
         return;
       }
 
+      clearActiveControlFocus();
       state = engine.dropPiece(state, col);
       queueTokenReveal(state.lastMove);
       maybeRecordMatch();
@@ -1037,14 +1052,20 @@
 
     function renderColumnBattle() {
       var battle = getColumnBattle();
-      var battleKey = battle ? state.dropCount + ":" + battle.column + ":" + battle.firstPlayer : null;
+      var battleKey = battle ? getColumnBattleKey(battle) : null;
 
-      if (!battle || battleKey === animatedColumnBattleKey) {
+      if (!battle) {
         els.columnBattle.hidden = true;
         return;
       }
 
+      if (battleKey === animatedColumnBattleKey) {
+        els.columnBattle.hidden = columnBattleDropReadyKey === battleKey;
+        return;
+      }
+
       animatedColumnBattleKey = battleKey;
+      columnBattleDropReadyKey = null;
       els.columnBattle.hidden = false;
       els.columnBattle.classList.toggle("is-red-winner", battle.firstPlayer === "R");
       els.columnBattle.classList.toggle("is-yellow-winner", battle.firstPlayer === "Y");
@@ -1052,9 +1073,15 @@
 
       global.setTimeout(function () {
         if (mounted && animatedColumnBattleKey === battleKey) {
+          columnBattleDropReadyKey = battleKey;
           els.columnBattle.hidden = true;
+          render();
         }
       }, 2600);
+    }
+
+    function getColumnBattleKey(battle) {
+      return state.dropCount + ":" + battle.column + ":" + battle.firstPlayer;
     }
 
     function getColumnBattle() {
@@ -1076,6 +1103,11 @@
       var legalColumns = engine.getLegalDropColumns(state);
       var dropBatch = getDropBatch();
       var dropBatchKey = getDropBatchKey(dropBatch);
+      var battle = getColumnBattle();
+      var battleKey = battle ? getColumnBattleKey(battle) : null;
+      var battleDropReady = !battleKey || columnBattleDropReadyKey === battleKey;
+      var animateDropBatch = Boolean(dropBatchKey && dropBatchKey !== animatedDropKey && battleDropReady);
+      var hidePendingBattleDrops = Boolean(dropBatchKey && battleKey && !battleDropReady && dropBatchKey !== animatedDropKey);
       var row;
       var col;
 
@@ -1111,18 +1143,21 @@
           }
 
           if (displayPiece) {
-            var disc = createDisc(displayPiece, actualPiece, dropBatch, dropBatchKey, row, col, winning);
+            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning);
 
-            if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
-              cell.classList.add("is-animation-lane");
+            if (disc) {
+              if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
+                cell.classList.add("is-animation-lane");
+              }
+              cell.appendChild(disc);
             }
-            cell.appendChild(disc);
           } else if (token && token.visible) {
             cell.appendChild(createToken());
           }
 
+          appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
           appendTokenReveals(cell, row, col);
-          appendBombClears(cell, row, col, dropBatch, dropBatchKey);
+          appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
 
           if (winning) {
             cell.classList.add("is-winning");
@@ -1133,7 +1168,7 @@
       }
 
       els.board.appendChild(fragment);
-      if (dropBatchKey && dropBatchKey !== animatedDropKey) {
+      if (animateDropBatch) {
         animatedDropKey = dropBatchKey;
       }
       if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
@@ -1207,10 +1242,14 @@
       }) || null;
     }
 
-    function createDisc(displayPiece, actualPiece, dropBatch, dropBatchKey, row, col, winning) {
+    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
       var dropMove = getDropForCell(dropBatch, actualPiece, row, col);
+
+      if (dropMove && hidePendingBattleDrops) {
+        return null;
+      }
 
       if (displayPiece.mystery) {
         disc.className = "cfp-disc mystery";
@@ -1230,7 +1269,7 @@
 
       if (gravityMove) {
         applyGravityShiftAnimation(disc, gravityMove);
-      } else if (dropMove && dropBatchKey !== animatedDropKey) {
+      } else if (dropMove && animateDropBatch) {
         var dropAnimation = getDropAnimation(dropMove, row, col);
 
         disc.classList.add("is-dropping");
@@ -1251,11 +1290,41 @@
       return disc;
     }
 
-    function appendBombClears(cell, row, col, dropBatch, dropBatchKey) {
+    function appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
+      var bombDrop = dropBatch.find(function (drop) {
+        return drop.dropKind === "bomb";
+      });
+      var bomb;
+      var dropAnimation;
+
+      if (!bombDrop || !animateDropBatch || bombDrop.row !== row || bombDrop.col !== col) {
+        return;
+      }
+
+      dropAnimation = getDropAnimation(bombDrop, row, col);
+      bomb = document.createElement("span");
+      bomb.className = "cfp-bomb-drop " + (bombDrop.player === "R" ? "red" : "yellow");
+      bomb.style.setProperty("--cfp-drop-x", dropAnimation.x);
+      bomb.style.setProperty("--cfp-drop-y", dropAnimation.y);
+      bomb.style.setProperty("--cfp-drop-mid-x", dropAnimation.midX);
+      bomb.style.setProperty("--cfp-drop-mid-y", dropAnimation.midY);
+      bomb.style.setProperty("--cfp-bounce-x", dropAnimation.bounceX);
+      bomb.style.setProperty("--cfp-bounce-y", dropAnimation.bounceY);
+      bomb.style.setProperty("--cfp-rebound-x", dropAnimation.reboundX);
+      bomb.style.setProperty("--cfp-rebound-y", dropAnimation.reboundY);
+      bomb.style.setProperty("--cfp-settle-x", dropAnimation.settleX);
+      bomb.style.setProperty("--cfp-settle-y", dropAnimation.settleY);
+      bomb.style.setProperty("--cfp-drop-duration", dropAnimation.duration);
+      cell.classList.add("is-animation-lane");
+      cell.appendChild(bomb);
+    }
+
+    function appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
       var lastDrop = dropBatch[dropBatch.length - 1];
       var blast;
+      var dropAnimation;
 
-      if (!lastDrop || lastDrop.dropKind !== "bomb" || dropBatchKey === animatedDropKey || !Array.isArray(lastDrop.bombCleared)) {
+      if (!lastDrop || lastDrop.dropKind !== "bomb" || !animateDropBatch || !Array.isArray(lastDrop.bombCleared)) {
         return;
       }
 
@@ -1265,9 +1334,13 @@
         return;
       }
 
+      dropAnimation = getDropAnimation(lastDrop, lastDrop.row, lastDrop.col);
       blast = document.createElement("span");
       blast.className = "cfp-bomb-blast";
-      blast.textContent = "BOOM";
+      blast.classList.toggle("is-center", row === lastDrop.row && col === lastDrop.col);
+      blast.classList.toggle("red", lastDrop.player === "R");
+      blast.classList.toggle("yellow", lastDrop.player === "Y");
+      blast.style.setProperty("--cfp-blast-delay", "calc(" + dropAnimation.duration + " - 120ms)");
       cell.classList.add("is-animation-lane");
       cell.appendChild(blast);
     }

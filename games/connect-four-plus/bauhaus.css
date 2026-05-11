@@ -679,6 +679,7 @@ button.cfp-hand-chip:disabled {
   min-height: 2.55rem;
   background: #f0c020;
   color: #121212;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cfp-drop-button.is-locked {
@@ -762,6 +763,7 @@ button.cfp-hand-chip:disabled {
   background: #ffffff;
   padding: 5px;
   overflow: visible;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cfp-cell.is-animation-lane {
@@ -781,6 +783,13 @@ button.cfp-hand-chip:disabled {
   background: #e0e0e0;
   outline: 3px solid #1040c0;
   outline-offset: -3px;
+}
+
+@media (hover: none) {
+  .cfp-cell.is-playable-column:hover {
+    background: #ffffff;
+    outline: 0;
+  }
 }
 
 .cfp-cell.is-winning {
@@ -876,6 +885,36 @@ button.cfp-hand-chip:disabled {
   transform: rotate(45deg);
 }
 
+.cfp-bomb-drop {
+  position: relative;
+  z-index: 8;
+  display: block;
+  width: 82%;
+  height: 82%;
+  border: 3px solid #121212;
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 0 #121212;
+  animation: cfp-bomb-drop-hit var(--cfp-drop-duration, 720ms) linear both;
+  will-change: opacity, transform;
+}
+
+.cfp-bomb-drop.red {
+  background: #d02020;
+}
+
+.cfp-bomb-drop.yellow {
+  background: #f0c020;
+}
+
+.cfp-bomb-drop::before {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border: 3px solid #121212;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
 .cfp-token {
   display: grid;
   place-items: center;
@@ -945,21 +984,62 @@ button.cfp-hand-chip:disabled {
 
 .cfp-bomb-blast {
   position: absolute;
-  inset: 7%;
-  z-index: 7;
+  inset: -10%;
+  z-index: 9;
   display: grid;
   place-items: center;
-  border: 4px solid #121212;
-  background: #ffffff;
-  box-shadow: 5px 5px 0 0 #121212;
-  color: #d02020;
-  font-size: clamp(0.48rem, 1.55vw, 0.86rem);
-  font-weight: 900;
-  line-height: 1;
+  background: transparent;
   pointer-events: none;
-  text-align: center;
-  text-transform: uppercase;
-  animation: cfp-bomb-blast 1050ms ease-out forwards;
+  animation: cfp-bomb-blast-cell 980ms ease-out var(--cfp-blast-delay, 620ms) both;
+}
+
+.cfp-bomb-blast.is-center {
+  inset: -88%;
+  z-index: 10;
+  animation-name: cfp-bomb-blast-center;
+}
+
+.cfp-bomb-blast::before,
+.cfp-bomb-blast::after {
+  content: "";
+  position: absolute;
+  border: 4px solid #121212;
+  box-shadow: 4px 4px 0 0 #121212;
+}
+
+.cfp-bomb-blast::before {
+  width: 68%;
+  height: 68%;
+  border-radius: 50%;
+  background: #f0c020;
+}
+
+.cfp-bomb-blast::after {
+  width: 46%;
+  height: 46%;
+  background: #1040c0;
+  transform: rotate(45deg);
+}
+
+.cfp-bomb-blast.red::before {
+  background: #d02020;
+}
+
+.cfp-bomb-blast.yellow::before {
+  background: #f0c020;
+}
+
+.cfp-bomb-blast.is-center::before {
+  width: 62%;
+  height: 62%;
+  background:
+    conic-gradient(from 45deg, #d02020 0 25%, #f0c020 0 50%, #1040c0 0 75%, #ffffff 0);
+}
+
+.cfp-bomb-blast.is-center::after {
+  width: 32%;
+  height: 32%;
+  background: #ffffff;
 }
 
 .cfp-column-battle {
@@ -1099,28 +1179,6 @@ button.cfp-hand-chip:disabled {
   }
 }
 
-@keyframes cfp-bomb-blast {
-  0% {
-    opacity: 0;
-    transform: scale(0.32) rotate(-10deg);
-  }
-
-  16% {
-    opacity: 1;
-    transform: scale(1.14) rotate(4deg);
-  }
-
-  72% {
-    opacity: 0.94;
-    transform: scale(1) rotate(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(1.5) rotate(0);
-  }
-}
-
 @keyframes cfp-battle-overlay {
   0% {
     opacity: 0;
@@ -1150,6 +1208,86 @@ button.cfp-hand-chip:disabled {
 
   100% {
     transform: rotateY(1260deg) rotateZ(0);
+  }
+}
+
+@keyframes cfp-bomb-drop-hit {
+  0% {
+    opacity: 1;
+    transform: translate(var(--cfp-drop-x, 0), var(--cfp-drop-y, -700%));
+    animation-timing-function: cubic-bezier(0.42, 0, 0.92, 0.28);
+  }
+
+  56% {
+    opacity: 1;
+    transform: translate(var(--cfp-drop-mid-x, 0), var(--cfp-drop-mid-y, -220%));
+    animation-timing-function: cubic-bezier(0.08, 0.72, 0.16, 1);
+  }
+
+  76% {
+    opacity: 1;
+    transform: translate(var(--cfp-bounce-x, 0), var(--cfp-bounce-y, 8%));
+    animation-timing-function: cubic-bezier(0.2, 0.88, 0.28, 1);
+  }
+
+  88% {
+    opacity: 1;
+    transform: translate(var(--cfp-rebound-x, 0), var(--cfp-rebound-y, -4%));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.7, 0.48);
+  }
+
+  96% {
+    opacity: 1;
+    transform: translate(var(--cfp-settle-x, 0), var(--cfp-settle-y, 2%)) scale(1.12, 0.78);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1.28, 0.58);
+  }
+}
+
+@keyframes cfp-bomb-blast-cell {
+  0% {
+    opacity: 0;
+    transform: scale(0.18) rotate(-18deg);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1.16) rotate(8deg);
+  }
+
+  72% {
+    opacity: 0.9;
+    transform: scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.42) rotate(0);
+  }
+}
+
+@keyframes cfp-bomb-blast-center {
+  0% {
+    opacity: 0;
+    transform: scale(0.12) rotate(-12deg);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1.06) rotate(8deg);
+  }
+
+  66% {
+    opacity: 0.94;
+    transform: scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.32) rotate(0);
   }
 }
 

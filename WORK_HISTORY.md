@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-10 - Connect Four Bomb and Battle Animation
+
+- Added a temporary falling bomb visual for Bomb Pieces so the bomb visibly drops and hits before the board resolves to the post-blast state.
+- Replaced the text `BOOM` boxes with Bauhaus-style geometric explosion shapes over the affected blast cells.
+- Cleared active board/drop-button focus after a column is selected so touchscreen taps in Simultaneous Planning do not leave a highlighted square for the next player.
+- Delayed same-column Simultaneous Planning piece drops until after the Column Battle coin overlay has faded; the resolved pieces now fall afterward.
+
+What to test:
+- In Bomb Pieces, drop a bomb and confirm the bomb visibly falls, hits, and triggers a geometric blast instead of text boxes.
+- On a touchscreen in Simultaneous Planning, choose the first player's column and confirm no tapped square remains highlighted when passing to the second player.
+- In Simultaneous Planning, choose the same column for both players and confirm the coin overlay plays first, then fades before both pieces fall.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node targeted Connect Four Plus smoke test covering remaining mode initialization, removed-mode absence, 3x3 bomb blast metadata, and same-column Column Battle metadata.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Bomb Blast and Mode Trim
 
 - Changed Bomb Pieces from cross-shaped clearing to a full 3x3 blast centered on the bomb placement.
