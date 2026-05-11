@@ -210,7 +210,7 @@
             '</div>' +
             '<p class="cfp-label">variant router</p>' +
             '<h2>Choose Mode</h2>' +
-            '<p>Select which Connect Four Plus ruleset to launch. Fog modes are the only modes that use private handoff screens.</p>' +
+            '<p>Select which public Connect Four Plus ruleset to launch.</p>' +
           '</div>' +
           '<div class="cfp-mode-list" data-role="mode-list"></div>' +
         '</section>' +
@@ -1420,7 +1420,7 @@
       }
 
       if (player.bombs > 0) {
-        fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears adjacent cells."));
+        fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears a 3x3 blast area."));
         renderedTools = true;
       }
 
@@ -1713,13 +1713,12 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, fog, gravity, bombs, wild pieces, locks, board-shift, token, objective, puzzle, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, gravity, bombs, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
-      "Most variants use public board play with no private handoff screen.",
-      "Fog of War variants are the only modes that cover the board between turns.",
+      "Current variants use public board play with no private handoff screen.",
       "Power Duel and Draft Duel use one optional power before a normal drop.",
-      "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, Puzzle, and Simultaneous Planning modes are selectable from the in-game mode picker.",
+      "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, and Simultaneous Planning modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],
     getLibraryMetrics: getPowerSummary,

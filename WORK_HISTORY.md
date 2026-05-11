@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-10 - Connect Four Bomb Blast and Mode Trim
+
+- Changed Bomb Pieces from cross-shaped clearing to a full 3x3 blast centered on the bomb placement.
+- The bomb now removes every occupied square in that 3x3 area, including the bomb itself, then collapses the remaining pieces.
+- Updated Bomb Pieces rules/tool text to describe the 3x3 blast behavior.
+- Removed Puzzle Campaign, Shadow Connect, and Powerups plus Fog from the Connect Four Plus mode picker.
+- Updated Connect Four Plus library/mode copy so it no longer advertises removed fog or puzzle variants.
+
+What to test:
+- In Bomb Pieces, place a bomb into a surrounded square and confirm the center plus all eight touching squares are destroyed before pieces fall.
+- Open the Connect Four Plus mode picker and confirm Puzzle Campaign, Shadow Connect, and Powerups plus Fog are gone.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering remaining mode initialization, removed-mode absence, 3x3 bomb blast removal by piece ID, same-column Column Battle resolution, and winning-line final-piece metadata.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Interaction and Win Polish
 
 - Made Connect Four Plus top powerup summary chips clickable for the active player; selected chips pulse and clicking the selected chip cancels the pending tool.

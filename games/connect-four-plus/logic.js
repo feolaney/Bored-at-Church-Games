@@ -68,46 +68,6 @@
       ]
     },
     {
-      id: "shadow-connect",
-      title: "Shadow Connect",
-      bestFor: "Advanced fog mode",
-      summary: "Players see only their pieces, nearby threats, top pieces, and scan results.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      fog: true,
-      powerups: true,
-      startHands: {
-        R: ["Scan Column"],
-        Y: ["Scan Column"]
-      },
-      rules: [
-        "Fog of war hides some opponent pieces from the active player.",
-        "Hidden occupied spaces show as mystery tokens, never as empty cells.",
-        "Each player starts with one Scan Column power.",
-        "Wins use the true board state and reveal the full board."
-      ]
-    },
-    {
-      id: "power-fog",
-      title: "Powerups plus Fog",
-      bestFor: "Expert mixed mode",
-      summary: "Shadow Connect visibility combined with private tactical powerups.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      fog: true,
-      powerups: true,
-      randomPowerups: true,
-      startHands: "fog-random",
-      rules: [
-        "Use Shadow Connect visibility rules.",
-        "Players also have tactical powerup hands.",
-        "Targeting a hidden piece is blocked unless the power reveals information.",
-        "Wins reveal the true board."
-      ]
-    },
-    {
       id: "gravity-connect",
       title: "Gravity Connect",
       bestFor: "Visual arcade mode",
@@ -128,7 +88,7 @@
       id: "bomb-pieces",
       title: "Bomb Pieces",
       bestFor: "Tactical disruption",
-      summary: "Each player has two bomb pieces that clear orthogonally adjacent cells.",
+      summary: "Each player has two bomb pieces that clear a 3x3 blast area.",
       rows: 6,
       cols: 7,
       connect: 4,
@@ -136,7 +96,7 @@
       rules: [
         "Each player gets two bombs for the game.",
         "Instead of a normal piece, drop a bomb piece.",
-        "A bomb destroys adjacent pieces above, below, left, and right.",
+        "A bomb destroys every occupied square in its 3x3 blast area, including the bomb square.",
         "Pieces fall before win checks resolve."
       ]
     },
@@ -239,22 +199,6 @@
       ]
     },
     {
-      id: "puzzle-campaign",
-      title: "Puzzle Campaign",
-      bestFor: "Training mode",
-      summary: "A starter puzzle asks Red to find a one-move connect-four win.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      puzzle: true,
-      rules: [
-        "Solve focused board positions.",
-        "The starter puzzle is a win-in-one for Red.",
-        "Additional puzzles can build from this mode.",
-        "The board still uses normal connect-four win checks."
-      ]
-    },
-    {
       id: "simultaneous-planning",
       title: "Simultaneous Planning",
       bestFor: "Prediction game",
@@ -267,7 +211,7 @@
         "Red chooses a column for the round.",
         "Yellow chooses a column for the round.",
         "Both moves resolve together.",
-        "If both choose the same column, round priority alternates."
+        "If both choose the same column, a Column Battle coin flip decides who drops first."
       ]
     }
   ];
@@ -1617,34 +1561,30 @@
 
   function explodeBomb(next, row, col) {
     var cleared = [];
+    var targetRow;
+    var targetCol;
+    var cell;
 
-    [
-      [row - 1, col],
-      [row + 1, col],
-      [row, col - 1],
-      [row, col + 1]
-    ].forEach(function (position) {
-      var targetRow = position[0];
-      var targetCol = position[1];
-      var cell;
+    for (targetRow = row - 1; targetRow <= row + 1; targetRow += 1) {
+      for (targetCol = col - 1; targetCol <= col + 1; targetCol += 1) {
+        if (!inBounds(next, targetRow, targetCol)) {
+          continue;
+        }
 
-      if (!inBounds(next, targetRow, targetCol)) {
-        return;
+        cell = next.board[targetRow][targetCol];
+        if (cell) {
+          cleared.push({
+            row: targetRow,
+            col: targetCol,
+            id: cell.id === undefined ? null : cell.id,
+            player: cell.player,
+            wild: Boolean(cell.wild),
+            bomb: Boolean(cell.bomb)
+          });
+          next.board[targetRow][targetCol] = null;
+        }
       }
-
-      cell = next.board[targetRow][targetCol];
-      if (cell && !cell.shielded) {
-        cleared.push({
-          row: targetRow,
-          col: targetCol,
-          id: cell.id === undefined ? null : cell.id,
-          player: cell.player,
-          wild: Boolean(cell.wild),
-          bomb: Boolean(cell.bomb)
-        });
-        next.board[targetRow][targetCol] = null;
-      }
-    });
+    }
 
     return cleared;
   }
