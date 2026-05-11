@@ -467,6 +467,11 @@
         return Object.assign({}, settledMove);
       });
     }
+    if (Array.isArray(move.swapMoves)) {
+      clone.swapMoves = move.swapMoves.map(function (swapMove) {
+        return Object.assign({}, swapMove);
+      });
+    }
     if (move.tokenFound) {
       clone.tokenFound = Object.assign({}, move.tokenFound);
     }
@@ -1067,6 +1072,8 @@
     var popRow;
     var poppedCell;
     var beforeCollapse;
+    var firstSwapRow;
+    var secondSwapRow;
 
     if (!power) {
       next.lastError = "Select a column tool first.";
@@ -1157,10 +1164,29 @@
         return next;
       }
 
-      temp = next.board[topRows[0]][col];
-      next.board[topRows[0]][col] = next.board[topRows[1]][col];
-      next.board[topRows[1]][col] = temp;
-      consumePendingPower(next);
+      firstSwapRow = topRows[0];
+      secondSwapRow = topRows[1];
+      temp = next.board[firstSwapRow][col];
+      next.board[firstSwapRow][col] = next.board[secondSwapRow][col];
+      next.board[secondSwapRow][col] = temp;
+      consumePendingPower(next, {
+        swapMoves: [
+          {
+            pieceId: next.board[secondSwapRow][col].id,
+            fromRow: firstSwapRow,
+            fromCol: col,
+            toRow: secondSwapRow,
+            toCol: col
+          },
+          {
+            pieceId: next.board[firstSwapRow][col].id,
+            fromRow: secondSwapRow,
+            fromCol: col,
+            toRow: firstSwapRow,
+            toCol: col
+          }
+        ]
+      });
       next.lastError = null;
       return next;
     }

@@ -876,6 +876,15 @@ button.cfp-hand-chip:disabled {
   will-change: transform;
 }
 
+.cfp-disc.is-swapping {
+  animation: cfp-swap-piece 760ms cubic-bezier(0.24, 0.9, 0.28, 1) both;
+  will-change: transform;
+}
+
+.cfp-cell.is-animation-lane .cfp-disc.is-swapping {
+  z-index: 6;
+}
+
 .cfp-disc.shielded::after {
   content: "";
   position: absolute;
@@ -1436,6 +1445,24 @@ button.cfp-hand-chip:disabled {
 
   100% {
     transform: translate(0, 0);
+  }
+}
+
+@keyframes cfp-swap-piece {
+  0% {
+    transform: translate(var(--cfp-swap-start-x, 0), var(--cfp-swap-start-y, 0)) scale(1);
+  }
+
+  44% {
+    transform: translate(var(--cfp-swap-mid-x, 0), var(--cfp-swap-mid-y, 0)) scale(1.08);
+  }
+
+  78% {
+    transform: translate(0, 0) scale(1.08);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
   }
 }
 

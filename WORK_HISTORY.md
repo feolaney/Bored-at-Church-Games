@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-11 - Connect Four Swap Animation
+
+- Added Swap Top move metadata for both pieces involved in the top-piece swap.
+- Animated swapped discs from their previous cells into their new cells with a small side arc so the board no longer changes instantly.
+- Preserved swap animation metadata through state cloning.
+
+What to test:
+- In a mode with `Swap Top`, use it on a column with at least two pieces.
+- Confirm the top two pieces visibly swap positions before play continues.
+- Confirm Swap Top still consumes the hand power and still requires a normal drop afterward.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering Swap Top board mutation, swap metadata, clone preservation, and power consumption.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Shielded Bombs and Pop Targeting
 
 - Changed bomb explosions so shielded pieces survive the 3x3 blast and are not included in bomb-cleared animation metadata.

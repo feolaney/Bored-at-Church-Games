@@ -181,6 +181,7 @@
     var lastRecordStatus = null;
     var animatedDropKey = null;
     var animatedPopKey = null;
+    var animatedSwapKey = null;
     var animatedGravityShiftId = null;
     var animatedColumnBattleKey = null;
     var columnBattleDropReadyKey = null;
@@ -504,6 +505,7 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       animatedPopKey = null;
+      animatedSwapKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -519,6 +521,7 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       animatedPopKey = null;
+      animatedSwapKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -542,6 +545,7 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       animatedPopKey = null;
+      animatedSwapKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -1117,6 +1121,8 @@
       var hidePendingBattleDrops = Boolean(dropBatchKey && battleKey && !battleDropReady && dropBatchKey !== animatedDropKey);
       var popKey = getPopAnimationKey();
       var animatePop = Boolean(popKey && popKey !== animatedPopKey);
+      var swapKey = getSwapAnimationKey();
+      var animateSwap = Boolean(swapKey && swapKey !== animatedSwapKey);
       var cellRects = getCurrentCellRects();
       var row;
       var col;
@@ -1153,10 +1159,10 @@
           }
 
           if (displayPiece) {
-            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop);
+            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop, animateSwap);
 
             if (disc) {
-              if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
+              if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting") || disc.classList.contains("is-swapping")) {
                 cell.classList.add("is-animation-lane");
               }
               cell.appendChild(disc);
@@ -1185,6 +1191,9 @@
       }
       if (animatePop) {
         animatedPopKey = popKey;
+      }
+      if (animateSwap) {
+        animatedSwapKey = swapKey;
       }
       if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
         animatedGravityShiftId = state.gravityShift.id;
@@ -1263,6 +1272,18 @@
       return ["pop", state.publicLog.length, popped.id, popped.row, popped.col].join(":");
     }
 
+    function getSwapAnimationKey() {
+      var moves = state.lastMove && state.lastMove.swapMoves;
+
+      if (!state.lastMove || state.lastMove.kind !== "power" || state.lastMove.power !== "Swap Top" || !Array.isArray(moves)) {
+        return null;
+      }
+
+      return "swap:" + state.publicLog.length + ":" + moves.map(function (move) {
+        return [move.pieceId, move.fromRow, move.fromCol, move.toRow, move.toCol].join("-");
+      }).join("|");
+    }
+
     function getDropForCell(dropBatch, actualPiece, row, col) {
       if (!actualPiece) {
         return null;
@@ -1277,11 +1298,12 @@
       }) || null;
     }
 
-    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop) {
+    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop, animateSwap) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
       var bombSettleMove = getBombSettleMove(actualPiece, row, col, dropBatch);
       var popSettleMove = getPopSettleMove(actualPiece, row, col);
+      var swapMove = getSwapMove(actualPiece, row, col);
       var dropMove = getDropForCell(dropBatch, actualPiece, row, col);
 
       if (dropMove && hidePendingBattleDrops) {
@@ -1310,6 +1332,8 @@
         applyBombSettleAnimation(disc, bombSettleMove, cellRects);
       } else if (popSettleMove && animatePop) {
         applyPopSettleAnimation(disc, popSettleMove, cellRects);
+      } else if (swapMove && animateSwap) {
+        applySwapAnimation(disc, swapMove, cellRects);
       } else if (dropMove && animateDropBatch) {
         var dropAnimation = getDropAnimation(dropMove, row, col);
 
@@ -1394,6 +1418,26 @@
       disc.style.setProperty("--cfp-settle-y", animation.settleY);
       disc.style.setProperty("--cfp-drop-duration", animation.duration);
       disc.style.setProperty("--cfp-drop-delay", POP_SETTLE_DELAY_MS + "ms");
+    }
+
+    function getSwapMove(piece, row, col) {
+      if (!piece || !state.lastMove || state.lastMove.kind !== "power" || state.lastMove.power !== "Swap Top" || !Array.isArray(state.lastMove.swapMoves)) {
+        return null;
+      }
+
+      return state.lastMove.swapMoves.find(function (move) {
+        return move.pieceId === piece.id && move.toRow === row && move.toCol === col;
+      }) || null;
+    }
+
+    function applySwapAnimation(disc, move, cellRects) {
+      var animation = getSwapAnimation(move, cellRects);
+
+      disc.classList.add("is-swapping");
+      disc.style.setProperty("--cfp-swap-start-x", animation.startX);
+      disc.style.setProperty("--cfp-swap-start-y", animation.startY);
+      disc.style.setProperty("--cfp-swap-mid-x", animation.midX);
+      disc.style.setProperty("--cfp-swap-mid-y", animation.midY);
     }
 
     function appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
@@ -1564,6 +1608,30 @@
       return {
         x: (fromRect.left + fromRect.width / 2) - (toRect.left + toRect.width / 2),
         y: (fromRect.top + fromRect.height / 2) - (toRect.top + toRect.height / 2)
+      };
+    }
+
+    function getSwapAnimation(move, cellRects) {
+      var deltaCol = move.fromCol - move.toCol;
+      var deltaRow = move.fromRow - move.toRow;
+      var startX = deltaCol * 126;
+      var startY = deltaRow * 126;
+      var measuredDelta = getCellCenterDelta(cellRects, move.fromRow, move.fromCol, move.toRow, move.toCol);
+      var unit = "%";
+      var arc = move.toRow > move.fromRow ? 24 : -24;
+
+      if (measuredDelta) {
+        startX = measuredDelta.x;
+        startY = measuredDelta.y;
+        unit = "px";
+        arc = move.toRow > move.fromRow ? 18 : -18;
+      }
+
+      return {
+        startX: startX + unit,
+        startY: startY + unit,
+        midX: ((startX * 0.5) + arc) + unit,
+        midY: (startY * 0.5) + unit
       };
     }
 
