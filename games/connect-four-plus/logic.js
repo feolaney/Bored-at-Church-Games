@@ -208,17 +208,17 @@
       id: "token-hunt",
       title: "Token Hunt",
       bestFor: "Board-control mode",
-      summary: "Players collect public board tokens that grant powerups.",
+      summary: "Players hunt mostly invisible board tokens that grant powerups.",
       rows: 6,
       cols: 7,
       connect: 4,
       powerups: true,
       tokens: true,
       rules: [
-        "Three public tokens start on reachable cells.",
-        "Landing on a token grants one powerup.",
-        "A replacement token appears after a short delay.",
-        "Token positions are public; drawn powers are shown in your hand."
+        "Fifteen tokens are randomly placed on the board with no more than three per row.",
+        "Only one token starts visible, and it appears at least three rows above the bottom.",
+        "Hidden tokens are invisible until a piece lands on them.",
+        "Landing on any token grants one powerup."
       ]
     },
     {
@@ -340,7 +340,7 @@
       removedColumns: [],
       gravityDirection: "down",
       tokenRespawn: 0,
-      tokens: mode.tokens ? createStartingTokens(rows, cols) : [],
+      tokens: mode.tokens ? createStartingTokens(rows, cols, rng) : [],
       revealedColumns: {
         R: [],
         Y: []
@@ -377,13 +377,71 @@
     };
   }
 
-  function createStartingTokens(rows, cols) {
-    var bottom = rows - 1;
-    return [
-      { row: bottom, col: Math.floor(cols / 2) },
-      { row: bottom - 1, col: Math.max(1, Math.floor(cols / 2) - 2) },
-      { row: bottom - 1, col: Math.min(cols - 2, Math.floor(cols / 2) + 2) }
-    ];
+  function getRandomIndex(random, length) {
+    return Math.floor(random() * length);
+  }
+
+  function shuffleCells(cells, random) {
+    var shuffled = cells.slice();
+    var index;
+    var swapIndex;
+    var temp;
+
+    for (index = shuffled.length - 1; index > 0; index -= 1) {
+      swapIndex = getRandomIndex(random, index + 1);
+      temp = shuffled[index];
+      shuffled[index] = shuffled[swapIndex];
+      shuffled[swapIndex] = temp;
+    }
+
+    return shuffled;
+  }
+
+  function createStartingTokens(rows, cols, rng) {
+    var random = typeof rng === "function" ? rng : Math.random;
+    var tokenTarget = Math.min(15, rows * Math.min(cols, 3));
+    var visibleMaxRow = Math.max(0, rows - 4);
+    var visibleRow = getRandomIndex(random, visibleMaxRow + 1);
+    var visibleCol = getRandomIndex(random, cols);
+    var rowCounts = Array(rows).fill(0);
+    var cells = [];
+    var tokens = [{
+      row: visibleRow,
+      col: visibleCol,
+      visible: true
+    }];
+    var row;
+    var col;
+
+    rowCounts[visibleRow] = 1;
+
+    for (row = 0; row < rows; row += 1) {
+      for (col = 0; col < cols; col += 1) {
+        if (row !== visibleRow || col !== visibleCol) {
+          cells.push({ row: row, col: col });
+        }
+      }
+    }
+
+    shuffleCells(cells, random).some(function (cell) {
+      if (tokens.length >= tokenTarget) {
+        return true;
+      }
+
+      if (rowCounts[cell.row] >= 3) {
+        return false;
+      }
+
+      rowCounts[cell.row] += 1;
+      tokens.push({
+        row: cell.row,
+        col: cell.col,
+        visible: false
+      });
+      return false;
+    });
+
+    return tokens;
   }
 
   function seedPuzzle(state) {
@@ -1121,18 +1179,28 @@
       return token.row === row && token.col === col;
     });
     var power;
+    var token;
 
     if (index === -1) {
       return;
     }
 
+    token = next.tokens[index];
     power = drawPowerup();
     next.tokens.splice(index, 1);
     if (next.players[activePlayer].hand.length < MAX_HAND_SIZE) {
       next.players[activePlayer].hand.push(power);
     }
-    next.tokenRespawn = 2;
-    next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " collected a token and drew " + power + "."]);
+    if (next.lastMove) {
+      next.lastMove.tokenFound = {
+        row: row,
+        col: col,
+        power: power,
+        hidden: !token.visible,
+        player: activePlayer
+      };
+    }
+    next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " found a " + (token.visible ? "visible" : "hidden") + " token and drew " + power + "."]);
   }
 
   function respawnToken(next) {
@@ -1206,11 +1274,6 @@
       });
       next.publicLog = next.publicLog.concat(["Both players received a late Double Drop."]);
     }
-
-    if (next.tokenRespawn > 0) {
-      next.tokenRespawn -= 1;
-    }
-    respawnToken(next);
 
     if (next.lockedFor === activePlayer) {
       next.lockedFor = null;

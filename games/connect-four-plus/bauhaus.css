@@ -740,6 +740,60 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   font-weight: 900;
 }
 
+.cfp-token-reveal {
+  position: absolute;
+  inset: 6%;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border: 4px solid #121212;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 0 #121212;
+  color: #121212;
+  pointer-events: none;
+  animation: cfp-token-found 3000ms ease-out forwards;
+}
+
+.cfp-token-reveal::before,
+.cfp-token-reveal::after {
+  content: "";
+  position: absolute;
+  border: 4px solid #121212;
+  border-radius: 50%;
+  animation: cfp-token-ping 3000ms ease-out forwards;
+}
+
+.cfp-token-reveal::before {
+  inset: -12%;
+  background: rgba(240, 192, 32, 0.58);
+}
+
+.cfp-token-reveal::after {
+  inset: -28%;
+  animation-delay: 180ms;
+}
+
+.cfp-token-reveal.red {
+  background: #d02020;
+  color: #ffffff;
+}
+
+.cfp-token-reveal.yellow {
+  background: #f0c020;
+}
+
+.cfp-token-reveal-label {
+  position: relative;
+  z-index: 1;
+  max-width: 7.5rem;
+  padding: 3px;
+  font-size: clamp(0.48rem, 1.25vw, 0.72rem);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 @keyframes cfp-disc-drop {
   0% {
     transform: translate(var(--cfp-drop-x, 0), var(--cfp-drop-y, -700%));
@@ -751,6 +805,44 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
   100% {
     transform: translate(0, 0);
+  }
+}
+
+@keyframes cfp-token-found {
+  0% {
+    opacity: 0;
+    transform: scale(0.28) rotate(-12deg);
+  }
+
+  12% {
+    opacity: 1;
+    transform: scale(1.08) rotate(4deg);
+  }
+
+  72% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.42) rotate(0);
+  }
+}
+
+@keyframes cfp-token-ping {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.38);
+  }
+
+  70% {
+    opacity: 0.32;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
   }
 }
 

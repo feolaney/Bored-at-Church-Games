@@ -178,6 +178,7 @@
     var matchRecorded = false;
     var lastRecordStatus = null;
     var animatedDropKey = null;
+    var tokenRevealAnimations = [];
 
     function mount() {
       if (!mounted) {
@@ -342,6 +343,7 @@
         matchRecorded = false;
         lastRecordStatus = null;
         animatedDropKey = null;
+        tokenRevealAnimations = [];
         render();
         scrollGameToTop();
       });
@@ -454,6 +456,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      tokenRevealAnimations = [];
       render();
       scrollGameToTop();
     }
@@ -472,6 +475,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      tokenRevealAnimations = [];
       render();
       scrollGameToTop();
     }
@@ -507,8 +511,36 @@
       }
 
       state = engine.dropPiece(state, col);
+      queueTokenReveal(state.lastMove);
       maybeRecordMatch();
       render();
+    }
+
+    function queueTokenReveal(lastMove) {
+      var tokenFound = lastMove && lastMove.tokenFound;
+      var reveal;
+
+      if (!tokenFound || !tokenFound.hidden) {
+        return;
+      }
+
+      reveal = {
+        id: state.dropCount + ":" + tokenFound.row + ":" + tokenFound.col + ":" + tokenFound.power,
+        row: tokenFound.row,
+        col: tokenFound.col,
+        power: tokenFound.power,
+        player: tokenFound.player
+      };
+      tokenRevealAnimations.push(reveal);
+
+      global.setTimeout(function () {
+        tokenRevealAnimations = tokenRevealAnimations.filter(function (animation) {
+          return animation.id !== reveal.id;
+        });
+        if (mounted) {
+          render();
+        }
+      }, 3000);
     }
 
     function getPlayerName(mark) {
@@ -892,9 +924,11 @@
 
           if (displayPiece) {
             cell.appendChild(createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col));
-          } else if (token) {
+          } else if (token && token.visible) {
             cell.appendChild(createToken());
           }
+
+          appendTokenReveals(cell, row, col);
 
           if (isWinningCell(row, col)) {
             cell.classList.add("is-winning");
@@ -1012,6 +1046,25 @@
       token.className = "cfp-token";
       token.textContent = "+";
       return token;
+    }
+
+    function appendTokenReveals(cell, row, col) {
+      tokenRevealAnimations.forEach(function (reveal) {
+        var marker;
+        var label;
+
+        if (reveal.row !== row || reveal.col !== col) {
+          return;
+        }
+
+        marker = document.createElement("span");
+        label = document.createElement("span");
+        marker.className = "cfp-token-reveal " + (reveal.player === "R" ? "red" : "yellow");
+        label.className = "cfp-token-reveal-label";
+        label.textContent = "TOKEN FOUND " + reveal.power;
+        marker.appendChild(label);
+        cell.appendChild(marker);
+      });
     }
 
     function renderHand() {

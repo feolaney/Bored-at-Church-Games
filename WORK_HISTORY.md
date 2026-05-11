@@ -1,5 +1,27 @@
 # Work History
 
+## 2026-05-10 - Token Hunt Hidden Tokens
+
+- Reworked Token Hunt token placement from three public tokens to fifteen randomly placed tokens.
+- Enforced no more than three tokens per row during random placement.
+- Made all tokens hidden except one visible token placed at least three rows above the bottom.
+- Added non-blocking hidden-token discovery animation that runs for about three seconds while the next turn can proceed.
+- Stopped Token Hunt from respawning public replacement tokens after collection.
+
+What to test:
+- Start Token Hunt and confirm only one token is visible on the board.
+- Play into a hidden token location during testing and confirm a `TOKEN FOUND` animation appears without blocking the next turn.
+- Confirm collected tokens grant powerups and disappear from the hidden token pool.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node token placement constraints: 15 tokens, one visible, no more than three per row, visible token at least three rows up.
+- Node hidden-token collection test confirming reveal metadata is set and turn advances.
+- Node smoke test across all 14 Connect Four Plus modes.
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Gravity Connect Directional Drops
 
 - Updated Gravity Connect so gravity direction changes the playable entry lanes: columns for up/down gravity and rows for left/right gravity.
