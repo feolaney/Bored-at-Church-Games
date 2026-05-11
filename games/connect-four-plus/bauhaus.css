@@ -89,6 +89,94 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   font-family: "Outfit", var(--font-display);
 }
 
+.cfp-mode-select {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  max-height: min(78vh, 760px);
+  min-height: min(66vh, 620px);
+  border: 4px solid #121212;
+  background: #ffffff;
+  box-shadow: 8px 8px 0 0 #121212;
+  padding: clamp(18px, 4vw, 42px);
+  overflow: hidden;
+}
+
+.cfp-mode-hero {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  border: 4px solid #121212;
+  background: #f0c020;
+  box-shadow: 6px 6px 0 0 #121212;
+  padding: clamp(16px, 4vw, 32px);
+}
+
+.cfp-mode-hero h2 {
+  margin: 0;
+  font-size: clamp(2.8rem, 10vw, 6.8rem);
+  font-weight: 900;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.cfp-mode-hero p {
+  max-width: 760px;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.cfp-mode-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  min-height: 0;
+  padding: 4px 8px 8px 4px;
+  overflow-y: auto;
+}
+
+.cfp-mode-card {
+  display: grid;
+  gap: 8px;
+  min-height: 11rem;
+  border: 4px solid #121212;
+  border-radius: 0;
+  background: #1040c0;
+  color: #ffffff;
+  box-shadow: 5px 5px 0 0 #121212;
+  padding: 14px;
+  font-family: "Outfit", var(--font-display);
+  text-align: left;
+}
+
+.cfp-mode-card:nth-child(3n + 2) {
+  background: #d02020;
+}
+
+.cfp-mode-card:nth-child(3n) {
+  background: #f0c020;
+  color: #121212;
+}
+
+.cfp-mode-card strong {
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cfp-mode-card span {
+  font-weight: 700;
+}
+
+.cfp-mode-card span:last-child {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .cfp-handoff {
   position: relative;
   min-height: min(66vh, 620px);
@@ -327,13 +415,14 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 }
 
 .cfp-actions {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 14px;
 }
 
 .cfp-button,
 .cfp-drop-button,
-.cfp-power-card {
+.cfp-power-card,
+.cfp-mode-card {
   border: 3px solid #121212;
   border-radius: 0;
   box-shadow: 4px 4px 0 0 #121212;
@@ -353,7 +442,9 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 .cfp-drop-button:hover:not(:disabled),
 .cfp-drop-button:focus-visible:not(:disabled),
 .cfp-power-card:hover:not(:disabled),
-.cfp-power-card:focus-visible:not(:disabled) {
+.cfp-power-card:focus-visible:not(:disabled),
+.cfp-mode-card:hover,
+.cfp-mode-card:focus-visible {
   outline: 3px solid #121212;
   outline-offset: 3px;
   transform: translateY(-2px);
@@ -361,7 +452,8 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-button:active:not(:disabled),
 .cfp-drop-button:active:not(:disabled),
-.cfp-power-card:active:not(:disabled) {
+.cfp-power-card:active:not(:disabled),
+.cfp-mode-card:active {
   box-shadow: none;
   transform: translate(3px, 3px);
 }
@@ -390,11 +482,12 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 .cfp-board-panel {
   background: #d02020;
   padding: 14px;
+  overflow-x: auto;
 }
 
 .cfp-drop-row {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cfp-cols, 7), minmax(44px, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -408,12 +501,11 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-board {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cfp-cols, 7), minmax(44px, 1fr));
   gap: 8px;
   border: 4px solid #121212;
   background: #121212;
   padding: 8px;
-  overflow: hidden;
 }
 
 .cfp-cell {
@@ -442,6 +534,18 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   background: #f0c020;
 }
 
+.cfp-cell.is-removed {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #121212 0,
+      #121212 8px,
+      #f0f0f0 8px,
+      #f0f0f0 16px
+    );
+  cursor: not-allowed;
+}
+
 .cfp-disc {
   position: relative;
   display: block;
@@ -460,6 +564,35 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   background: #f0c020;
 }
 
+.cfp-disc.wild {
+  background:
+    linear-gradient(135deg, #d02020 0 44%, #ffffff 44% 56%, #f0c020 56% 100%);
+}
+
+.cfp-disc.mystery {
+  background: #8f8f8f;
+}
+
+.cfp-disc.mystery::before {
+  content: "?";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #121212;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.cfp-disc.bomb::before {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border: 3px solid #121212;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
 .cfp-disc.is-dropping {
   animation: cfp-disc-drop 280ms cubic-bezier(0.2, 0.9, 0.25, 1);
   will-change: transform;
@@ -472,6 +605,19 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   border: 3px solid #121212;
   background: #1040c0;
   transform: rotate(45deg);
+}
+
+.cfp-token {
+  display: grid;
+  place-items: center;
+  width: 62%;
+  height: 62%;
+  border: 3px solid #121212;
+  background: #ffffff;
+  box-shadow: 3px 3px 0 0 #121212;
+  color: #1040c0;
+  font-size: 1.4rem;
+  font-weight: 900;
 }
 
 @keyframes cfp-disc-drop {
@@ -501,6 +647,12 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   color: #121212;
   padding: 12px;
   text-align: left;
+}
+
+.cfp-power-card.is-selected {
+  background: #f0c020;
+  color: #121212;
+  transform: translateY(-2px);
 }
 
 .cfp-power-card strong {

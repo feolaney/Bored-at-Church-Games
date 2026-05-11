@@ -1,5 +1,26 @@
 # Work History
 
+## 2026-05-10 - Connect Four Plus Variant Picker
+
+- Reworked Connect Four Plus from a single Power Duel session into an in-game variant picker with 14 selectable modes from the rules PDF.
+- Added playable mode state for Power Duel, Draft Duel, Shadow Connect, Powerups plus Fog, Gravity Connect, Bomb Pieces, Wild Pieces, Column Locks, Shrinking Board, Connect 5, Token Hunt, Hidden Objectives, Puzzle Campaign, and Simultaneous Planning.
+- Limited private handoff screens to fog-based modes only; non-fog variants now launch directly into the public board view.
+- Updated the Bauhaus game UI for variable board sizes, mode-specific tools, removed columns, mystery fog pieces, wild/bomb pieces, public tokens, mode rules, and mode-aware local stats.
+
+What to test:
+- Launch Connect Four Plus and confirm it opens to the mode picker.
+- Start Power Duel or another non-fog variant and confirm no private handoff screen appears.
+- Start Shadow Connect or Powerups plus Fog and confirm the fog handoff screen appears between turns.
+- Try 9-column modes like Shrinking Board or Connect 5 and confirm the board remains playable.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node smoke test across all 14 modes, including simultaneous planning and column 1 selection.
+- Node registration check confirmed Connect Four Plus registers with 14 modes.
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Prevent Homepage Title Clipping
 
 - Fixed the library/game-info header layout so the top-right controls no longer reduce the title column width.

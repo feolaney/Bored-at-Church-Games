@@ -6,7 +6,7 @@
 
   function createEmptyStats() {
     return {
-      version: 1,
+      version: 2,
       matches: 0,
       draws: 0,
       redWins: 0,
@@ -16,6 +16,7 @@
       powerupsUsed: 0,
       fastestWinTurns: null,
       lastPlayedAt: null,
+      modes: {},
       players: {},
       recent: []
     };
@@ -32,6 +33,7 @@
     stats.totalDrops = Number(stats.totalDrops) || 0;
     stats.powerupsUsed = Number(stats.powerupsUsed) || 0;
     stats.fastestWinTurns = stats.fastestWinTurns === null ? null : Number(stats.fastestWinTurns) || null;
+    stats.modes = stats.modes && typeof stats.modes === "object" ? stats.modes : {};
     stats.players = stats.players && typeof stats.players === "object" ? stats.players : {};
     stats.recent = Array.isArray(stats.recent) ? stats.recent : [];
 
@@ -40,7 +42,7 @@
 
   function getPowerSummary(rawStats) {
     var stats = normalizeStats(rawStats);
-    return "matches:" + stats.matches + " powers:" + stats.powerupsUsed + " fastest:" + (stats.fastestWinTurns || "--") + " turns";
+    return "modes:" + engine.MODES.length + " matches:" + stats.matches + " powers:" + stats.powerupsUsed;
   }
 
   function renderLeaderboard(container, rawStats, helpers) {
@@ -52,6 +54,11 @@
         return b.wins - a.wins;
       }
       return b.games - a.games;
+    });
+    var topModes = Object.keys(stats.modes).map(function (modeId) {
+      return stats.modes[modeId];
+    }).sort(function (a, b) {
+      return b.matches - a.matches;
     });
     var summary = document.createElement("dl");
 
@@ -66,6 +73,10 @@
     );
     container.appendChild(summary);
 
+    if (topModes.length) {
+      container.appendChild(createModeList(topModes, helpers));
+    }
+
     if (!players.length) {
       var empty = document.createElement("p");
       empty.className = "empty-state";
@@ -78,6 +89,24 @@
     if (stats.recent.length) {
       container.appendChild(createRecentList(stats.recent, helpers));
     }
+  }
+
+  function createModeList(modes, helpers) {
+    var section = document.createElement("section");
+    var heading = document.createElement("h2");
+    var list = document.createElement("ol");
+
+    heading.textContent = "Mode Results";
+    list.className = "recent-list";
+
+    modes.slice(0, 5).forEach(function (mode) {
+      var item = document.createElement("li");
+      item.textContent = mode.title + " | " + mode.matches + " matches | " + mode.wins + " wins | " + mode.draws + " draws";
+      list.appendChild(item);
+    });
+
+    section.append(heading, list);
+    return section;
   }
 
   function createLeaderboardTable(players, helpers) {
@@ -119,14 +148,14 @@
     var heading = document.createElement("h2");
     var list = document.createElement("ol");
 
-    heading.textContent = "Recent Power Duels";
+    heading.textContent = "Recent Matches";
     list.className = "recent-list";
 
     recentMatches.slice(0, 6).forEach(function (match) {
       var item = document.createElement("li");
       var result = match.result === "draw" ? "DRAW" : match.winnerName + " WON";
 
-      item.textContent = helpers.formatDateTime(match.playedAt) + " | " + result + " | " + match.turns + " turns | " + match.powerupsUsed + " powers";
+      item.textContent = helpers.formatDateTime(match.playedAt) + " | " + match.modeTitle + " | " + result + " | " + match.turns + " turns";
       list.appendChild(item);
     });
 
@@ -137,7 +166,8 @@
   function createController(options) {
     var root = options.root;
     var services = options.services;
-    var state = engine.createInitialState();
+    var state = null;
+    var selectedModeId = null;
     var savedNames = services.getPlayerNames(GAME_ID);
     var playerNames = {
       R: typeof savedNames.R === "string" ? savedNames.R : "",
@@ -166,25 +196,35 @@
 
       wrapper.className = "connect-four-plus";
       wrapper.innerHTML =
-        '<section class="cfp-handoff" data-role="handoff-panel" aria-live="polite">' +
+        '<section class="cfp-mode-select" data-role="mode-select">' +
+          '<div class="cfp-mode-hero">' +
+            '<div class="cfp-shape-row" aria-hidden="true"><span class="cfp-circle"></span><span class="cfp-square"></span><span class="cfp-triangle"></span></div>' +
+            '<p class="cfp-label">variant router</p>' +
+            '<h2>Choose Mode</h2>' +
+            '<p>Select which Connect Four Plus ruleset to launch. Fog modes are the only modes that use private handoff screens.</p>' +
+          '</div>' +
+          '<div class="cfp-mode-list" data-role="mode-list"></div>' +
+        '</section>' +
+        '<section class="cfp-handoff" data-role="handoff-panel" aria-live="polite" hidden>' +
           '<div class="cfp-shape-row" aria-hidden="true"><span class="cfp-circle"></span><span class="cfp-square"></span><span class="cfp-triangle"></span></div>' +
-          '<p class="cfp-label">private handoff</p>' +
+          '<p class="cfp-label">fog handoff</p>' +
           '<h2 data-role="handoff-title">Pass the device</h2>' +
-          '<p data-role="handoff-copy">The board and hidden powerups are covered until the active player starts their turn.</p>' +
+          '<p data-role="handoff-copy">Fog information is covered until the active player starts their turn.</p>' +
           '<div class="cfp-name-grid" data-role="name-setup">' +
             '<label><span>Red name</span><input type="text" data-role="red-name" maxlength="32" autocomplete="off" placeholder="Red player"></label>' +
             '<label><span>Yellow name</span><input type="text" data-role="yellow-name" maxlength="32" autocomplete="off" placeholder="Yellow player"></label>' +
           '</div>' +
           '<button type="button" class="cfp-button cfp-button-red" data-role="start-turn">Start Turn</button>' +
         '</section>' +
-        '<section class="cfp-live-area" data-role="live-area">' +
+        '<section class="cfp-live-area" data-role="live-area" hidden>' +
           '<aside class="cfp-panel cfp-status-panel">' +
             '<div class="cfp-panel-title"><span class="cfp-circle"></span><span>turn system</span></div>' +
             '<div class="cfp-panel-body">' +
               '<p class="cfp-status" data-role="status-line"></p>' +
               '<dl class="cfp-readouts">' +
+                '<div><dt>mode</dt><dd data-role="mode-readout">Select</dd></div>' +
                 '<div><dt>turn</dt><dd data-role="turn-readout">Red</dd></div>' +
-                '<div><dt>locked</dt><dd data-role="lock-readout">None</dd></div>' +
+                '<div><dt>state</dt><dd data-role="lock-readout">Open</dd></div>' +
                 '<div><dt>turns</dt><dd data-role="turn-count">0</dd></div>' +
                 '<div><dt>drops</dt><dd data-role="drop-count">0</dd></div>' +
               '</dl>' +
@@ -194,7 +234,8 @@
               '</div>' +
               '<div class="cfp-actions">' +
                 '<button type="button" class="cfp-button cfp-button-yellow" data-role="new-game">New Game</button>' +
-                '<button type="button" class="cfp-button cfp-button-outline" data-role="cancel-power">Cancel Power</button>' +
+                '<button type="button" class="cfp-button cfp-button-outline" data-role="change-mode">Change Mode</button>' +
+                '<button type="button" class="cfp-button cfp-button-outline" data-role="cancel-power">Cancel Tool</button>' +
               '</div>' +
             '</div>' +
           '</aside>' +
@@ -203,17 +244,13 @@
             '<div class="cfp-board" data-role="board" role="grid" aria-label="Connect Four Plus board"></div>' +
           '</section>' +
           '<aside class="cfp-panel cfp-power-panel">' +
-            '<div class="cfp-panel-title"><span class="cfp-square"></span><span>private hand</span></div>' +
+            '<div class="cfp-panel-title"><span class="cfp-square"></span><span data-role="tools-title">mode tools</span></div>' +
             '<div class="cfp-panel-body">' +
-              '<p class="cfp-label" data-role="hand-owner">Red hand</p>' +
+              '<p class="cfp-label" data-role="hand-owner">Red tools</p>' +
               '<div class="cfp-hand" data-role="hand"></div>' +
               '<section class="cfp-rules-mini">' +
-                '<h3>Power Duel Rules</h3>' +
-                '<ul>' +
-                  '<li>Use at most one powerup before dropping.</li>' +
-                  '<li>Draw one hidden power every fourth personal turn.</li>' +
-                  '<li>Used powers are public; unused powers stay private.</li>' +
-                '</ul>' +
+                '<h3 data-role="rules-title">Mode Rules</h3>' +
+                '<ul data-role="rules-list"></ul>' +
               '</section>' +
               '<section class="cfp-log-section">' +
                 '<h3>Public Log</h3>' +
@@ -228,6 +265,8 @@
 
     function bindElements() {
       [
+        "mode-select",
+        "mode-list",
         "handoff-panel",
         "handoff-title",
         "handoff-copy",
@@ -235,6 +274,7 @@
         "start-turn",
         "live-area",
         "status-line",
+        "mode-readout",
         "turn-readout",
         "lock-readout",
         "turn-count",
@@ -244,11 +284,15 @@
         "red-name-live",
         "yellow-name-live",
         "new-game",
+        "change-mode",
         "cancel-power",
         "drop-row",
         "board",
+        "tools-title",
         "hand-owner",
         "hand",
+        "rules-title",
+        "rules-list",
         "public-log"
       ].forEach(function (role) {
         els[toCamel(role)] = root.querySelector('[data-role="' + role + '"]');
@@ -262,25 +306,66 @@
     }
 
     function bindEvents() {
+      els.modeList.addEventListener("click", function (event) {
+        var card;
+
+        if (!(event.target instanceof Element)) {
+          return;
+        }
+
+        card = event.target.closest("[data-mode-id]");
+        if (!card) {
+          return;
+        }
+
+        startMode(card.dataset.modeId);
+      });
+
       els.startTurn.addEventListener("click", function () {
+        if (!state) {
+          return;
+        }
+
         state = engine.startTurn(state);
         render();
       });
 
       els.newGame.addEventListener("click", resetMatch);
+      els.changeMode.addEventListener("click", function () {
+        state = null;
+        selectedModeId = null;
+        matchRecorded = false;
+        lastRecordStatus = null;
+        animatedDropKey = null;
+        render();
+        scrollGameToTop();
+      });
       els.cancelPower.addEventListener("click", function () {
+        if (!state) {
+          return;
+        }
+
         state = engine.cancelPendingPower(state);
         render();
       });
 
       els.dropRow.addEventListener("click", function (event) {
         var button = event.target;
+        var col;
 
-        if (!(button instanceof HTMLButtonElement) || !button.dataset.column) {
+        if (!state || !(button instanceof HTMLButtonElement) || button.dataset.column === undefined) {
           return;
         }
 
-        playColumn(Number(button.dataset.column));
+        col = Number(button.dataset.column);
+
+        if (state.pendingPower && state.pendingPower.name !== "Shield") {
+          state = engine.applyPowerToColumn(state, col);
+          render();
+          return;
+        }
+
+        playColumn(col);
       });
 
       els.board.addEventListener("click", function (event) {
@@ -289,7 +374,7 @@
         var row;
         var col;
 
-        if (!(target instanceof Element)) {
+        if (!state || !(target instanceof Element)) {
           return;
         }
 
@@ -319,17 +404,21 @@
       els.hand.addEventListener("click", function (event) {
         var button;
 
-        if (!(event.target instanceof Element)) {
+        if (!state || !(event.target instanceof Element)) {
           return;
         }
 
-        button = event.target.closest("[data-hand-index]");
+        button = event.target.closest("[data-hand-index], [data-special]");
 
         if (!button) {
           return;
         }
 
-        state = engine.selectPower(state, Number(button.dataset.handIndex));
+        if (button.dataset.special) {
+          state = engine.selectSpecial(state, button.dataset.special);
+        } else {
+          state = engine.selectPower(state, Number(button.dataset.handIndex));
+        }
         render();
       });
 
@@ -352,12 +441,35 @@
       });
     }
 
-    function resetMatch() {
-      state = engine.createInitialState();
+    function startMode(modeId) {
+      selectedModeId = modeId;
+      state = engine.createInitialState({ modeId: selectedModeId });
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
       render();
+      scrollGameToTop();
+    }
+
+    function resetMatch() {
+      if (!selectedModeId && state) {
+        selectedModeId = state.modeId;
+      }
+
+      if (!selectedModeId) {
+        render();
+        return;
+      }
+
+      state = engine.createInitialState({ modeId: selectedModeId });
+      matchRecorded = false;
+      lastRecordStatus = null;
+      animatedDropKey = null;
+      render();
+      scrollGameToTop();
+    }
+
+    function scrollGameToTop() {
       if (services.scrollToTop) {
         services.scrollToTop();
       }
@@ -366,16 +478,17 @@
     function getBoardColumnFromPointer(event) {
       var rect = els.board.getBoundingClientRect();
       var x = event.clientX - rect.left;
+      var cols = state ? state.cols : engine.COLS;
 
       if (x < 0 || x > rect.width) {
         return NaN;
       }
 
-      return Math.max(0, Math.min(engine.COLS - 1, Math.floor((x / rect.width) * engine.COLS)));
+      return Math.max(0, Math.min(cols - 1, Math.floor((x / rect.width) * cols)));
     }
 
     function playColumn(col) {
-      if (state.winner || state.draw) {
+      if (!state || state.winner || state.draw) {
         return;
       }
 
@@ -403,28 +516,31 @@
     }
 
     function syncNameInputs() {
-      var redDisabled = state.turnOpen || state.turnCount > 0 || state.dropCount > 0;
-      var yellowDisabled = redDisabled;
+      var gameStarted = Boolean(state && (state.turnCount > 0 || state.dropCount > 0 || hasPlannedMove()));
+      var inputs = [
+        [els.redName, "R"],
+        [els.redNameLive, "R"],
+        [els.yellowName, "Y"],
+        [els.yellowNameLive, "Y"]
+      ];
 
-      [
-        els.redName,
-        els.redNameLive
-      ].forEach(function (input) {
-        if (input.value !== playerNames.R) {
-          input.value = playerNames.R;
-        }
-        input.disabled = redDisabled;
-      });
+      inputs.forEach(function (entry) {
+        var input = entry[0];
+        var mark = entry[1];
 
-      [
-        els.yellowName,
-        els.yellowNameLive
-      ].forEach(function (input) {
-        if (input.value !== playerNames.Y) {
-          input.value = playerNames.Y;
+        if (!input) {
+          return;
         }
-        input.disabled = yellowDisabled;
+
+        if (input.value !== playerNames[mark]) {
+          input.value = playerNames[mark];
+        }
+        input.disabled = gameStarted;
       });
+    }
+
+    function hasPlannedMove() {
+      return Boolean(state && state.simultaneous && (state.simultaneous.plans.R !== undefined || state.simultaneous.plans.Y !== undefined));
     }
 
     function getRecordSuffix() {
@@ -444,22 +560,39 @@
     }
 
     function getStatusText() {
-      var power = state.pendingPower && state.pendingPower.name;
+      var mode = state ? engine.getMode(state.modeId) : null;
+      var power = state && state.pendingPower && state.pendingPower.name;
+
+      if (!state) {
+        return "Choose a variant to launch.";
+      }
 
       if (state.lastError) {
         return state.lastError;
       }
 
       if (state.winner) {
-        return getPlayerLabel(state.winner) + " connects four." + getRecordSuffix();
+        return getPlayerLabel(state.winner) + " wins " + mode.title + "." + getRecordSuffix();
       }
 
       if (state.draw) {
-        return "Board full. The match is a draw." + getRecordSuffix();
+        return mode.title + " ends in a draw." + getRecordSuffix();
       }
 
       if (state.pendingHandoff) {
-        return "Board hidden for pass-and-play privacy.";
+        return "Fog board hidden for pass-and-play privacy.";
+      }
+
+      if (state.simultaneous && mode.simultaneous && hasPlannedMove()) {
+        return getPlayerLabel(state.currentPlayer) + " chooses the second planned column.";
+      }
+
+      if (state.pendingDropKind === "bomb") {
+        return "Bomb piece selected. Choose a legal column.";
+      }
+
+      if (state.pendingDropKind === "wild") {
+        return "Wild piece selected. Choose a legal column.";
       }
 
       if (power === "Shield") {
@@ -474,25 +607,70 @@
         return "Double Drop active. Drop " + state.dropPlan.remaining + " pieces in different columns.";
       }
 
-      return getPlayerLabel(state.currentPlayer) + " may use one powerup, then drop a piece.";
+      if (mode.simultaneous) {
+        return getPlayerLabel(state.currentPlayer) + " chooses a planned column.";
+      }
+
+      return getPlayerLabel(state.currentPlayer) + " drops a piece in " + mode.title + ".";
     }
 
     function render() {
       syncNameInputs();
+
+      if (!state) {
+        renderModeSelect();
+        return;
+      }
+
       renderPrivacyState();
       renderStatus();
       renderDropButtons();
       renderBoard();
       renderHand();
+      renderRulesMini();
       renderLog();
     }
 
+    function renderModeSelect() {
+      var fragment = document.createDocumentFragment();
+
+      els.modeSelect.hidden = false;
+      els.handoffPanel.hidden = true;
+      els.liveArea.hidden = true;
+      els.modeList.replaceChildren();
+
+      engine.MODES.forEach(function (mode) {
+        var card = document.createElement("button");
+        var title = document.createElement("strong");
+        var meta = document.createElement("span");
+        var copy = document.createElement("span");
+
+        card.type = "button";
+        card.className = "cfp-mode-card";
+        card.dataset.modeId = mode.id;
+
+        title.textContent = mode.title;
+        meta.textContent = mode.cols + "x" + mode.rows + " | connect " + mode.connect + " | " + mode.bestFor;
+        copy.textContent = mode.summary;
+
+        card.append(title, meta, copy);
+        fragment.appendChild(card);
+      });
+
+      els.modeList.appendChild(fragment);
+      if (services.setSessionChip) {
+        services.setSessionChip("MODE: SELECT");
+      }
+    }
+
     function renderPrivacyState() {
+      var usesHandoff = engine.modeUsesHandoff(state);
       var activeName = getPlayerLabel(state.currentPlayer);
 
-      els.handoffPanel.hidden = !state.pendingHandoff && !state.winner && !state.draw;
-      els.liveArea.hidden = state.pendingHandoff && !state.winner && !state.draw;
-      els.nameSetup.hidden = state.turnCount > 0 || state.dropCount > 0;
+      els.modeSelect.hidden = true;
+      els.handoffPanel.hidden = !usesHandoff || (!state.pendingHandoff && !state.winner && !state.draw);
+      els.liveArea.hidden = usesHandoff && state.pendingHandoff && !state.winner && !state.draw;
+      els.nameSetup.hidden = state.turnCount > 0 || state.dropCount > 0 || hasPlannedMove();
 
       if (state.winner || state.draw) {
         els.handoffPanel.hidden = true;
@@ -500,23 +678,58 @@
       }
 
       els.handoffTitle.textContent = "Pass to " + activeName;
-      els.handoffCopy.textContent = activeName + ", tap Start Turn when the device is in your hands. Hidden powerups stay private between turns.";
+      els.handoffCopy.textContent = activeName + ", tap Start Turn when the device is in your hands. Fog and private tools stay covered between turns.";
     }
 
     function renderStatus() {
-      var lockedText = state.lockedColumn === null ? "None" : "Column " + (state.lockedColumn + 1) + " for " + engine.PLAYER_LABELS[state.lockedFor];
+      var mode = engine.getMode(state.modeId);
 
       els.statusLine.classList.toggle("is-error", Boolean(state.lastError));
       els.statusLine.textContent = getStatusText();
+      els.modeReadout.textContent = mode.title;
       els.turnReadout.textContent = state.winner || state.draw ? "Ended" : getPlayerLabel(state.currentPlayer);
-      els.lockReadout.textContent = lockedText;
+      els.lockReadout.textContent = getConstraintText(mode);
       els.turnCount.textContent = String(state.turnCount);
       els.dropCount.textContent = String(state.dropCount);
-      els.cancelPower.disabled = !state.pendingPower;
+      els.cancelPower.disabled = !state.pendingPower && state.pendingDropKind === "normal";
 
       if (services.setSessionChip) {
-        services.setSessionChip(state.winner || state.draw ? "SESSION: COMPLETE" : "SESSION: ACTIVE");
+        services.setSessionChip(state.winner || state.draw ? "SESSION: COMPLETE" : mode.title.toUpperCase());
       }
+    }
+
+    function getConstraintText(mode) {
+      if (state.lockedColumn !== null) {
+        return "Column " + (state.lockedColumn + 1) + " locked for " + engine.PLAYER_LABELS[state.lockedFor];
+      }
+
+      if (state.pendingDropKind !== "normal") {
+        return state.pendingDropKind.toUpperCase();
+      }
+
+      if (mode.gravity) {
+        return "Gravity " + state.gravityDirection;
+      }
+
+      if (mode.shrinking) {
+        if (state.turnCount < 10) {
+          return "Left edge at turn 10";
+        }
+        if (state.turnCount < 18) {
+          return "Right edge at turn 18";
+        }
+        return "Edges removed";
+      }
+
+      if (mode.objectives) {
+        return state.players[state.currentPlayer].objective || "Objective";
+      }
+
+      if (mode.tokens) {
+        return state.tokens.length + " tokens";
+      }
+
+      return "Open";
     }
 
     function renderDropButtons() {
@@ -525,14 +738,18 @@
       var col;
 
       els.dropRow.replaceChildren();
+      els.dropRow.style.setProperty("--cfp-cols", String(state.cols));
 
-      for (col = 0; col < engine.COLS; col += 1) {
+      for (col = 0; col < state.cols; col += 1) {
         var button = document.createElement("button");
+        var removed = engine.isRemovedColumn(state, col);
+        var columnPower = state.pendingPower && state.pendingPower.name !== "Shield";
+
         button.type = "button";
         button.className = "cfp-drop-button";
         button.dataset.column = String(col);
         button.textContent = String(col + 1);
-        button.disabled = !state.turnOpen || Boolean(state.pendingPower) || Boolean(state.winner) || state.draw || legalColumns.indexOf(col) === -1;
+        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || removed || (!columnPower && legalColumns.indexOf(col) === -1);
         fragment.appendChild(button);
       }
 
@@ -554,37 +771,38 @@
       var col;
 
       els.board.replaceChildren();
+      els.board.style.setProperty("--cfp-cols", String(state.cols));
 
-      for (row = 0; row < engine.ROWS; row += 1) {
-        for (col = 0; col < engine.COLS; col += 1) {
+      for (row = 0; row < state.rows; row += 1) {
+        for (col = 0; col < state.cols; col += 1) {
           var cell = document.createElement("button");
-          var piece = state.board[row][col];
-          var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && legalColumns.indexOf(col) !== -1;
+          var removed = engine.isRemovedColumn(state, col);
+          var displayPiece = removed ? null : engine.getDisplayCell(state, row, col, state.currentPlayer);
+          var actualPiece = state.board[row][col];
+          var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && !removed && legalColumns.indexOf(col) !== -1;
           var label = "Row " + (row + 1) + ", column " + (col + 1);
+          var token = removed ? null : engine.getTokenAt(state, row, col);
 
           cell.type = "button";
           cell.className = "cfp-cell";
           cell.dataset.row = String(row);
           cell.dataset.column = String(col);
           cell.setAttribute("role", "gridcell");
-          cell.setAttribute("aria-label", label + (piece ? " occupied by " + engine.PLAYER_LABELS[piece.player] : " empty"));
+          cell.setAttribute("aria-label", getCellLabel(label, displayPiece, removed));
           cell.setAttribute("aria-disabled", playableColumn || state.pendingPower ? "false" : "true");
+
+          if (removed) {
+            cell.classList.add("is-removed");
+          }
 
           if (playableColumn) {
             cell.classList.add("is-playable-column");
           }
 
-          if (piece) {
-            var disc = document.createElement("span");
-            disc.className = "cfp-disc " + (piece.player === "R" ? "red" : "yellow");
-            if (piece.shielded) {
-              disc.classList.add("shielded");
-            }
-            if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
-              disc.classList.add("is-dropping");
-              disc.style.setProperty("--cfp-drop-distance", "-" + ((row + 1) * 126) + "%");
-            }
-            cell.appendChild(disc);
+          if (displayPiece) {
+            cell.appendChild(createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col));
+          } else if (token) {
+            cell.appendChild(createToken());
           }
 
           if (isWinningCell(row, col)) {
@@ -601,46 +819,144 @@
       }
     }
 
-    function renderHand() {
-      var hand = state.players[state.currentPlayer].hand;
-      var fragment = document.createDocumentFragment();
+    function getCellLabel(label, piece, removed) {
+      if (removed) {
+        return label + " removed";
+      }
 
-      els.handOwner.textContent = getPlayerLabel(state.currentPlayer) + " hand";
+      if (!piece) {
+        return label + " empty";
+      }
+
+      if (piece.mystery) {
+        return label + " hidden occupied cell";
+      }
+
+      if (piece.wild) {
+        return label + " occupied by a wild piece";
+      }
+
+      return label + " occupied by " + engine.PLAYER_LABELS[piece.player];
+    }
+
+    function createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col) {
+      var disc = document.createElement("span");
+
+      if (displayPiece.mystery) {
+        disc.className = "cfp-disc mystery";
+        return disc;
+      }
+
+      disc.className = "cfp-disc " + (displayPiece.wild ? "wild" : (displayPiece.player === "R" ? "red" : "yellow"));
+      if (displayPiece.shielded) {
+        disc.classList.add("shielded");
+      }
+      if (actualPiece && actualPiece.bomb) {
+        disc.classList.add("bomb");
+      }
+      if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
+        disc.classList.add("is-dropping");
+        disc.style.setProperty("--cfp-drop-distance", "-" + ((row + 1) * 126) + "%");
+      }
+
+      return disc;
+    }
+
+    function createToken() {
+      var token = document.createElement("span");
+      token.className = "cfp-token";
+      token.textContent = "+";
+      return token;
+    }
+
+    function renderHand() {
+      var mode = engine.getMode(state.modeId);
+      var hand = state.players[state.currentPlayer].hand;
+      var player = state.players[state.currentPlayer];
+      var fragment = document.createDocumentFragment();
+      var renderedTools = false;
+
+      els.toolsTitle.textContent = mode.fog ? "private fog tools" : "mode tools";
+      els.handOwner.textContent = getPlayerLabel(state.currentPlayer) + " tools";
       els.hand.replaceChildren();
 
       if (!state.turnOpen || state.pendingHandoff || state.winner || state.draw) {
         var hidden = document.createElement("p");
         hidden.className = "cfp-hand-empty";
-        hidden.textContent = "Hidden until the private turn starts.";
+        hidden.textContent = mode.fog ? "Hidden until the private fog turn starts." : "Tools unavailable while the match is paused.";
         els.hand.appendChild(hidden);
         return;
       }
 
-      if (!hand.length) {
+      if (player.bombs > 0) {
+        fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears adjacent cells."));
+        renderedTools = true;
+      }
+
+      if (player.wilds > 0) {
+        fragment.appendChild(createSpecialCard("wild", "Wild Piece", player.wilds + " left", "Drop a neutral piece that counts for either player."));
+        renderedTools = true;
+      }
+
+      if (player.locks > 0) {
+        fragment.appendChild(createSpecialCard("lock", "Column Lock", player.locks + " left", "Lock a column for the opponent's next turn."));
+        renderedTools = true;
+      }
+
+      hand.forEach(function (power, index) {
+        fragment.appendChild(createPowerCard(power, index));
+        renderedTools = true;
+      });
+
+      if (!renderedTools) {
         var empty = document.createElement("p");
         empty.className = "cfp-hand-empty";
-        empty.textContent = "No powerups in hand.";
+        empty.textContent = mode.powerups || mode.bombs || mode.wilds || mode.locks ? "No tools remaining." : "This mode uses the board only.";
         els.hand.appendChild(empty);
         return;
       }
 
-      hand.forEach(function (power, index) {
-        var button = document.createElement("button");
-        var name = document.createElement("strong");
-        var rule = document.createElement("span");
-
-        button.type = "button";
-        button.className = "cfp-power-card";
-        button.dataset.handIndex = String(index);
-        button.disabled = state.powerUsedThisTurn || Boolean(state.pendingPower);
-
-        name.textContent = power;
-        rule.textContent = getPowerHelp(power);
-        button.append(name, rule);
-        fragment.appendChild(button);
-      });
-
       els.hand.appendChild(fragment);
+    }
+
+    function createSpecialCard(special, name, count, rule) {
+      var button = document.createElement("button");
+      var title = document.createElement("strong");
+      var details = document.createElement("span");
+
+      button.type = "button";
+      button.className = "cfp-power-card";
+      button.dataset.special = special;
+      if ((special === "bomb" && state.pendingDropKind === "bomb") ||
+          (special === "wild" && state.pendingDropKind === "wild") ||
+          (special === "lock" && state.pendingPower && state.pendingPower.name === "Column Lock")) {
+        button.classList.add("is-selected");
+      }
+      button.disabled = Boolean(state.pendingPower && special !== "lock") || (special === "lock" && state.powerUsedThisTurn);
+
+      title.textContent = name;
+      details.textContent = count + " | " + rule;
+      button.append(title, details);
+      return button;
+    }
+
+    function createPowerCard(power, index) {
+      var button = document.createElement("button");
+      var name = document.createElement("strong");
+      var rule = document.createElement("span");
+
+      button.type = "button";
+      button.className = "cfp-power-card";
+      button.dataset.handIndex = String(index);
+      button.disabled = state.powerUsedThisTurn || Boolean(state.pendingPower);
+      if (state.pendingPower && state.pendingPower.handIndex === index) {
+        button.classList.add("is-selected");
+      }
+
+      name.textContent = power;
+      rule.textContent = getPowerHelp(power);
+      button.append(name, rule);
+      return button;
     }
 
     function getPowerHelp(power) {
@@ -659,7 +975,33 @@
       if (power === "Double Drop") {
         return "Drop two pieces in different columns.";
       }
-      return "One-use powerup.";
+      if (power === "Scan Column") {
+        return "Reveal a fog column for this turn.";
+      }
+      if (power === "Scan Radius") {
+        return "Reveal a small fog area.";
+      }
+      if (power === "Decoy") {
+        return "Create a fake fog signal.";
+      }
+      if (power === "Signal Jam") {
+        return "Disrupt the opponent's next fog read.";
+      }
+      return "One-use tool.";
+    }
+
+    function renderRulesMini() {
+      var mode = engine.getMode(state.modeId);
+      var fragment = document.createDocumentFragment();
+
+      els.rulesTitle.textContent = mode.title + " Rules";
+      els.rulesList.replaceChildren();
+      mode.rules.forEach(function (rule) {
+        var item = document.createElement("li");
+        item.textContent = rule;
+        fragment.appendChild(item);
+      });
+      els.rulesList.appendChild(fragment);
     }
 
     function renderLog() {
@@ -732,11 +1074,32 @@
       }).length;
     }
 
+    function updateModeStats(stats) {
+      var mode = engine.getMode(state.modeId);
+      var modeStats = Object.assign({
+        id: mode.id,
+        title: mode.title,
+        matches: 0,
+        wins: 0,
+        draws: 0
+      }, stats.modes[mode.id] || {});
+
+      modeStats.title = mode.title;
+      modeStats.matches += 1;
+      if (state.draw) {
+        modeStats.draws += 1;
+      } else {
+        modeStats.wins += 1;
+      }
+      stats.modes[mode.id] = modeStats;
+    }
+
     function recordMatch() {
       var stats = normalizeStats(services.getStats(GAME_ID));
       var now = new Date().toISOString();
       var powerupsUsed = countPowerupsUsed();
       var winnerName = state.winner ? getPlayerLabel(state.winner) : "DRAW";
+      var mode = engine.getMode(state.modeId);
 
       stats.matches += 1;
       stats.totalTurns += state.turnCount;
@@ -756,11 +1119,14 @@
         stats.fastestWinTurns = state.turnCount;
       }
 
+      updateModeStats(stats);
       updatePlayerStats(stats, "R", now);
       updatePlayerStats(stats, "Y", now);
 
       stats.recent.unshift({
         playedAt: now,
+        modeId: mode.id,
+        modeTitle: mode.title,
         result: state.draw ? "draw" : "win",
         winnerMark: state.winner,
         winnerName: winnerName,
@@ -776,7 +1142,7 @@
     }
 
     function maybeRecordMatch() {
-      if (!(state.winner || state.draw) || matchRecorded) {
+      if (!state || !(state.winner || state.draw) || matchRecorded) {
         return;
       }
 
@@ -796,7 +1162,11 @@
     return {
       mount: mount,
       getSessionChip: function () {
-        return state.winner || state.draw ? "SESSION: COMPLETE" : "SESSION: ACTIVE";
+        if (!state) {
+          return "MODE: SELECT";
+        }
+
+        return state.winner || state.draw ? "SESSION: COMPLETE" : engine.getMode(state.modeId).title.toUpperCase();
       }
     };
   }
@@ -805,21 +1175,21 @@
     id: GAME_ID,
     sortOrder: 20,
     title: "Connect Four Plus",
-    version: "v1.0",
-    command: "./connect-four-plus --power-duel",
+    version: "v1.1",
+    command: "./connect-four-plus --select-mode",
     status: "installed",
     players: "2 local",
-    duration: "8-18 min",
-    type: "strategy / power duel",
+    duration: "8-25 min",
+    type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A pass-and-play Connect Four variant with private powerup hands, handoff privacy, tactical disruption, and classic connect-four win conditions.",
+    description: "A selectable Connect Four Plus collection with Power Duel, fog, gravity, bombs, wild pieces, locks, board-shift, token, objective, puzzle, and simultaneous-planning variants.",
     rules: [
-      "Use a standard 7-column by 6-row board.",
-      "Each player starts with one hidden random powerup and may hold up to three.",
-      "On your turn, privately reveal your hand, optionally use one powerup, then drop one piece.",
-      "After every fourth personal turn, draw one hidden powerup unless your hand is full.",
-      "Used powerups are public in the log; unused powerups remain private.",
-      "After each turn, the board is hidden until the next player starts their private turn."
+      "Choose a Connect Four Plus variant before the match starts.",
+      "Most variants use public board play with no private handoff screen.",
+      "Fog of War variants are the only modes that cover the board between turns.",
+      "Power Duel and Draft Duel use one optional power before a normal drop.",
+      "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, Puzzle, and Simultaneous Planning modes are selectable from the in-game mode picker.",
+      "Named players save match results and mode stats on this device."
     ],
     getLibraryMetrics: getPowerSummary,
     renderLeaderboard: renderLeaderboard,
