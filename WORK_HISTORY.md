@@ -1,5 +1,27 @@
 # Work History
 
+## 2026-05-10 - Connect Four Tool Priority And Cancel Flow
+
+- Reordered the Connect Four Plus play layout so the board and mode tools/powerups appear before the turn system.
+- Moved the `Cancel Tool` control into the tools panel, closer to selected powerups.
+- Tightened tool selection so selected powerups and special tools must be used or canceled before a normal move or another tool can be selected.
+- Fixed Lock so it blocks only the opponent's next turn and no longer blocks the player who placed it.
+
+What to test:
+- Start Power Duel and confirm the powerups/tools panel appears above the turn system.
+- Select a Power Duel powerup and confirm normal drops are blocked until the power is used or `Cancel Tool` is pressed.
+- Select Bomb or Wild mode tools and confirm clicking the selected tool again does not return to a normal move.
+- Use Lock, then confirm the locking player can still play that column while the opponent cannot on their next turn.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node guard test for selected powerups, canceling, and selected special tools.
+- Node guard test confirming Lock affects the opponent only and expires after that opponent turn.
+- Node smoke test across all 14 Connect Four Plus modes.
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Plus Variant Picker
 
 - Reworked Connect Four Plus from a single Power Duel session into an in-game variant picker with 14 selectable modes from the rules PDF.

@@ -318,7 +318,10 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-live-area {
   display: grid;
-  grid-template-columns: 300px minmax(420px, 1fr) 330px;
+  grid-template-columns: minmax(420px, 1fr) minmax(300px, 360px);
+  grid-template-areas:
+    "board tools"
+    "board status";
   gap: 16px;
   align-items: start;
 }
@@ -332,10 +335,12 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 }
 
 .cfp-status-panel {
+  grid-area: status;
   background: #f0c020;
 }
 
 .cfp-power-panel {
+  grid-area: tools;
   background: #1040c0;
   color: #ffffff;
 }
@@ -415,7 +420,7 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 }
 
 .cfp-actions {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 14px;
 }
 
@@ -480,6 +485,7 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 }
 
 .cfp-board-panel {
+  grid-area: board;
   background: #d02020;
   padding: 14px;
   overflow-x: auto;
@@ -655,6 +661,10 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   transform: translateY(-2px);
 }
 
+.cfp-power-card.is-selected:disabled {
+  opacity: 1;
+}
+
 .cfp-power-card strong {
   font-size: 1rem;
 }
@@ -674,6 +684,11 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   color: #121212;
   box-shadow: 4px 4px 0 0 #121212;
   padding: 12px;
+}
+
+.cfp-tool-actions {
+  display: grid;
+  margin-top: 12px;
 }
 
 .cfp-rules-mini,
@@ -709,11 +724,11 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 @media (max-width: 1180px) {
   .cfp-live-area {
-    grid-template-columns: minmax(260px, 330px) minmax(420px, 1fr);
-  }
-
-  .cfp-power-panel {
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "board"
+      "tools"
+      "status";
   }
 }
 
@@ -726,18 +741,6 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   .cfp-live-area,
   .cfp-actions {
     grid-template-columns: 1fr;
-  }
-
-  .cfp-board-panel {
-    order: 1;
-  }
-
-  .cfp-status-panel {
-    order: 2;
-  }
-
-  .cfp-power-panel {
-    order: 3;
   }
 
   .cfp-drop-row,

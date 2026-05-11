@@ -335,7 +335,6 @@
       },
       lockedColumn: null,
       lockedFor: null,
-      lockPlacedColumn: null,
       lastLockedColumn: null,
       removedColumns: [],
       gravityDirection: "down",
@@ -443,7 +442,6 @@
       dropPlan: Object.assign({}, state.dropPlan),
       lockedColumn: state.lockedColumn,
       lockedFor: state.lockedFor,
-      lockPlacedColumn: state.lockPlacedColumn,
       lastLockedColumn: state.lastLockedColumn,
       removedColumns: state.removedColumns.slice(),
       gravityDirection: state.gravityDirection,
@@ -526,12 +524,6 @@
     if (state.dropPlan.remaining > 1 && state.dropPlan.firstColumn !== null) {
       columns = columns.filter(function (col) {
         return col !== state.dropPlan.firstColumn;
-      });
-    }
-
-    if (state.lockPlacedColumn !== null) {
-      columns = columns.filter(function (col) {
-        return col !== state.lockPlacedColumn;
       });
     }
 
@@ -655,6 +647,10 @@
       return { ok: false, reason: "Resolve the selected powerup first." };
     }
 
+    if (state.pendingDropKind !== "normal") {
+      return { ok: false, reason: "Use or cancel the selected tool before choosing another." };
+    }
+
     if (handIndex < 0 || handIndex >= state.players[state.currentPlayer].hand.length) {
       return { ok: false, reason: "That powerup is not in your hand." };
     }
@@ -734,12 +730,17 @@
       return next;
     }
 
+    if (next.pendingPower || next.pendingDropKind !== "normal") {
+      next.lastError = "Use or cancel the selected tool before choosing another.";
+      return next;
+    }
+
     if (special === "bomb") {
       if (!player.bombs) {
         next.lastError = "No bombs remaining.";
         return next;
       }
-      next.pendingDropKind = next.pendingDropKind === "bomb" ? "normal" : "bomb";
+      next.pendingDropKind = "bomb";
       next.pendingPower = null;
       next.lastError = null;
       return next;
@@ -750,7 +751,7 @@
         next.lastError = "No wild pieces remaining.";
         return next;
       }
-      next.pendingDropKind = next.pendingDropKind === "wild" ? "normal" : "wild";
+      next.pendingDropKind = "wild";
       next.pendingPower = null;
       next.lastError = null;
       return next;
@@ -767,7 +768,7 @@
         return next;
       }
       next.pendingDropKind = "normal";
-      next.pendingPower = next.pendingPower && next.pendingPower.name === "Column Lock" ? null : {
+      next.pendingPower = {
         name: "Column Lock",
         handIndex: null,
         special: true
@@ -841,7 +842,6 @@
 
       next.lockedColumn = col;
       next.lockedFor = otherPlayer(next.currentPlayer);
-      next.lockPlacedColumn = col;
       next.lastLockedColumn = col;
       if (power === "Column Lock") {
         player = next.players[next.currentPlayer];
@@ -1157,7 +1157,6 @@
     next.pendingPower = null;
     next.pendingDropKind = "normal";
     next.powerUsedThisTurn = false;
-    next.lockPlacedColumn = null;
     next.dropPlan = {
       remaining: 1,
       firstColumn: null

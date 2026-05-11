@@ -235,7 +235,6 @@
               '<div class="cfp-actions">' +
                 '<button type="button" class="cfp-button cfp-button-yellow" data-role="new-game">New Game</button>' +
                 '<button type="button" class="cfp-button cfp-button-outline" data-role="change-mode">Change Mode</button>' +
-                '<button type="button" class="cfp-button cfp-button-outline" data-role="cancel-power">Cancel Tool</button>' +
               '</div>' +
             '</div>' +
           '</aside>' +
@@ -248,6 +247,9 @@
             '<div class="cfp-panel-body">' +
               '<p class="cfp-label" data-role="hand-owner">Red tools</p>' +
               '<div class="cfp-hand" data-role="hand"></div>' +
+              '<div class="cfp-tool-actions">' +
+                '<button type="button" class="cfp-button cfp-button-outline" data-role="cancel-power">Cancel Tool</button>' +
+              '</div>' +
               '<section class="cfp-rules-mini">' +
                 '<h3 data-role="rules-title">Mode Rules</h3>' +
                 '<ul data-role="rules-list"></ul>' +
@@ -749,7 +751,7 @@
         button.className = "cfp-drop-button";
         button.dataset.column = String(col);
         button.textContent = String(col + 1);
-        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || removed || (!columnPower && legalColumns.indexOf(col) === -1);
+        button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || removed || (state.pendingPower && !columnPower) || (!columnPower && legalColumns.indexOf(col) === -1);
         fragment.appendChild(button);
       }
 
@@ -932,7 +934,7 @@
           (special === "lock" && state.pendingPower && state.pendingPower.name === "Column Lock")) {
         button.classList.add("is-selected");
       }
-      button.disabled = Boolean(state.pendingPower && special !== "lock") || (special === "lock" && state.powerUsedThisTurn);
+      button.disabled = Boolean(state.pendingPower) || state.pendingDropKind !== "normal" || (special === "lock" && state.powerUsedThisTurn);
 
       title.textContent = name;
       details.textContent = count + " | " + rule;
