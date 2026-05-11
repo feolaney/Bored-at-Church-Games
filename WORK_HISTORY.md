@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-11 - Connect Four Bomb Drop Asset
+
+- Swapped the falling Bomb Pieces drop visual from a CSS-drawn disc to the supplied `Images/Connect 4 Bomb.svg` asset.
+- Added the `Images` directory to the build copy script so the bomb asset is included if the static build outputs to `dist`.
+
+What to test:
+- In Bomb Pieces, select a bomb and drop it into a column; confirm the falling object uses the supplied bomb artwork.
+- Confirm the bomb still lands, triggers the explosion animation, and then resolves affected/cascading pieces as before.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- `node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); console.log('package json ok')"`
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Bomb Cascade Alignment
 
 - Fixed delayed Bomb Pieces cascade discs so they use measured board-cell positions instead of an approximate percentage offset while waiting for the explosion to finish.

@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist && cp -R index.html styles.css design game_rules games library AGENTS.md WORK_HISTORY.md dist/"
+    "build": "rm -rf dist && mkdir -p dist && cp -R index.html styles.css design game_rules games library Images AGENTS.md WORK_HISTORY.md dist/"
   }
 }

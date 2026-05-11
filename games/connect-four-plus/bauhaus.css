@@ -889,30 +889,26 @@ button.cfp-hand-chip:disabled {
   position: relative;
   z-index: 8;
   display: block;
-  width: 82%;
-  height: 82%;
-  border: 3px solid #121212;
-  border-radius: 50%;
-  box-shadow: 3px 3px 0 0 #121212;
+  width: 96%;
+  height: 96%;
+  background-image: url("../../Images/Connect%204%20Bomb.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   animation: cfp-bomb-drop-hit var(--cfp-drop-duration, 720ms) linear both;
   will-change: opacity, transform;
 }
 
 .cfp-bomb-drop.red {
-  background: #d02020;
+  background-color: transparent;
 }
 
 .cfp-bomb-drop.yellow {
-  background: #f0c020;
+  background-color: transparent;
 }
 
 .cfp-bomb-drop::before {
-  content: "";
-  position: absolute;
-  inset: 22%;
-  border: 3px solid #121212;
-  border-radius: 50%;
-  background: #ffffff;
+  display: none;
 }
 
 .cfp-preblast-piece {
