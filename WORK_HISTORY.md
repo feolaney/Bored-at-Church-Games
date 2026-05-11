@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-10 - Connect Four Bomb Cascade Timing
+
+- Added post-blast settle metadata for surviving Bomb Pieces discs that drop only because the explosion cleared pieces below them.
+- Delayed those surviving-disc falling animations until after the bomb drop and full explosion animation finish, then reused the normal falling/bounce motion from their old cells into their resolved cells.
+
+What to test:
+- In Bomb Pieces, drop a bomb under a stacked column and confirm pieces above the blast stay visually in place until the explosion finishes.
+- Confirm surviving pieces then fall into the cleared spaces with the same bounce-style falling animation used for normal drops.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node targeted Bomb Pieces smoke test covering 3x3 blast metadata and delayed settle-move metadata for a surviving piece above the blast.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Bomb Impact Timing
 
 - Kept blast-cleared Bomb Pieces discs visible as temporary overlay pieces while the bomb is still falling.

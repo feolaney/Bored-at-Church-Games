@@ -3,6 +3,7 @@
 
   var GAME_ID = "connect-four-plus";
   var engine = global.ConnectFourPlus;
+  var BOMB_BLAST_SETTLE_DELAY_MS = 900;
 
   function createEmptyStats() {
     return {
@@ -1246,6 +1247,7 @@
     function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
+      var bombSettleMove = getBombSettleMove(actualPiece, row, col, dropBatch);
       var dropMove = getDropForCell(dropBatch, actualPiece, row, col);
 
       if (dropMove && hidePendingBattleDrops) {
@@ -1270,6 +1272,8 @@
 
       if (gravityMove) {
         applyGravityShiftAnimation(disc, gravityMove);
+      } else if (bombSettleMove && animateDropBatch) {
+        applyBombSettleAnimation(disc, bombSettleMove);
       } else if (dropMove && animateDropBatch) {
         var dropAnimation = getDropAnimation(dropMove, row, col);
 
@@ -1289,6 +1293,43 @@
       }
 
       return disc;
+    }
+
+    function getBombSettleMove(piece, row, col, dropBatch) {
+      var bombDrop;
+
+      if (!piece || !state.lastMove || state.lastMove.dropKind !== "bomb" || !Array.isArray(state.lastMove.bombSettledMoves)) {
+        return null;
+      }
+
+      bombDrop = dropBatch.find(function (drop) {
+        return drop.dropKind === "bomb";
+      });
+      if (!bombDrop) {
+        return null;
+      }
+
+      return state.lastMove.bombSettledMoves.find(function (move) {
+        return move.pieceId === piece.id && move.toRow === row && move.toCol === col;
+      }) || null;
+    }
+
+    function applyBombSettleAnimation(disc, move) {
+      var animation = getBombSettleAnimation(move);
+
+      disc.classList.add("is-dropping");
+      disc.style.setProperty("--cfp-drop-x", animation.x);
+      disc.style.setProperty("--cfp-drop-y", animation.y);
+      disc.style.setProperty("--cfp-drop-mid-x", animation.midX);
+      disc.style.setProperty("--cfp-drop-mid-y", animation.midY);
+      disc.style.setProperty("--cfp-bounce-x", animation.bounceX);
+      disc.style.setProperty("--cfp-bounce-y", animation.bounceY);
+      disc.style.setProperty("--cfp-rebound-x", animation.reboundX);
+      disc.style.setProperty("--cfp-rebound-y", animation.reboundY);
+      disc.style.setProperty("--cfp-settle-x", animation.settleX);
+      disc.style.setProperty("--cfp-settle-y", animation.settleY);
+      disc.style.setProperty("--cfp-drop-duration", animation.duration);
+      disc.style.setProperty("--cfp-drop-delay", getBombSettleDelay());
     }
 
     function appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
@@ -1375,6 +1416,57 @@
       blast.style.setProperty("--cfp-blast-delay", "calc(" + dropAnimation.duration + " - 120ms)");
       cell.classList.add("is-animation-lane");
       cell.appendChild(blast);
+    }
+
+    function getBombSettleAnimation(move) {
+      var deltaCol = move.fromCol - move.toCol;
+      var deltaRow = move.fromRow - move.toRow;
+      var startX = deltaCol * 126;
+      var startY = deltaRow * 126;
+      var bounceX = deltaCol < 0 ? 10 : (deltaCol > 0 ? -10 : 0);
+      var bounceY = deltaRow < 0 ? 10 : (deltaRow > 0 ? -10 : 0);
+      var reboundX = bounceX ? bounceX * -0.4 : 0;
+      var reboundY = bounceY ? bounceY * -0.4 : 0;
+      var travelCells = Math.max(Math.abs(deltaCol), Math.abs(deltaRow), 1);
+
+      return {
+        x: startX + "%",
+        y: startY + "%",
+        midX: (startX * 0.34) + "%",
+        midY: (startY * 0.34) + "%",
+        bounceX: bounceX + "%",
+        bounceY: bounceY + "%",
+        reboundX: reboundX + "%",
+        reboundY: reboundY + "%",
+        settleX: (bounceX * 0.28) + "%",
+        settleY: (bounceY * 0.28) + "%",
+        duration: Math.min(980, 430 + travelCells * 76) + "ms"
+      };
+    }
+
+    function getBombSettleDelay() {
+      var dropBatch = getDropBatch();
+      var bombDrop = dropBatch.find(function (drop) {
+        return drop.dropKind === "bomb";
+      });
+      var dropAnimation;
+
+      if (!bombDrop) {
+        return BOMB_BLAST_SETTLE_DELAY_MS + "ms";
+      }
+
+      dropAnimation = getDropAnimation(bombDrop, bombDrop.row, bombDrop.col);
+      return (parseAnimationMs(dropAnimation.duration) + BOMB_BLAST_SETTLE_DELAY_MS) + "ms";
+    }
+
+    function parseAnimationMs(value) {
+      var numeric = Number.parseFloat(value);
+
+      if (!Number.isFinite(numeric)) {
+        return 0;
+      }
+
+      return value.indexOf("s") !== -1 && value.indexOf("ms") === -1 ? numeric * 1000 : numeric;
     }
 
     function getGravityShiftMove(piece, row, col) {

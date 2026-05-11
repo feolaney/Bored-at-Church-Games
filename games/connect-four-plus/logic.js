@@ -451,6 +451,11 @@
         return Object.assign({}, cleared);
       });
     }
+    if (Array.isArray(move.bombSettledMoves)) {
+      clone.bombSettledMoves = move.bombSettledMoves.map(function (settledMove) {
+        return Object.assign({}, settledMove);
+      });
+    }
     if (move.tokenFound) {
       clone.tokenFound = Object.assign({}, move.tokenFound);
     }
@@ -1502,6 +1507,7 @@
     var dropKind = kind || "normal";
     var pieceId;
     var finalPosition;
+    var beforeCollapse;
 
     if (!position) {
       return null;
@@ -1537,7 +1543,9 @@
 
     if (dropKind === "bomb") {
       next.lastMove.bombCleared = explodeBomb(next, row, landingCol);
+      beforeCollapse = capturePiecePositions(next);
       collapseAllColumns(next);
+      next.lastMove.bombSettledMoves = createSettledMoves(beforeCollapse, next);
       finalPosition = findPiecePositionById(next, pieceId);
       if (finalPosition) {
         next.lastMove.row = finalPosition.row;
@@ -1547,6 +1555,36 @@
     }
 
     return position;
+  }
+
+  function createSettledMoves(beforePositions, state) {
+    var moves = [];
+    var row;
+    var col;
+    var cell;
+    var before;
+
+    for (row = 0; row < state.rows; row += 1) {
+      for (col = 0; col < state.cols; col += 1) {
+        cell = state.board[row][col];
+        if (!cell || cell.id === undefined || cell.id === null) {
+          continue;
+        }
+
+        before = beforePositions[cell.id];
+        if (before && (before.row !== row || before.col !== col)) {
+          moves.push({
+            pieceId: cell.id,
+            fromRow: before.row,
+            fromCol: before.col,
+            toRow: row,
+            toCol: col
+          });
+        }
+      }
+    }
+
+    return moves;
   }
 
   function getDropKindLabel(kind) {
