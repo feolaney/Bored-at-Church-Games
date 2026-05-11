@@ -494,6 +494,32 @@
     };
   }
 
+  function cloneLastMove(move) {
+    var clone;
+
+    if (!move) {
+      return null;
+    }
+
+    clone = Object.assign({}, move);
+    if (Array.isArray(move.bombCleared)) {
+      clone.bombCleared = move.bombCleared.map(function (cleared) {
+        return Object.assign({}, cleared);
+      });
+    }
+    if (move.tokenFound) {
+      clone.tokenFound = Object.assign({}, move.tokenFound);
+    }
+    if (move.columnBattle) {
+      clone.columnBattle = Object.assign({}, move.columnBattle);
+    }
+    if (Array.isArray(move.simultaneousDrops)) {
+      clone.simultaneousDrops = move.simultaneousDrops.map(cloneLastMove);
+    }
+
+    return clone;
+  }
+
   function cloneState(state) {
     return {
       modeId: state.modeId,
@@ -511,7 +537,7 @@
       turnCount: state.turnCount,
       dropCount: state.dropCount,
       lastError: state.lastError,
-      lastMove: state.lastMove ? Object.assign({}, state.lastMove) : null,
+      lastMove: cloneLastMove(state.lastMove),
       gravityShift: cloneGravityShift(state.gravityShift),
       pendingPower: state.pendingPower ? Object.assign({}, state.pendingPower) : null,
       pendingDropKind: state.pendingDropKind,
@@ -668,6 +694,26 @@
     return columns;
   }
 
+  function getOpenLaneSpaceCount(state, lane) {
+    var probe = cloneState(state);
+    var position;
+    var count = 0;
+
+    position = getLandingPosition(probe, lane);
+    while (position) {
+      probe.board[position.row][position.col] = {
+        player: "R",
+        shielded: false,
+        wild: false,
+        bomb: false
+      };
+      count += 1;
+      position = getLandingPosition(probe, lane);
+    }
+
+    return count;
+  }
+
   function getLegalDropColumns(state) {
     var columns = getNonFullColumns(state);
 
@@ -779,6 +825,24 @@
     }
 
     return positions;
+  }
+
+  function findPiecePositionById(state, pieceId) {
+    var row;
+    var col;
+
+    for (row = 0; row < state.rows; row += 1) {
+      for (col = 0; col < state.cols; col += 1) {
+        if (state.board[row][col] && state.board[row][col].id === pieceId) {
+          return {
+            row: row,
+            col: col
+          };
+        }
+      }
+    }
+
+    return null;
   }
 
   function createGravityShift(beforePositions, state) {
@@ -1492,6 +1556,8 @@
     var row = position && position.row;
     var landingCol = position && position.col;
     var dropKind = kind || "normal";
+    var pieceId;
+    var finalPosition;
 
     if (!position) {
       return null;
@@ -1503,8 +1569,9 @@
       next.players[activePlayer].wilds -= 1;
     }
 
+    pieceId = next.nextPieceId;
     next.board[row][landingCol] = {
-      id: next.nextPieceId,
+      id: pieceId,
       player: activePlayer,
       shielded: false,
       wild: dropKind === "wild",
@@ -1515,6 +1582,7 @@
     next.lastMove = {
       kind: "drop",
       dropKind: dropKind,
+      pieceId: pieceId,
       player: activePlayer,
       row: row,
       col: landingCol,
@@ -1524,8 +1592,14 @@
     };
 
     if (dropKind === "bomb") {
-      explodeBomb(next, row, landingCol);
+      next.lastMove.bombCleared = explodeBomb(next, row, landingCol);
       collapseAllColumns(next);
+      finalPosition = findPiecePositionById(next, pieceId);
+      if (finalPosition) {
+        next.lastMove.row = finalPosition.row;
+        next.lastMove.col = finalPosition.col;
+        return finalPosition;
+      }
     }
 
     return position;
@@ -1542,6 +1616,8 @@
   }
 
   function explodeBomb(next, row, col) {
+    var cleared = [];
+
     [
       [row - 1, col],
       [row + 1, col],
@@ -1558,15 +1634,29 @@
 
       cell = next.board[targetRow][targetCol];
       if (cell && !cell.shielded) {
+        cleared.push({
+          row: targetRow,
+          col: targetCol,
+          id: cell.id === undefined ? null : cell.id,
+          player: cell.player,
+          wild: Boolean(cell.wild),
+          bomb: Boolean(cell.bomb)
+        });
         next.board[targetRow][targetCol] = null;
       }
     });
+
+    return cleared;
   }
 
   function planSimultaneousDrop(next, col) {
     var player = next.currentPlayer;
     var first;
     var second;
+    var firstMove;
+    var secondMove;
+    var otherPlan;
+    var columnBattle = null;
     var result;
 
     if (next.winner || next.draw) {
@@ -1579,6 +1669,12 @@
       return next;
     }
 
+    otherPlan = next.simultaneous.plans[otherPlayer(player)];
+    if (otherPlan === col && getOpenLaneSpaceCount(next, col) < 2) {
+      next.lastError = "That column needs two open spaces for a Column Battle.";
+      return next;
+    }
+
     next.simultaneous.plans[player] = col;
     next.publicLog = next.publicLog.concat([PLAYER_LABELS[player] + " planned a column."]);
 
@@ -1588,12 +1684,35 @@
       return next;
     }
 
-    first = next.simultaneous.priority;
+    if (next.simultaneous.plans.R === next.simultaneous.plans.Y) {
+      first = Math.random() < 0.5 ? "R" : "Y";
+      columnBattle = {
+        column: next.simultaneous.plans.R,
+        firstPlayer: first,
+        secondPlayer: otherPlayer(first)
+      };
+    } else {
+      first = next.simultaneous.priority;
+    }
     second = otherPlayer(first);
     placePiece(next, first, next.simultaneous.plans[first], "normal");
     next.dropCount += 1;
+    firstMove = cloneLastMove(next.lastMove);
+    if (firstMove) {
+      firstMove.sequenceIndex = 0;
+    }
     placePiece(next, second, next.simultaneous.plans[second], "normal");
     next.dropCount += 1;
+    secondMove = cloneLastMove(next.lastMove);
+    if (secondMove) {
+      secondMove.sequenceIndex = 1;
+    }
+    next.lastMove = cloneLastMove(secondMove);
+    next.lastMove.simultaneousDrops = [firstMove, secondMove];
+    if (columnBattle) {
+      next.lastMove.columnBattle = columnBattle;
+      next.publicLog = next.publicLog.concat(["Column Battle in column " + (columnBattle.column + 1) + ": " + PLAYER_LABELS[first] + " won the flip and dropped first."]);
+    }
     next.publicLog = next.publicLog.concat(["Both planned moves resolved."]);
 
     result = findWinner(next, second);

@@ -91,15 +91,12 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-mode-select {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
   gap: 18px;
-  max-height: min(78vh, 760px);
-  min-height: min(66vh, 620px);
   border: 4px solid #121212;
   background: #ffffff;
   box-shadow: 8px 8px 0 0 #121212;
   padding: clamp(18px, 4vw, 42px);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cfp-mode-hero {
@@ -133,7 +130,7 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   gap: 14px;
   min-height: 0;
   padding: 4px 8px 8px 4px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .cfp-mode-card {
@@ -223,6 +220,56 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   gap: 12px;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.cfp-falling-discs {
+  position: relative;
+  height: 58px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+.cfp-fall-disc {
+  position: absolute;
+  top: -34px;
+  width: 28px;
+  height: 28px;
+  border: 4px solid #121212;
+  border-radius: 50%;
+  animation: cfp-mode-disc-fall 3600ms cubic-bezier(0.44, 0, 0.62, 1) infinite;
+}
+
+.cfp-fall-disc.red {
+  background: #d02020;
+}
+
+.cfp-fall-disc.yellow {
+  background: #f0c020;
+}
+
+.cfp-fall-disc:nth-child(1) {
+  left: 0;
+  animation-delay: -160ms;
+}
+
+.cfp-fall-disc:nth-child(2) {
+  left: 48px;
+  animation-delay: -1320ms;
+}
+
+.cfp-fall-disc:nth-child(3) {
+  left: 96px;
+  animation-delay: -760ms;
+}
+
+.cfp-fall-disc:nth-child(4) {
+  left: 144px;
+  animation-delay: -2240ms;
+}
+
+.cfp-fall-disc:nth-child(5) {
+  left: 192px;
+  animation-delay: -1840ms;
 }
 
 .cfp-circle,
@@ -486,6 +533,7 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-board-panel {
   grid-area: board;
+  position: relative;
   background: #d02020;
   padding: 14px;
   overflow-x: auto;
@@ -551,14 +599,72 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
 
 .cfp-hand-chip {
   border: 2px solid #121212;
+  border-radius: 0;
   background: #f0f0f0;
   box-shadow: 2px 2px 0 0 #121212;
+  color: #121212;
   padding: 4px 6px;
+  font-family: "Outfit", var(--font-display);
   font-size: 0.72rem;
   font-weight: 900;
   line-height: 1;
   overflow-wrap: anywhere;
   text-transform: uppercase;
+}
+
+button.cfp-hand-chip {
+  cursor: pointer;
+}
+
+button.cfp-hand-chip:hover:not(:disabled),
+button.cfp-hand-chip:focus-visible:not(:disabled) {
+  outline: 2px solid #1040c0;
+  outline-offset: 2px;
+  transform: translateY(-1px);
+}
+
+button.cfp-hand-chip:active:not(:disabled) {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+button.cfp-hand-chip:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.cfp-hand-chip.is-selected {
+  background: #121212;
+  color: #ffffff;
+  animation: cfp-hand-chip-pulse 1700ms ease-in-out infinite;
+}
+
+.cfp-win-banner {
+  margin-bottom: 12px;
+  border: 4px solid #121212;
+  background: #f0c020;
+  box-shadow: 5px 5px 0 0 #121212;
+  color: #121212;
+  padding: 10px 12px;
+  font-family: "Outfit", var(--font-display);
+  font-size: clamp(1.3rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 0.96;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cfp-end-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+
+.cfp-end-actions[hidden],
+.cfp-column-battle[hidden] {
+  display: none;
 }
 
 .cfp-drop-row {
@@ -573,6 +679,24 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   min-height: 2.55rem;
   background: #f0c020;
   color: #121212;
+}
+
+.cfp-drop-button.is-locked {
+  background: #121212;
+  color: #ffffff;
+  animation: cfp-lock-pulse 1400ms ease-in-out infinite;
+}
+
+.cfp-drop-button.is-locked::before {
+  content: "";
+  display: inline-block;
+  width: 0.72rem;
+  height: 0.52rem;
+  margin-right: 0.35rem;
+  border: 3px solid currentColor;
+  border-top-left-radius: 0.24rem;
+  border-top-right-radius: 0.24rem;
+  vertical-align: -0.04rem;
 }
 
 .cfp-board {
@@ -722,9 +846,20 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   background: #ffffff;
 }
 
+.cfp-disc.is-winning-piece {
+  animation: cfp-winning-disc-pulse 1250ms ease-in-out infinite;
+  transform-origin: center;
+}
+
 .cfp-disc.is-dropping {
-  animation: cfp-disc-drop var(--cfp-drop-duration, 720ms) linear;
+  animation: cfp-disc-drop var(--cfp-drop-duration, 720ms) linear var(--cfp-drop-delay, 0ms) backwards;
   will-change: transform;
+}
+
+.cfp-disc.is-dropping.is-winning-piece {
+  animation:
+    cfp-disc-drop var(--cfp-drop-duration, 720ms) linear var(--cfp-drop-delay, 0ms) backwards,
+    cfp-winning-disc-pulse 1250ms ease-in-out calc(var(--cfp-drop-delay, 0ms) + var(--cfp-drop-duration, 720ms)) infinite;
 }
 
 .cfp-disc.is-gravity-shifting {
@@ -806,6 +941,216 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
+}
+
+.cfp-bomb-blast {
+  position: absolute;
+  inset: 7%;
+  z-index: 7;
+  display: grid;
+  place-items: center;
+  border: 4px solid #121212;
+  background: #ffffff;
+  box-shadow: 5px 5px 0 0 #121212;
+  color: #d02020;
+  font-size: clamp(0.48rem, 1.55vw, 0.86rem);
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+  animation: cfp-bomb-blast 1050ms ease-out forwards;
+}
+
+.cfp-column-battle {
+  position: absolute;
+  inset: 14px;
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  background: rgba(18, 18, 18, 0.34);
+  pointer-events: none;
+  animation: cfp-battle-overlay 2600ms ease-out forwards;
+}
+
+.cfp-column-battle-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  border: 5px solid #121212;
+  background: #ffffff;
+  box-shadow: 8px 8px 0 0 #121212;
+  color: #121212;
+  padding: 18px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cfp-column-battle-card p {
+  margin: 0;
+  color: #1040c0;
+  font-family: "Outfit", var(--font-display);
+  font-size: clamp(1.2rem, 6vw, 3.6rem);
+  font-weight: 900;
+  line-height: 0.92;
+}
+
+.cfp-column-battle-card strong {
+  color: #121212;
+  font-size: clamp(0.82rem, 3vw, 1.2rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.cfp-battle-coin {
+  position: relative;
+  display: block;
+  width: clamp(64px, 18vw, 104px);
+  aspect-ratio: 1;
+  border: 5px solid #121212;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #d02020 0 50%, #f0c020 50% 100%);
+  box-shadow: 5px 5px 0 0 #121212;
+  animation: cfp-battle-coin 1500ms cubic-bezier(0.3, 0.04, 0.22, 1) forwards;
+}
+
+.cfp-battle-coin::before,
+.cfp-battle-coin::after {
+  position: absolute;
+  inset-block: 0;
+  display: grid;
+  place-items: center;
+  width: 50%;
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.cfp-battle-coin::before {
+  content: "R";
+  left: 0;
+}
+
+.cfp-battle-coin::after {
+  content: "Y";
+  right: 0;
+  color: #121212;
+}
+
+.cfp-column-battle.is-red-winner .cfp-battle-coin {
+  outline: 5px solid #d02020;
+}
+
+.cfp-column-battle.is-yellow-winner .cfp-battle-coin {
+  outline: 5px solid #f0c020;
+}
+
+@keyframes cfp-lock-pulse {
+  0%,
+  100% {
+    box-shadow: 4px 4px 0 0 #121212, 0 0 0 rgba(18, 18, 18, 0);
+  }
+
+  50% {
+    box-shadow: 4px 4px 0 0 #121212, 0 0 16px rgba(18, 18, 18, 0.74);
+  }
+}
+
+@keyframes cfp-mode-disc-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+
+  14% {
+    opacity: 1;
+  }
+
+  76% {
+    opacity: 1;
+    transform: translateY(70px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(90px);
+  }
+}
+
+@keyframes cfp-hand-chip-pulse {
+  0%,
+  100% {
+    box-shadow: 2px 2px 0 0 #121212, 0 0 0 rgba(240, 192, 32, 0);
+  }
+
+  50% {
+    box-shadow: 2px 2px 0 0 #121212, 0 0 14px rgba(240, 192, 32, 0.92), 0 0 26px rgba(16, 64, 192, 0.52);
+  }
+}
+
+@keyframes cfp-winning-disc-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.16;
+  }
+}
+
+@keyframes cfp-bomb-blast {
+  0% {
+    opacity: 0;
+    transform: scale(0.32) rotate(-10deg);
+  }
+
+  16% {
+    opacity: 1;
+    transform: scale(1.14) rotate(4deg);
+  }
+
+  72% {
+    opacity: 0.94;
+    transform: scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.5) rotate(0);
+  }
+}
+
+@keyframes cfp-battle-overlay {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  12%,
+  82% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes cfp-battle-coin {
+  0% {
+    transform: rotateY(0) rotateZ(-8deg);
+  }
+
+  58% {
+    transform: rotateY(900deg) rotateZ(8deg);
+  }
+
+  100% {
+    transform: rotateY(1260deg) rotateZ(0);
+  }
 }
 
 @keyframes cfp-disc-drop {

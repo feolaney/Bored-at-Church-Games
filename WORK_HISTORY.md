@@ -1,5 +1,34 @@
 # Work History
 
+## 2026-05-10 - Connect Four Interaction and Win Polish
+
+- Made Connect Four Plus top powerup summary chips clickable for the active player; selected chips pulse and clicking the selected chip cancels the pending tool.
+- Fixed Bomb Pieces resolution so adjacent cleared pieces are explicitly tracked, removed, and the bomb's final collapsed position is recorded for animation.
+- Added Connect Four Plus win banners above the board, end-of-game New Game/Change Game actions, and pulsing winning discs that continue pulsing after the final dropping piece lands.
+- Added Ultimate Tic Tac Toe win banners, end-of-game New Game/Change Game actions, and pulsing large-board owner marks on the winning line.
+- Updated Simultaneous Planning so both resolved pieces animate, and same-column selections trigger a Column Battle coin flip that randomly decides which color drops first.
+- Added a visible lock marker to locked top drop boxes while the active player is blocked from that column.
+- Changed the Connect Four Plus mode selector to scroll with the page instead of using an internal card scroller, and replaced the clipped Bauhaus shape row with red/yellow falling discs.
+
+What to test:
+- In a powerup mode, click a small top powerup chip to activate it, confirm it pulses, click it again to cancel, then use it normally on the board.
+- In Bomb Pieces, drop a bomb beside pieces and above a support piece; adjacent pieces should disappear and the bomb should settle into its final space.
+- In Simultaneous Planning, choose the same column for both players and confirm the Column Battle overlay appears, the winner drops first, and both discs fall.
+- Win a Connect Four Plus game and confirm the banner appears, both end actions are below it, and all winning discs pulse after the final piece lands.
+- Win Ultimate Tic Tac Toe and confirm the large-board winning marks pulse with a winner banner above the board.
+- In Column Locks, lock a column and confirm the active opponent sees a lock marker in that top drop box.
+- On the Connect Four Plus mode select screen, scroll down and confirm the Choose Mode panel scrolls away with the mode cards.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check library/app.js`
+- Node targeted Connect Four Plus smoke test covering all mode initialization, bomb clears, bomb collapse, same-column Column Battle resolution, simultaneous drop animation metadata, and winning-line final-piece metadata.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Animation Layering
 
 - Fixed falling and gravity-shifting Connect Four Plus discs painting behind neighboring white board cells.

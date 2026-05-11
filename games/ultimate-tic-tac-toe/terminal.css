@@ -280,6 +280,33 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   padding: 12px;
 }
 
+.terminal-win-banner {
+  margin: 12px 12px 0;
+  border: 2px solid #33ff00;
+  background: #ffb000;
+  color: #000000;
+  padding: 8px 10px;
+  font-size: clamp(1.25rem, 7vw, 3.2rem);
+  font-weight: 700;
+  line-height: 0.96;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.terminal-end-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 12px 0;
+}
+
+.terminal-win-banner[hidden],
+.terminal-end-actions[hidden] {
+  display: none;
+}
+
 .ultimate-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -332,6 +359,7 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 .mini-board.is-win-line {
   outline: 2px solid #ffb000;
   outline-offset: -4px;
+  background: rgba(255, 176, 0, 0.16);
 }
 
 .mini-label {
@@ -369,6 +397,11 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 .owner-mark.d {
   color: #1f521f;
   font-size: 3.2rem;
+}
+
+.owner-mark.is-winning-owner {
+  opacity: 0.96;
+  animation: ultimate-winning-owner-pulse 1250ms ease-in-out infinite;
 }
 
 .cell {
@@ -492,6 +525,17 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 
 .empty-log {
   color: #1f521f;
+}
+
+@keyframes ultimate-winning-owner-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.13;
+  }
 }
 
 @media (max-width: 1160px) {

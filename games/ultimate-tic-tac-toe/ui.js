@@ -192,6 +192,11 @@
         '</aside>' +
         '<section class="terminal-panel board-panel" aria-labelledby="board-heading">' +
           '<div class="terminal-panel-title" id="board-heading">+-- BOARD MATRIX --+</div>' +
+          '<div class="terminal-win-banner" data-role="win-banner" aria-live="polite" hidden></div>' +
+          '<div class="terminal-end-actions" data-role="end-actions" hidden>' +
+            '<button type="button" data-role="new-game-inline">[ NEW GAME ]</button>' +
+            '<button type="button" data-role="change-game">[ CHANGE GAME ]</button>' +
+          '</div>' +
           '<div class="board-wrap"><div class="ultimate-board" data-role="ultimate-board" role="group" aria-label="Nine mini tic tac toe boards"></div></div>' +
         '</section>' +
         '<aside class="terminal-panel telemetry-panel" aria-labelledby="telemetry-heading">' +
@@ -237,8 +242,12 @@
         "move-log",
         "new-game",
         "undo-move",
+        "new-game-inline",
+        "change-game",
         "x-player-name",
         "o-player-name",
+        "win-banner",
+        "end-actions",
         "ultimate-board",
         "large-board-map"
       ].forEach(function (role) {
@@ -268,6 +277,8 @@
       });
 
       els.newGame.addEventListener("click", resetMatch);
+      els.newGameInline.addEventListener("click", resetMatch);
+      els.changeGame.addEventListener("click", changeGame);
 
       els.undoMove.addEventListener("click", function () {
         if (state.winner) {
@@ -371,6 +382,19 @@
       return "[OK] " + getPlayerLabel(last.player) + " sends " + getPlayerLabel(state.currentPlayer) + " to " + target + ".";
     }
 
+    function renderWinBanner() {
+      if (state.winner === "X" || state.winner === "O") {
+        els.winBanner.hidden = false;
+        els.endActions.hidden = false;
+        els.winBanner.textContent = getPlayerLabel(state.winner) + " Won!";
+        return;
+      }
+
+      els.winBanner.hidden = true;
+      els.endActions.hidden = true;
+      els.winBanner.textContent = "";
+    }
+
     function renderBoard() {
       var legalBoards = game.getLegalBoards(state);
       var free = state.nextBoard === null && !state.winner;
@@ -430,6 +454,9 @@
         if (owner) {
           var ownerMark = document.createElement("span");
           ownerMark.className = "owner-mark " + owner.toLowerCase();
+          if (state.winningLine && state.winningLine.indexOf(boardIndex) !== -1) {
+            ownerMark.classList.add("is-winning-owner");
+          }
           ownerMark.textContent = owner;
           mini.appendChild(ownerMark);
         }
@@ -518,6 +545,7 @@
     function render() {
       syncPlayerInputs();
       renderStatus();
+      renderWinBanner();
       renderBoard();
       renderLargeBoardMap();
       renderLog();
@@ -639,6 +667,12 @@
       render();
       if (services.scrollToTop) {
         services.scrollToTop();
+      }
+    }
+
+    function changeGame() {
+      if (services.goToLibrary) {
+        services.goToLibrary();
       }
     }
 

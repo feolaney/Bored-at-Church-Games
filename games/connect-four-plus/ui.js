@@ -179,6 +179,7 @@
     var lastRecordStatus = null;
     var animatedDropKey = null;
     var animatedGravityShiftId = null;
+    var animatedColumnBattleKey = null;
     var tokenRevealAnimations = [];
 
     function mount() {
@@ -200,7 +201,13 @@
       wrapper.innerHTML =
         '<section class="cfp-mode-select" data-role="mode-select">' +
           '<div class="cfp-mode-hero">' +
-            '<div class="cfp-shape-row" aria-hidden="true"><span class="cfp-circle"></span><span class="cfp-square"></span><span class="cfp-triangle"></span></div>' +
+            '<div class="cfp-falling-discs" aria-hidden="true">' +
+              '<span class="cfp-fall-disc red"></span>' +
+              '<span class="cfp-fall-disc yellow"></span>' +
+              '<span class="cfp-fall-disc red"></span>' +
+              '<span class="cfp-fall-disc yellow"></span>' +
+              '<span class="cfp-fall-disc red"></span>' +
+            '</div>' +
             '<p class="cfp-label">variant router</p>' +
             '<h2>Choose Mode</h2>' +
             '<p>Select which Connect Four Plus ruleset to launch. Fog modes are the only modes that use private handoff screens.</p>' +
@@ -243,7 +250,19 @@
           '<section class="cfp-board-panel" data-role="board-panel">' +
             '<section class="cfp-hand-summary" data-role="hand-summary" aria-label="Player powerups"></section>' +
             '<div class="cfp-drop-row" data-role="drop-row" aria-label="Drop by column"></div>' +
+            '<div class="cfp-win-banner" data-role="win-banner" aria-live="polite" hidden></div>' +
+            '<div class="cfp-end-actions" data-role="end-actions" hidden>' +
+              '<button type="button" class="cfp-button cfp-button-yellow" data-role="new-game-inline">New Game</button>' +
+              '<button type="button" class="cfp-button cfp-button-outline" data-role="change-mode-inline">Change Game</button>' +
+            '</div>' +
             '<div class="cfp-board" data-role="board" role="grid" aria-label="Connect Four Plus board"></div>' +
+            '<div class="cfp-column-battle" data-role="column-battle" aria-live="polite" hidden>' +
+              '<div class="cfp-column-battle-card">' +
+                '<p>Column Battle</p>' +
+                '<span class="cfp-battle-coin" aria-hidden="true"></span>' +
+                '<strong data-role="column-battle-result"></strong>' +
+              '</div>' +
+            '</div>' +
           '</section>' +
           '<aside class="cfp-panel cfp-power-panel">' +
             '<div class="cfp-panel-title"><span class="cfp-square"></span><span data-role="tools-title">mode tools</span></div>' +
@@ -294,7 +313,13 @@
         "board-panel",
         "hand-summary",
         "drop-row",
+        "win-banner",
+        "end-actions",
+        "new-game-inline",
+        "change-mode-inline",
         "board",
+        "column-battle",
+        "column-battle-result",
         "tools-title",
         "hand-owner",
         "hand",
@@ -338,17 +363,9 @@
       });
 
       els.newGame.addEventListener("click", resetMatch);
-      els.changeMode.addEventListener("click", function () {
-        state = null;
-        selectedModeId = null;
-        matchRecorded = false;
-        lastRecordStatus = null;
-        animatedDropKey = null;
-        animatedGravityShiftId = null;
-        tokenRevealAnimations = [];
-        render();
-        scrollGameToTop();
-      });
+      els.newGameInline.addEventListener("click", resetMatch);
+      els.changeMode.addEventListener("click", changeMode);
+      els.changeModeInline.addEventListener("click", changeMode);
       els.cancelPower.addEventListener("click", function () {
         if (!state) {
           return;
@@ -433,6 +450,28 @@
         render();
       });
 
+      els.handSummary.addEventListener("click", function (event) {
+        var button;
+
+        if (!state || !(event.target instanceof Element)) {
+          return;
+        }
+
+        button = event.target.closest("[data-summary-tool]");
+        if (!button || button.dataset.player !== state.currentPlayer) {
+          return;
+        }
+
+        if (button.classList.contains("is-selected")) {
+          state = engine.cancelPendingPower(state);
+        } else if (button.dataset.special) {
+          state = engine.selectSpecial(state, button.dataset.special);
+        } else if (button.dataset.handIndex !== undefined) {
+          state = engine.selectPower(state, Number(button.dataset.handIndex));
+        }
+        render();
+      });
+
       [
         els.redName,
         els.redNameLive
@@ -452,6 +491,19 @@
       });
     }
 
+    function changeMode() {
+      state = null;
+      selectedModeId = null;
+      matchRecorded = false;
+      lastRecordStatus = null;
+      animatedDropKey = null;
+      animatedGravityShiftId = null;
+      animatedColumnBattleKey = null;
+      tokenRevealAnimations = [];
+      render();
+      scrollGameToTop();
+    }
+
     function startMode(modeId) {
       selectedModeId = modeId;
       state = engine.createInitialState({ modeId: selectedModeId });
@@ -459,6 +511,7 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       animatedGravityShiftId = null;
+      animatedColumnBattleKey = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -479,6 +532,7 @@
       lastRecordStatus = null;
       animatedDropKey = null;
       animatedGravityShiftId = null;
+      animatedColumnBattleKey = null;
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
@@ -677,7 +731,9 @@
       renderStatus();
       renderHandSummary();
       renderDropButtons();
+      renderWinBanner();
       renderBoard();
+      renderColumnBattle();
       renderHand();
       renderRulesMini();
       renderLog();
@@ -805,7 +861,7 @@
         var row = document.createElement("div");
         var name = document.createElement("span");
         var tools = document.createElement("span");
-        var toolNames = getPlayerToolNames(mark);
+        var toolEntries = getPlayerToolEntries(mark);
 
         row.className = "cfp-hand-summary-row " + (mark === "R" ? "red" : "yellow");
         row.classList.toggle("is-active", mark === state.currentPlayer && !state.winner && !state.draw);
@@ -814,11 +870,9 @@
         name.textContent = getPlayerLabel(mark);
 
         tools.className = "cfp-hand-summary-tools";
-        toolNames.forEach(function (toolName) {
-          var chip = document.createElement("span");
+        toolEntries.forEach(function (toolEntry) {
+          var chip = createHandSummaryChip(mark, toolEntry);
 
-          chip.className = "cfp-hand-chip";
-          chip.textContent = toolName;
           tools.appendChild(chip);
         });
 
@@ -829,27 +883,111 @@
       els.handSummary.appendChild(fragment);
     }
 
-    function getPlayerToolNames(mark) {
+    function getPlayerToolEntries(mark) {
       var player = state.players[mark];
-      var tools = player.hand.slice();
+      var tools = player.hand.map(function (name, index) {
+        return {
+          type: "hand",
+          name: name,
+          handIndex: index
+        };
+      });
 
       if (player.bombs > 0) {
-        tools.push("Bomb x" + player.bombs);
+        tools.push({
+          type: "special",
+          name: "Bomb x" + player.bombs,
+          special: "bomb"
+        });
       }
 
       if (player.wilds > 0) {
-        tools.push("Wild x" + player.wilds);
+        tools.push({
+          type: "special",
+          name: "Wild x" + player.wilds,
+          special: "wild"
+        });
       }
 
       if (player.locks > 0) {
-        tools.push("Lock x" + player.locks);
+        tools.push({
+          type: "special",
+          name: "Lock x" + player.locks,
+          special: "lock"
+        });
       }
 
       if (!tools.length) {
-        tools.push("None");
+        tools.push({
+          type: "empty",
+          name: "None"
+        });
       }
 
       return tools;
+    }
+
+    function createHandSummaryChip(mark, toolEntry) {
+      var chip = document.createElement(toolEntry.type === "empty" ? "span" : "button");
+      var selected = isSummaryToolSelected(toolEntry);
+      var disabled = toolEntry.type === "empty" || mark !== state.currentPlayer || !canUseSummaryTool(toolEntry, selected);
+
+      chip.className = "cfp-hand-chip";
+      chip.classList.toggle("is-selected", selected);
+      chip.textContent = toolEntry.name;
+
+      if (toolEntry.type !== "empty") {
+        chip.type = "button";
+        chip.dataset.summaryTool = "true";
+        chip.dataset.player = mark;
+        if (toolEntry.type === "hand") {
+          chip.dataset.handIndex = String(toolEntry.handIndex);
+        }
+        if (toolEntry.type === "special") {
+          chip.dataset.special = toolEntry.special;
+        }
+        chip.disabled = disabled;
+        chip.setAttribute("aria-pressed", selected ? "true" : "false");
+        chip.title = selected ? "Cancel " + toolEntry.name : "Activate " + toolEntry.name;
+      }
+
+      return chip;
+    }
+
+    function isSummaryToolSelected(toolEntry) {
+      if (toolEntry.type === "hand") {
+        return Boolean(state.pendingPower && state.pendingPower.handIndex === toolEntry.handIndex);
+      }
+
+      if (toolEntry.special === "lock") {
+        return Boolean(state.pendingPower && state.pendingPower.name === "Column Lock");
+      }
+
+      if (toolEntry.special === "bomb" || toolEntry.special === "wild") {
+        return state.pendingDropKind === toolEntry.special;
+      }
+
+      return false;
+    }
+
+    function canUseSummaryTool(toolEntry, selected) {
+      if (selected) {
+        return true;
+      }
+
+      if (!state.turnOpen || state.pendingHandoff || state.winner || state.draw) {
+        return false;
+      }
+
+      if (toolEntry.type === "hand") {
+        return !state.powerUsedThisTurn && !state.pendingPower && state.pendingDropKind === "normal";
+      }
+
+      if (toolEntry.type === "special") {
+        return !state.pendingPower && state.pendingDropKind === "normal" && !(toolEntry.special === "lock" && state.powerUsedThisTurn);
+      }
+
+      return false;
     }
 
     function renderDropButtons() {
@@ -869,17 +1007,62 @@
         var landingPosition = engine.getLandingPosition(state, lane);
         var columnPower = state.pendingPower && state.pendingPower.name !== "Shield";
         var label = engine.getDropLaneLabel(state, lane);
+        var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
 
         button.type = "button";
         button.className = "cfp-drop-button";
+        button.classList.toggle("is-locked", lockedForActivePlayer);
         button.dataset.column = String(lane);
-        button.textContent = label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1);
-        button.setAttribute("aria-label", "Play " + label);
+        button.textContent = lockedForActivePlayer ? "LOCK" : (label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1));
+        button.setAttribute("aria-label", lockedForActivePlayer ? label + " locked" : "Play " + label);
         button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower) || (!columnPower && legalColumns.indexOf(lane) === -1);
         fragment.appendChild(button);
       }
 
       els.dropRow.appendChild(fragment);
+    }
+
+    function renderWinBanner() {
+      if (state.winner) {
+        els.winBanner.hidden = false;
+        els.endActions.hidden = false;
+        els.winBanner.textContent = getPlayerLabel(state.winner) + " Won!";
+        return;
+      }
+
+      els.winBanner.hidden = true;
+      els.endActions.hidden = true;
+      els.winBanner.textContent = "";
+    }
+
+    function renderColumnBattle() {
+      var battle = getColumnBattle();
+      var battleKey = battle ? state.dropCount + ":" + battle.column + ":" + battle.firstPlayer : null;
+
+      if (!battle || battleKey === animatedColumnBattleKey) {
+        els.columnBattle.hidden = true;
+        return;
+      }
+
+      animatedColumnBattleKey = battleKey;
+      els.columnBattle.hidden = false;
+      els.columnBattle.classList.toggle("is-red-winner", battle.firstPlayer === "R");
+      els.columnBattle.classList.toggle("is-yellow-winner", battle.firstPlayer === "Y");
+      els.columnBattleResult.textContent = getPlayerLabel(battle.firstPlayer) + " drops first";
+
+      global.setTimeout(function () {
+        if (mounted && animatedColumnBattleKey === battleKey) {
+          els.columnBattle.hidden = true;
+        }
+      }, 2600);
+    }
+
+    function getColumnBattle() {
+      if (!state.lastMove || state.lastMove.kind !== "drop" || !state.lastMove.columnBattle) {
+        return null;
+      }
+
+      return state.lastMove.columnBattle;
     }
 
     function isWinningCell(row, col) {
@@ -891,8 +1074,8 @@
     function renderBoard() {
       var fragment = document.createDocumentFragment();
       var legalColumns = engine.getLegalDropColumns(state);
-      var lastDrop = state.lastMove && state.lastMove.kind === "drop" ? state.lastMove : null;
-      var lastDropKey = lastDrop ? state.dropCount + ":" + lastDrop.player + ":" + lastDrop.row + ":" + lastDrop.col : null;
+      var dropBatch = getDropBatch();
+      var dropBatchKey = getDropBatchKey(dropBatch);
       var row;
       var col;
 
@@ -909,6 +1092,7 @@
           var playableColumn = state.turnOpen && !state.pendingHandoff && !state.pendingPower && !state.winner && !state.draw && !removed && legalColumns.indexOf(lane) !== -1;
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
+          var winning = isWinningCell(row, col);
 
           cell.type = "button";
           cell.className = "cfp-cell";
@@ -927,7 +1111,7 @@
           }
 
           if (displayPiece) {
-            var disc = createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col);
+            var disc = createDisc(displayPiece, actualPiece, dropBatch, dropBatchKey, row, col, winning);
 
             if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
               cell.classList.add("is-animation-lane");
@@ -938,8 +1122,9 @@
           }
 
           appendTokenReveals(cell, row, col);
+          appendBombClears(cell, row, col, dropBatch, dropBatchKey);
 
-          if (isWinningCell(row, col)) {
+          if (winning) {
             cell.classList.add("is-winning");
           }
 
@@ -948,8 +1133,8 @@
       }
 
       els.board.appendChild(fragment);
-      if (lastDropKey && lastDropKey !== animatedDropKey) {
-        animatedDropKey = lastDropKey;
+      if (dropBatchKey && dropBatchKey !== animatedDropKey) {
+        animatedDropKey = dropBatchKey;
       }
       if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
         animatedGravityShiftId = state.gravityShift.id;
@@ -986,9 +1171,46 @@
       return label + " occupied by " + engine.PLAYER_LABELS[piece.player];
     }
 
-    function createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col) {
+    function getDropBatch() {
+      if (!state.lastMove || state.lastMove.kind !== "drop") {
+        return [];
+      }
+
+      if (Array.isArray(state.lastMove.simultaneousDrops)) {
+        return state.lastMove.simultaneousDrops.filter(Boolean);
+      }
+
+      return [state.lastMove];
+    }
+
+    function getDropBatchKey(dropBatch) {
+      if (!dropBatch.length) {
+        return null;
+      }
+
+      return state.dropCount + ":" + dropBatch.map(function (drop) {
+        return [drop.player, drop.pieceId, drop.row, drop.col, drop.sequenceIndex || 0].join("-");
+      }).join("|");
+    }
+
+    function getDropForCell(dropBatch, actualPiece, row, col) {
+      if (!actualPiece) {
+        return null;
+      }
+
+      return dropBatch.find(function (drop) {
+        if (drop.pieceId !== undefined && drop.pieceId !== null) {
+          return drop.pieceId === actualPiece.id;
+        }
+
+        return drop.row === row && drop.col === col && drop.player === actualPiece.player;
+      }) || null;
+    }
+
+    function createDisc(displayPiece, actualPiece, dropBatch, dropBatchKey, row, col, winning) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
+      var dropMove = getDropForCell(dropBatch, actualPiece, row, col);
 
       if (displayPiece.mystery) {
         disc.className = "cfp-disc mystery";
@@ -1002,11 +1224,14 @@
       if (actualPiece && actualPiece.bomb) {
         disc.classList.add("bomb");
       }
+      if (winning && state.winner) {
+        disc.classList.add("is-winning-piece");
+      }
 
       if (gravityMove) {
         applyGravityShiftAnimation(disc, gravityMove);
-      } else if (lastDrop && lastDropKey !== animatedDropKey && lastDrop.row === row && lastDrop.col === col) {
-        var dropAnimation = getDropAnimation(lastDrop, row, col);
+      } else if (dropMove && dropBatchKey !== animatedDropKey) {
+        var dropAnimation = getDropAnimation(dropMove, row, col);
 
         disc.classList.add("is-dropping");
         disc.style.setProperty("--cfp-drop-x", dropAnimation.x);
@@ -1020,9 +1245,31 @@
         disc.style.setProperty("--cfp-settle-x", dropAnimation.settleX);
         disc.style.setProperty("--cfp-settle-y", dropAnimation.settleY);
         disc.style.setProperty("--cfp-drop-duration", dropAnimation.duration);
+        disc.style.setProperty("--cfp-drop-delay", dropMove.sequenceIndex ? "120ms" : "0ms");
       }
 
       return disc;
+    }
+
+    function appendBombClears(cell, row, col, dropBatch, dropBatchKey) {
+      var lastDrop = dropBatch[dropBatch.length - 1];
+      var blast;
+
+      if (!lastDrop || lastDrop.dropKind !== "bomb" || dropBatchKey === animatedDropKey || !Array.isArray(lastDrop.bombCleared)) {
+        return;
+      }
+
+      if (!lastDrop.bombCleared.some(function (cleared) {
+        return cleared.row === row && cleared.col === col;
+      })) {
+        return;
+      }
+
+      blast = document.createElement("span");
+      blast.className = "cfp-bomb-blast";
+      blast.textContent = "BOOM";
+      cell.classList.add("is-animation-lane");
+      cell.appendChild(blast);
     }
 
     function getGravityShiftMove(piece, row, col) {

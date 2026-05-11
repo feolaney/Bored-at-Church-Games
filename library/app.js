@@ -516,6 +516,9 @@
         refreshLibraryStats: function () {
           renderMenu();
         },
+        goToLibrary: function () {
+          showView("menu");
+        },
         scrollToTop: scrollToTop
       };
       activeController = activeGame.createController({
