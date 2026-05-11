@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-11 - Connect Four Pop Animation
+
+- Added Pop-specific move metadata for the removed bottom piece and the surviving pieces that collapse afterward.
+- Added a Bauhaus-style popping circle animation over the removed piece before it disappears.
+- Delayed the remaining pieces in the popped column so they fall after the pop animation, using the same bounce-style fall path as bomb cascade pieces.
+
+What to test:
+- In a mode with `Pop`, use it on your own bottom piece in a column with pieces above it.
+- Confirm the bottom piece shows a popping circle before disappearing, then the pieces above it fall into place afterward.
+- Confirm Pop still consumes the hand power and still requires a normal drop afterward.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering Pop removed-piece metadata and post-pop settle metadata.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Bomb Powerup
 
 - Added `Bomb Piece` to the Connect Four Plus power deck so Power Duel, Token Hunt, Hidden Objectives, and other deck-driven power modes can award bombs.

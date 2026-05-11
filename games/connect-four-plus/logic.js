@@ -459,6 +459,14 @@
         return Object.assign({}, settledMove);
       });
     }
+    if (move.popRemoved) {
+      clone.popRemoved = Object.assign({}, move.popRemoved);
+    }
+    if (Array.isArray(move.popSettledMoves)) {
+      clone.popSettledMoves = move.popSettledMoves.map(function (settledMove) {
+        return Object.assign({}, settledMove);
+      });
+    }
     if (move.tokenFound) {
       clone.tokenFound = Object.assign({}, move.tokenFound);
     }
@@ -1021,17 +1029,17 @@
     return next;
   }
 
-  function consumePendingPower(next) {
+  function consumePendingPower(next, moveData) {
     if (next.pendingPower.handIndex !== null && next.pendingPower.handIndex !== undefined) {
       next.players[next.currentPlayer].hand.splice(next.pendingPower.handIndex, 1);
     }
 
     next.powerUsedThisTurn = true;
     next.publicLog = next.publicLog.concat([PLAYER_LABELS[next.currentPlayer] + " used " + next.pendingPower.name + "."]);
-    next.lastMove = {
+    next.lastMove = Object.assign({
       kind: "power",
       power: next.pendingPower.name
-    };
+    }, moveData || {});
     next.pendingPower = null;
   }
 
@@ -1056,6 +1064,9 @@
     var temp;
     var nonFullColumns;
     var player;
+    var popRow;
+    var poppedCell;
+    var beforeCollapse;
 
     if (!power) {
       next.lastError = "Select a column tool first.";
@@ -1117,9 +1128,23 @@
         return next;
       }
 
-      next.board[next.rows - 1][col] = null;
+      popRow = next.rows - 1;
+      poppedCell = next.board[popRow][col];
+      next.board[popRow][col] = null;
+      beforeCollapse = capturePiecePositions(next);
       collapseColumn(next.board, col);
-      consumePendingPower(next);
+      consumePendingPower(next, {
+        popRemoved: {
+          row: popRow,
+          col: col,
+          id: poppedCell.id === undefined ? null : poppedCell.id,
+          player: poppedCell.player,
+          wild: Boolean(poppedCell.wild),
+          bomb: Boolean(poppedCell.bomb),
+          shielded: Boolean(poppedCell.shielded)
+        },
+        popSettledMoves: createSettledMoves(beforeCollapse, next)
+      });
       next.lastError = null;
       return next;
     }

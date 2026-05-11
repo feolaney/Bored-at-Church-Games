@@ -4,6 +4,7 @@
   var GAME_ID = "connect-four-plus";
   var engine = global.ConnectFourPlus;
   var BOMB_BLAST_SETTLE_DELAY_MS = 900;
+  var POP_SETTLE_DELAY_MS = 620;
 
   function createEmptyStats() {
     return {
@@ -179,6 +180,7 @@
     var matchRecorded = false;
     var lastRecordStatus = null;
     var animatedDropKey = null;
+    var animatedPopKey = null;
     var animatedGravityShiftId = null;
     var animatedColumnBattleKey = null;
     var columnBattleDropReadyKey = null;
@@ -501,6 +503,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      animatedPopKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -515,6 +518,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      animatedPopKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -537,6 +541,7 @@
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
+      animatedPopKey = null;
       animatedGravityShiftId = null;
       animatedColumnBattleKey = null;
       columnBattleDropReadyKey = null;
@@ -1110,6 +1115,8 @@
       var battleDropReady = !battleKey || columnBattleDropReadyKey === battleKey;
       var animateDropBatch = Boolean(dropBatchKey && dropBatchKey !== animatedDropKey && battleDropReady);
       var hidePendingBattleDrops = Boolean(dropBatchKey && battleKey && !battleDropReady && dropBatchKey !== animatedDropKey);
+      var popKey = getPopAnimationKey();
+      var animatePop = Boolean(popKey && popKey !== animatedPopKey);
       var cellRects = getCurrentCellRects();
       var row;
       var col;
@@ -1146,7 +1153,7 @@
           }
 
           if (displayPiece) {
-            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects);
+            var disc = createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop);
 
             if (disc) {
               if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
@@ -1160,6 +1167,7 @@
 
           appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
           appendBombPreBlastPiece(cell, row, col, dropBatch, animateDropBatch);
+          appendPopAnimation(cell, row, col, popKey, animatePop);
           appendTokenReveals(cell, row, col);
           appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
 
@@ -1174,6 +1182,9 @@
       els.board.appendChild(fragment);
       if (animateDropBatch) {
         animatedDropKey = dropBatchKey;
+      }
+      if (animatePop) {
+        animatedPopKey = popKey;
       }
       if (state.gravityShift && state.gravityShift.id !== animatedGravityShiftId) {
         animatedGravityShiftId = state.gravityShift.id;
@@ -1242,6 +1253,16 @@
       }).join("|");
     }
 
+    function getPopAnimationKey() {
+      var popped = state.lastMove && state.lastMove.popRemoved;
+
+      if (!state.lastMove || state.lastMove.kind !== "power" || state.lastMove.power !== "Pop" || !popped) {
+        return null;
+      }
+
+      return ["pop", state.publicLog.length, popped.id, popped.row, popped.col].join(":");
+    }
+
     function getDropForCell(dropBatch, actualPiece, row, col) {
       if (!actualPiece) {
         return null;
@@ -1256,10 +1277,11 @@
       }) || null;
     }
 
-    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects) {
+    function createDisc(displayPiece, actualPiece, dropBatch, animateDropBatch, hidePendingBattleDrops, row, col, winning, cellRects, animatePop) {
       var disc = document.createElement("span");
       var gravityMove = getGravityShiftMove(actualPiece, row, col);
       var bombSettleMove = getBombSettleMove(actualPiece, row, col, dropBatch);
+      var popSettleMove = getPopSettleMove(actualPiece, row, col);
       var dropMove = getDropForCell(dropBatch, actualPiece, row, col);
 
       if (dropMove && hidePendingBattleDrops) {
@@ -1286,6 +1308,8 @@
         applyGravityShiftAnimation(disc, gravityMove);
       } else if (bombSettleMove && animateDropBatch) {
         applyBombSettleAnimation(disc, bombSettleMove, cellRects);
+      } else if (popSettleMove && animatePop) {
+        applyPopSettleAnimation(disc, popSettleMove, cellRects);
       } else if (dropMove && animateDropBatch) {
         var dropAnimation = getDropAnimation(dropMove, row, col);
 
@@ -1342,6 +1366,34 @@
       disc.style.setProperty("--cfp-settle-y", animation.settleY);
       disc.style.setProperty("--cfp-drop-duration", animation.duration);
       disc.style.setProperty("--cfp-drop-delay", getBombSettleDelay());
+    }
+
+    function getPopSettleMove(piece, row, col) {
+      if (!piece || !state.lastMove || state.lastMove.kind !== "power" || state.lastMove.power !== "Pop" || !Array.isArray(state.lastMove.popSettledMoves)) {
+        return null;
+      }
+
+      return state.lastMove.popSettledMoves.find(function (move) {
+        return move.pieceId === piece.id && move.toRow === row && move.toCol === col;
+      }) || null;
+    }
+
+    function applyPopSettleAnimation(disc, move, cellRects) {
+      var animation = getBombSettleAnimation(move, cellRects);
+
+      disc.classList.add("is-dropping");
+      disc.style.setProperty("--cfp-drop-x", animation.x);
+      disc.style.setProperty("--cfp-drop-y", animation.y);
+      disc.style.setProperty("--cfp-drop-mid-x", animation.midX);
+      disc.style.setProperty("--cfp-drop-mid-y", animation.midY);
+      disc.style.setProperty("--cfp-bounce-x", animation.bounceX);
+      disc.style.setProperty("--cfp-bounce-y", animation.bounceY);
+      disc.style.setProperty("--cfp-rebound-x", animation.reboundX);
+      disc.style.setProperty("--cfp-rebound-y", animation.reboundY);
+      disc.style.setProperty("--cfp-settle-x", animation.settleX);
+      disc.style.setProperty("--cfp-settle-y", animation.settleY);
+      disc.style.setProperty("--cfp-drop-duration", animation.duration);
+      disc.style.setProperty("--cfp-drop-delay", POP_SETTLE_DELAY_MS + "ms");
     }
 
     function appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
@@ -1402,6 +1454,36 @@
       piece.style.setProperty("--cfp-blast-delay", "calc(" + dropAnimation.duration + " - 90ms)");
       cell.classList.add("is-animation-lane");
       cell.appendChild(piece);
+    }
+
+    function appendPopAnimation(cell, row, col, popKey, animatePop) {
+      var popped = state.lastMove && state.lastMove.popRemoved;
+      var piece;
+      var ring;
+
+      if (!popKey || !animatePop || !popped || popped.row !== row || popped.col !== col) {
+        return;
+      }
+
+      piece = createOverlayDisc(popped, "cfp-pop-piece");
+      ring = document.createElement("span");
+      ring.className = "cfp-pop-ring " + (popped.player === "R" ? "red" : "yellow");
+      cell.classList.add("is-animation-lane");
+      cell.append(piece, ring);
+    }
+
+    function createOverlayDisc(piece, className) {
+      var disc = document.createElement("span");
+
+      disc.className = "cfp-disc " + className + " " + (piece.wild ? "wild" : (piece.player === "R" ? "red" : "yellow"));
+      if (piece.bomb) {
+        disc.classList.add("bomb");
+      }
+      if (piece.shielded) {
+        disc.classList.add("shielded");
+      }
+
+      return disc;
     }
 
     function appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {
