@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-10 - Connect Four Animation Layering
+
+- Fixed falling and gravity-shifting Connect Four Plus discs painting behind neighboring white board cells.
+- Marked animated disc cells as a higher board layer while the animation runs.
+- Explicitly allowed animated discs to overflow their cell so side-gravity and gravity-rotation movement stays visible.
+
+What to test:
+- In Gravity Connect, rotate gravity and confirm shifting pieces appear above the white grid cells while they move.
+- Drop pieces after gravity rotates left/right/up and confirm the incoming piece stays visible above the board cells.
+- Confirm normal Connect Four Plus drops still render above the grid.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node smoke test across all 14 Connect Four Plus modes.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Drop Animation Polish
 
 - Reworked the single-piece Connect Four Plus drop animation from a fixed fast `280ms` movement to a distance-based duration.

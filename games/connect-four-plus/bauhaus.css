@@ -637,6 +637,15 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   border-radius: 0;
   background: #ffffff;
   padding: 5px;
+  overflow: visible;
+}
+
+.cfp-cell.is-animation-lane {
+  z-index: 8;
+}
+
+.cfp-cell.is-animation-lane .cfp-disc {
+  z-index: 2;
 }
 
 .cfp-cell.is-playable-column {

@@ -927,7 +927,12 @@
           }
 
           if (displayPiece) {
-            cell.appendChild(createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col));
+            var disc = createDisc(displayPiece, actualPiece, lastDrop, lastDropKey, row, col);
+
+            if (disc.classList.contains("is-dropping") || disc.classList.contains("is-gravity-shifting")) {
+              cell.classList.add("is-animation-lane");
+            }
+            cell.appendChild(disc);
           } else if (token && token.visible) {
             cell.appendChild(createToken());
           }
