@@ -915,6 +915,15 @@ button.cfp-hand-chip:disabled {
   background: #ffffff;
 }
 
+.cfp-preblast-piece {
+  position: absolute;
+  z-index: 7;
+  width: 86%;
+  height: 86%;
+  pointer-events: none;
+  animation: cfp-preblast-piece-clear 260ms ease-in var(--cfp-blast-delay, 620ms) both;
+}
+
 .cfp-token {
   display: grid;
   place-items: center;
@@ -1244,6 +1253,19 @@ button.cfp-hand-chip:disabled {
   100% {
     opacity: 0;
     transform: translate(0, 0) scale(1.28, 0.58);
+  }
+}
+
+@keyframes cfp-preblast-piece-clear {
+  0%,
+  72% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.12) rotate(10deg);
   }
 }
 

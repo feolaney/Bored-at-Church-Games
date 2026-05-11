@@ -1156,6 +1156,7 @@
           }
 
           appendBombDrop(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
+          appendBombPreBlastPiece(cell, row, col, dropBatch, animateDropBatch);
           appendTokenReveals(cell, row, col);
           appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch);
 
@@ -1317,6 +1318,37 @@
       bomb.style.setProperty("--cfp-drop-duration", dropAnimation.duration);
       cell.classList.add("is-animation-lane");
       cell.appendChild(bomb);
+    }
+
+    function appendBombPreBlastPiece(cell, row, col, dropBatch, animateDropBatch) {
+      var bombDrop = dropBatch.find(function (drop) {
+        return drop.dropKind === "bomb";
+      });
+      var cleared;
+      var piece;
+      var dropAnimation;
+
+      if (!bombDrop || !animateDropBatch || !Array.isArray(bombDrop.bombCleared)) {
+        return;
+      }
+
+      cleared = bombDrop.bombCleared.find(function (entry) {
+        return entry.row === row && entry.col === col;
+      });
+
+      if (!cleared || (cleared.bomb && row === bombDrop.row && col === bombDrop.col)) {
+        return;
+      }
+
+      dropAnimation = getDropAnimation(bombDrop, bombDrop.row, bombDrop.col);
+      piece = document.createElement("span");
+      piece.className = "cfp-disc cfp-preblast-piece " + (cleared.wild ? "wild" : (cleared.player === "R" ? "red" : "yellow"));
+      if (cleared.bomb) {
+        piece.classList.add("bomb");
+      }
+      piece.style.setProperty("--cfp-blast-delay", "calc(" + dropAnimation.duration + " - 90ms)");
+      cell.classList.add("is-animation-lane");
+      cell.appendChild(piece);
     }
 
     function appendBombClears(cell, row, col, dropBatch, dropBatchKey, animateDropBatch) {

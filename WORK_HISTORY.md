@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-10 - Connect Four Bomb Impact Timing
+
+- Kept blast-cleared Bomb Pieces discs visible as temporary overlay pieces while the bomb is still falling.
+- Timed those temporary pieces to collapse/fade only when the bomb reaches impact, so the board no longer reveals the post-blast empty cells early.
+
+What to test:
+- In Bomb Pieces, drop a bomb into a surrounded 3x3 area and confirm the surrounding pieces remain visible until the bomb touches down.
+- Confirm the geometric blast still plays over the affected cells after impact.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node targeted Connect Four Plus smoke test covering remaining mode initialization, removed-mode absence, 3x3 bomb blast metadata, and same-column Column Battle metadata.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Bomb and Battle Animation
 
 - Added a temporary falling bomb visual for Bomb Pieces so the bomb visibly drops and hits before the board resolves to the post-blast state.
