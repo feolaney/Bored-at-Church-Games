@@ -238,7 +238,8 @@
               '</div>' +
             '</div>' +
           '</aside>' +
-          '<section class="cfp-board-panel">' +
+          '<section class="cfp-board-panel" data-role="board-panel">' +
+            '<section class="cfp-hand-summary" data-role="hand-summary" aria-label="Player powerups"></section>' +
             '<div class="cfp-drop-row" data-role="drop-row" aria-label="Drop by column"></div>' +
             '<div class="cfp-board" data-role="board" role="grid" aria-label="Connect Four Plus board"></div>' +
           '</section>' +
@@ -288,6 +289,8 @@
         "new-game",
         "change-mode",
         "cancel-power",
+        "board-panel",
+        "hand-summary",
         "drop-row",
         "board",
         "tools-title",
@@ -625,7 +628,9 @@
       }
 
       renderPrivacyState();
+      renderBoardTheme();
       renderStatus();
+      renderHandSummary();
       renderDropButtons();
       renderBoard();
       renderHand();
@@ -732,6 +737,67 @@
       }
 
       return "Open";
+    }
+
+    function renderBoardTheme() {
+      els.boardPanel.classList.toggle("is-red-turn", state.currentPlayer === "R");
+      els.boardPanel.classList.toggle("is-yellow-turn", state.currentPlayer === "Y");
+    }
+
+    function renderHandSummary() {
+      var fragment = document.createDocumentFragment();
+
+      els.handSummary.replaceChildren();
+
+      engine.PLAYERS.forEach(function (mark) {
+        var row = document.createElement("div");
+        var name = document.createElement("span");
+        var tools = document.createElement("span");
+        var toolNames = getPlayerToolNames(mark);
+
+        row.className = "cfp-hand-summary-row " + (mark === "R" ? "red" : "yellow");
+        row.classList.toggle("is-active", mark === state.currentPlayer && !state.winner && !state.draw);
+
+        name.className = "cfp-hand-summary-player";
+        name.textContent = getPlayerLabel(mark);
+
+        tools.className = "cfp-hand-summary-tools";
+        toolNames.forEach(function (toolName) {
+          var chip = document.createElement("span");
+
+          chip.className = "cfp-hand-chip";
+          chip.textContent = toolName;
+          tools.appendChild(chip);
+        });
+
+        row.append(name, tools);
+        fragment.appendChild(row);
+      });
+
+      els.handSummary.appendChild(fragment);
+    }
+
+    function getPlayerToolNames(mark) {
+      var player = state.players[mark];
+      var tools = player.hand.slice();
+
+      if (player.bombs > 0) {
+        tools.push("Bomb x" + player.bombs);
+      }
+
+      if (player.wilds > 0) {
+        tools.push("Wild x" + player.wilds);
+      }
+
+      if (player.locks > 0) {
+        tools.push("Lock x" + player.locks);
+      }
+
+      if (!tools.length) {
+        tools.push("None");
+      }
+
+      return tools;
     }
 
     function renderDropButtons() {

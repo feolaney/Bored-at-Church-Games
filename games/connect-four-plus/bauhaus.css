@@ -491,6 +491,76 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   overflow-x: auto;
 }
 
+.cfp-board-panel.is-red-turn {
+  background: #d02020;
+}
+
+.cfp-board-panel.is-yellow-turn {
+  background: #f0c020;
+}
+
+.cfp-hand-summary {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  border: 3px solid #121212;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 8px;
+}
+
+.cfp-hand-summary-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.cfp-hand-summary-player {
+  min-width: 0;
+  border: 3px solid #121212;
+  background: #ffffff;
+  padding: 5px 7px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.cfp-hand-summary-row.red .cfp-hand-summary-player {
+  color: #d02020;
+}
+
+.cfp-hand-summary-row.yellow .cfp-hand-summary-player {
+  color: #8a6100;
+}
+
+.cfp-hand-summary-row.is-active .cfp-hand-summary-player {
+  background: #121212;
+  color: #ffffff;
+}
+
+.cfp-hand-summary-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cfp-hand-chip {
+  border: 2px solid #121212;
+  background: #f0f0f0;
+  box-shadow: 2px 2px 0 0 #121212;
+  padding: 4px 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
 .cfp-drop-row {
   display: grid;
   grid-template-columns: repeat(var(--cfp-cols, 7), minmax(44px, 1fr));

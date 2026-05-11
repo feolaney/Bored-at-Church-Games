@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-10 - Connect Four Board Powerup Strip
+
+- Added a compact powerup/tool summary strip above the Connect Four Plus board.
+- The strip shows both players by name with their current powerups and remaining special tools.
+- Kept the existing detailed active-player tools panel in place.
+- Updated the board panel background so it switches between red and yellow based on the active player.
+
+What to test:
+- Start Power Duel and confirm the board panel shows both players' powerups above the column buttons and board.
+- Use or cancel a powerup and confirm the compact strip updates with the changed hand.
+- Make a move and confirm the board panel background changes to the next player's color.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node smoke test across all 14 Connect Four Plus modes.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-10 - Connect Four Tool Priority And Cancel Flow
 
 - Reordered the Connect Four Plus play layout so the board and mode tools/powerups appear before the turn system.
