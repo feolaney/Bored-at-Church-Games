@@ -150,6 +150,34 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   text-overflow: ellipsis;
 }
 
+.terminal-board-title {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.board-turn-callout {
+  justify-self: end;
+  min-width: 0;
+  width: min(100%, 18rem);
+  border: 2px solid #000000;
+  background: #000000;
+  color: #33ff00;
+  padding: 5px 8px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 8px rgba(51, 255, 0, 0.75);
+  white-space: nowrap;
+  animation: ultimate-turn-callout-pulse 1300ms ease-in-out infinite;
+}
+
+.board-turn-callout.ended {
+  color: #ffb000;
+  animation: none;
+}
+
 .terminal-panel-body {
   padding: 12px;
 }
@@ -300,6 +328,9 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 8px 12px 0;
+  padding: 8px;
+  border: 1px solid #33ff00;
+  background: rgba(51, 255, 0, 0.06);
 }
 
 .terminal-win-banner[hidden],
@@ -538,6 +569,19 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
   }
 }
 
+@keyframes ultimate-turn-callout-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(51, 255, 0, 0);
+    transform: translateY(0);
+  }
+
+  50% {
+    box-shadow: 0 0 18px rgba(51, 255, 0, 0.62);
+    transform: translateY(-1px);
+  }
+}
+
 @media (max-width: 1160px) {
   .terminal-game-grid {
     grid-template-columns: minmax(260px, 320px) minmax(430px, 1fr);
@@ -572,6 +616,14 @@ body.game-mode[data-active-game="ultimate-tic-tac-toe"] .session-chip {
 
   .prompt-field {
     grid-template-columns: 1fr;
+  }
+
+  .terminal-board-title {
+    grid-template-columns: 1fr;
+  }
+
+  .board-turn-callout {
+    justify-self: stretch;
   }
 
   .ultimate-board {

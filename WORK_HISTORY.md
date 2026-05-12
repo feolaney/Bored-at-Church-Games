@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-12 - Ultimate Tic Tac Toe Turn Callout
+
+- Added a high-visibility pulsing current-turn indicator in the Board Matrix header.
+- Used `Player X` and `Player O` as default turn labels, switching to custom player names when they are entered.
+- Updated the end-of-game board section so the result banner is followed by front-and-center `[ NEW GAME ]` and `[ LIBRARY ]` actions.
+- Made the same end actions appear for large-board draws.
+
+What to test:
+- Launch Ultimate Tic Tac Toe and confirm the Board Matrix title row shows whose turn it is.
+- Enter custom player names before the first move and confirm the Board Matrix turn indicator uses those names.
+- Finish a match and confirm New Game and Library buttons appear directly under the result banner.
+
+Verification:
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/ultimate-tic-tac-toe/logic.js`
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-12 - Connect Four Vanilla Mode
 
 - Removed the standalone Bomb Pieces variant from the Connect Four Plus mode selector.

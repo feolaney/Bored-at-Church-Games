@@ -191,11 +191,14 @@
           '</div>' +
         '</aside>' +
         '<section class="terminal-panel board-panel" aria-labelledby="board-heading">' +
-          '<div class="terminal-panel-title" id="board-heading">+-- BOARD MATRIX --+</div>' +
+          '<div class="terminal-panel-title terminal-board-title" id="board-heading">' +
+            '<span>+-- BOARD MATRIX --+</span>' +
+            '<span class="board-turn-callout" data-role="board-turn-callout" aria-live="polite">TURN: Player X</span>' +
+          '</div>' +
           '<div class="terminal-win-banner" data-role="win-banner" aria-live="polite" hidden></div>' +
           '<div class="terminal-end-actions" data-role="end-actions" hidden>' +
             '<button type="button" data-role="new-game-inline">[ NEW GAME ]</button>' +
-            '<button type="button" data-role="change-game">[ CHANGE GAME ]</button>' +
+            '<button type="button" data-role="change-game">[ LIBRARY ]</button>' +
           '</div>' +
           '<div class="board-wrap"><div class="ultimate-board" data-role="ultimate-board" role="group" aria-label="Nine mini tic tac toe boards"></div></div>' +
         '</section>' +
@@ -248,6 +251,7 @@
         "o-player-name",
         "win-banner",
         "end-actions",
+        "board-turn-callout",
         "ultimate-board",
         "large-board-map"
       ].forEach(function (role) {
@@ -315,6 +319,11 @@
     function getPlayerLabel(mark) {
       var name = getPlayerName(mark);
       return name ? name + " (" + mark + ")" : mark;
+    }
+
+    function getTurnCalloutLabel(mark) {
+      var name = getPlayerName(mark);
+      return name ? name + " (" + mark + ")" : "Player " + mark;
     }
 
     function hasAnyCustomName() {
@@ -387,6 +396,13 @@
         els.winBanner.hidden = false;
         els.endActions.hidden = false;
         els.winBanner.textContent = getPlayerLabel(state.winner) + " Won!";
+        return;
+      }
+
+      if (state.winner === game.DRAW) {
+        els.winBanner.hidden = false;
+        els.endActions.hidden = false;
+        els.winBanner.textContent = "Large Board Draw!";
         return;
       }
 
@@ -525,6 +541,8 @@
       els.statusLine.classList.toggle("error", Boolean(state.lastError));
       els.statusLine.textContent = getStatusText();
       els.turnReadout.textContent = state.winner ? "ENDED" : getPlayerLabel(state.currentPlayer);
+      els.boardTurnCallout.classList.toggle("ended", Boolean(state.winner));
+      els.boardTurnCallout.textContent = state.winner ? "SESSION: COMPLETE" : "TURN: " + getTurnCalloutLabel(state.currentPlayer);
       els.routeReadout.textContent = getRouteText();
       els.xPlayerReadout.textContent = getPlayerLabel("X");
       els.oPlayerReadout.textContent = getPlayerLabel("O");
