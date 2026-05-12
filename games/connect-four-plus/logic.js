@@ -129,7 +129,7 @@
       rules: [
         "Each player has one neutral wild piece.",
         "A wild counts as either color when checking lines.",
-        "If a wild creates wins for both players, the active player wins.",
+        "If both players have a connect line after a move resolves, the game is a draw.",
         "Wild pieces cannot be removed by Pop."
       ]
     },
@@ -1308,14 +1308,45 @@
     return null;
   }
 
+  function mergeWinningLines(firstLine, secondLine) {
+    var seen = {};
+    var merged = [];
+
+    [firstLine, secondLine].forEach(function (line) {
+      if (!line) {
+        return;
+      }
+
+      line.forEach(function (position) {
+        var key = position[0] + ":" + position[1];
+
+        if (!seen[key]) {
+          seen[key] = true;
+          merged.push(position);
+        }
+      });
+    });
+
+    return merged;
+  }
+
   function findWinner(state, activePlayer) {
     var activeLine = findWinningLineForPlayer(state.board, activePlayer, state.connectLength);
     var other = otherPlayer(activePlayer);
     var otherLine = findWinningLineForPlayer(state.board, other, state.connectLength);
 
+    if (activeLine && otherLine) {
+      return {
+        winner: null,
+        draw: true,
+        line: mergeWinningLines(activeLine, otherLine)
+      };
+    }
+
     if (activeLine) {
       return {
         winner: activePlayer,
+        draw: false,
         line: activeLine
       };
     }
@@ -1323,12 +1354,14 @@
     if (otherLine) {
       return {
         winner: other,
+        draw: false,
         line: otherLine
       };
     }
 
     return {
       winner: null,
+      draw: false,
       line: null
     };
   }
@@ -1579,6 +1612,14 @@
     next.publicLog = next.publicLog.concat([PLAYER_LABELS[activePlayer] + " dropped " + getDropKindLabel(next.lastMove.dropKind) + " in " + getDropLaneLabel(next, col) + "."]);
 
     result = findWinner(next, activePlayer);
+    if (result.draw) {
+      completeTerminalTurn(next, activePlayer);
+      next.draw = true;
+      next.winningLine = result.line;
+      next.lastError = null;
+      return next;
+    }
+
     if (result.winner) {
       completeTerminalTurn(next, activePlayer);
       next.winner = result.winner;
@@ -1811,6 +1852,22 @@
     next.publicLog = next.publicLog.concat(["Both planned moves resolved."]);
 
     result = findWinner(next, second);
+    if (result.draw) {
+      next.draw = true;
+      next.winningLine = result.line;
+      next.turnCount += 1;
+      next.players.R.personalTurns += 1;
+      next.players.Y.personalTurns += 1;
+      next.turnOpen = false;
+      next.pendingHandoff = false;
+      next.pendingPower = null;
+      next.pendingDropKind = "normal";
+      next.powerUsedThisTurn = false;
+      next.simultaneous.plans = {};
+      next.lastError = null;
+      return next;
+    }
+
     if (result.winner) {
       next.winner = result.winner;
       next.winningLine = result.line;

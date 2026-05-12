@@ -1100,10 +1100,10 @@
     }
 
     function renderWinBanner() {
-      if (state.winner) {
+      if (state.winner || state.draw) {
         els.winBanner.hidden = false;
         els.endActions.hidden = false;
-        els.winBanner.textContent = getPlayerLabel(state.winner) + " Won!";
+        els.winBanner.textContent = state.draw ? "Draw!" : getPlayerLabel(state.winner) + " Won!";
         return;
       }
 

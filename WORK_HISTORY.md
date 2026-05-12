@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-11 - Connect Four Double-Win Draws
+
+- Changed Connect Four Plus win resolution so if both players have a connect line after a move resolves, the match becomes a draw instead of awarding the active player.
+- Preserved both winning lines for board highlighting when a double-connect draw happens.
+- Updated the board-end banner so draws show `Draw!` with the New Game and Change Game buttons.
+- Updated the Wild Pieces rule text to match the new double-connect draw behavior.
+
+What to test:
+- Use Pop or another collapse/removal effect to create a state where both players have connect four after the next move.
+- Confirm the result banner says `Draw!` and no player receives the win.
+- Confirm ordinary single-player connect four still produces a normal win.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering a double-connect board state resolving as a draw with both lines tracked, plus an ordinary single-player win.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four 2x Lock Powerup
 
 - Added a new `2x Lock` hand powerup that can appear in random Connect Four Plus power draws.
