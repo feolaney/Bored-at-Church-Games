@@ -8,19 +8,30 @@
     R: "Red",
     Y: "Yellow"
   };
+  var LOCKED_FOR_BOTH = "BOTH";
   var MAX_HAND_SIZE = 3;
   var DRAW_EVERY_PERSONAL_TURNS = 4;
+  var TWO_X_LOCK_TURN_SPAN = 4;
   var POWER_DECK = [
     "Pop",
     "Pop",
+    "Pop",
+    "Lock",
     "Lock",
     "Lock",
     "Swap Top",
     "Swap Top",
+    "Swap Top",
     "Shield",
     "Shield",
+    "Shield",
+    "Double Drop",
+    "Double Drop",
+    "Double Drop",
     "Bomb Piece",
-    "Double Drop"
+    "Bomb Piece",
+    "2x Lock",
+    "2x Lock"
   ];
   var FOG_POWER_DECK = [
     "Scan Column",
@@ -45,6 +56,8 @@
         "Each player starts with one powerup and may hold up to three.",
         "Use at most one powerup before dropping.",
         "Bomb Piece powerups drop a bomb that clears unshielded pieces in a 3x3 blast area.",
+        "2x Lock powerups lock one column for both players across two full rounds.",
+        "Bomb Piece and 2x Lock appear slightly less often than standard powers.",
         "After every fourth personal turn, draw one powerup unless your hand is full."
       ]
     },
@@ -66,6 +79,7 @@
         "Each player starts with three one-use drafted powers.",
         "Use at most one drafted power before placing a piece.",
         "Bomb Piece drops a bomb that clears unshielded pieces in a 3x3 blast area.",
+        "No 2x Lock powers are included in the fixed draft kits.",
         "Used powers are logged publicly.",
         "No random powerups are drawn during this mode."
       ]
@@ -181,7 +195,7 @@
         "Fifteen tokens are randomly placed on the board with no more than three per row.",
         "Only one token starts visible, and it appears at least three rows above the bottom.",
         "Hidden tokens are invisible until a piece lands on them.",
-        "Landing on any token grants one powerup, including a chance at Bomb Piece."
+        "Landing on any token grants one powerup, including a chance at Bomb Piece or 2x Lock."
       ]
     },
     {
@@ -196,7 +210,7 @@
       objectives: true,
       rules: [
         "Each player receives one objective.",
-        "Completing the objective grants a powerup.",
+        "Completing the objective grants a powerup, including a small chance at Bomb Piece or 2x Lock.",
         "The main connect-four win condition remains active.",
         "Objectives reward alternate strategic routes."
       ]
@@ -285,6 +299,7 @@
       },
       lockedColumn: null,
       lockedFor: null,
+      lockedTurnsRemaining: 0,
       lastLockedColumn: null,
       removedColumns: [],
       gravityDirection: "down",
@@ -510,6 +525,7 @@
       dropPlan: Object.assign({}, state.dropPlan),
       lockedColumn: state.lockedColumn,
       lockedFor: state.lockedFor,
+      lockedTurnsRemaining: state.lockedTurnsRemaining,
       lastLockedColumn: state.lastLockedColumn,
       removedColumns: state.removedColumns.slice(),
       gravityDirection: state.gravityDirection,
@@ -533,6 +549,10 @@
 
   function otherPlayer(player) {
     return player === "R" ? "Y" : "R";
+  }
+
+  function isLockActiveForPlayer(state, player) {
+    return state.lockedColumn !== null && (state.lockedFor === player || state.lockedFor === LOCKED_FOR_BOTH);
   }
 
   function getCurrentMode(state) {
@@ -682,7 +702,7 @@
   function getLegalDropColumns(state) {
     var columns = getNonFullColumns(state);
 
-    if (state.lockedFor === state.currentPlayer && state.lockedColumn !== null) {
+    if (isLockActiveForPlayer(state, state.currentPlayer)) {
       columns = columns.filter(function (col) {
         return col !== state.lockedColumn;
       });
@@ -1094,7 +1114,7 @@
       return next;
     }
 
-    if (power === "Column Lock" || power === "Lock") {
+    if (power === "Column Lock" || power === "Lock" || power === "2x Lock") {
       nonFullColumns = getNonFullColumns(next);
 
       if (isColumnFull(next.board, col)) {
@@ -1113,13 +1133,17 @@
       }
 
       next.lockedColumn = col;
-      next.lockedFor = otherPlayer(next.currentPlayer);
+      next.lockedFor = power === "2x Lock" ? LOCKED_FOR_BOTH : otherPlayer(next.currentPlayer);
+      next.lockedTurnsRemaining = power === "2x Lock" ? TWO_X_LOCK_TURN_SPAN : 1;
       next.lastLockedColumn = col;
       if (power === "Column Lock") {
         player = next.players[next.currentPlayer];
         player.locks -= 1;
       }
       consumePendingPower(next);
+      if (power === "2x Lock") {
+        next.publicLog = next.publicLog.concat([getDropLaneLabel(next, col) + " locked for both players for two full rounds."]);
+      }
       next.lastError = null;
       return next;
     }
@@ -1421,6 +1445,21 @@
     }
   }
 
+  function advanceLockAfterTurn(next, activePlayer) {
+    if (!isLockActiveForPlayer(next, activePlayer)) {
+      return;
+    }
+
+    if (next.lockedTurnsRemaining > 1) {
+      next.lockedTurnsRemaining -= 1;
+      return;
+    }
+
+    next.lockedFor = null;
+    next.lockedColumn = null;
+    next.lockedTurnsRemaining = 0;
+  }
+
   function finishTurn(next, activePlayer) {
     var mode = getCurrentMode(next);
     var playerState = next.players[activePlayer];
@@ -1444,10 +1483,7 @@
       next.publicLog = next.publicLog.concat(["Both players received a late Double Drop."]);
     }
 
-    if (next.lockedFor === activePlayer) {
-      next.lockedFor = null;
-      next.lockedColumn = null;
-    }
+    advanceLockAfterTurn(next, activePlayer);
 
     if (mode.shrinking && next.turnCount === 10) {
       removeScheduledColumn(next, "left");
@@ -1482,10 +1518,7 @@
     next.players[activePlayer].personalTurns += 1;
     next.turnCount += 1;
 
-    if (next.lockedFor === activePlayer) {
-      next.lockedFor = null;
-      next.lockedColumn = null;
-    }
+    advanceLockAfterTurn(next, activePlayer);
 
     next.turnOpen = false;
     next.pendingHandoff = false;
@@ -1976,6 +2009,7 @@
     COLS: DEFAULT_COLS,
     PLAYERS: PLAYERS,
     PLAYER_LABELS: PLAYER_LABELS,
+    LOCKED_FOR_BOTH: LOCKED_FOR_BOTH,
     POWER_DECK: POWER_DECK,
     FOG_POWER_DECK: FOG_POWER_DECK,
     MAX_HAND_SIZE: MAX_HAND_SIZE,

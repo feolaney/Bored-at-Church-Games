@@ -833,6 +833,10 @@
 
     function getConstraintText(mode) {
       if (state.lockedColumn !== null) {
+        if (state.lockedFor === engine.LOCKED_FOR_BOTH) {
+          return engine.getDropLaneLabel(state, state.lockedColumn) + " locked for both" + getLockRemainingText();
+        }
+
         if (state.lockedFor !== state.currentPlayer) {
           return engine.getDropLaneLabel(state, state.lockedColumn) + " prelocked for " + engine.PLAYER_LABELS[state.lockedFor];
         }
@@ -867,6 +871,18 @@
       }
 
       return "Open";
+    }
+
+    function getLockRemainingText() {
+      if (state.lockedTurnsRemaining > 1) {
+        return " (" + state.lockedTurnsRemaining + " player turns left)";
+      }
+
+      if (state.lockedTurnsRemaining === 1) {
+        return " (1 player turn left)";
+      }
+
+      return "";
     }
 
     function renderBoardTheme() {
@@ -1037,7 +1053,7 @@
         var columnPower = state.pendingPower && state.pendingPower.name !== "Shield" && state.pendingPower.name !== "Bomb Piece";
         var pendingDropTool = state.pendingDropKind !== "normal";
         var label = engine.getDropLaneLabel(state, lane);
-        var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
+        var lockedForActivePlayer = isLockedLaneForCurrent(lane);
         var prelockedForOpponent = isPrelockedLane(lane);
 
         button.type = "button";
@@ -1047,7 +1063,9 @@
         button.dataset.column = String(lane);
         button.textContent = lockedForActivePlayer ? "LOCK" : (label.indexOf("Row") === 0 ? "R" + (lane + 1) : String(lane + 1));
         button.setAttribute("aria-label", getDropButtonLabel(label, lockedForActivePlayer, prelockedForOpponent));
-        if (prelockedForOpponent) {
+        if (lockedForActivePlayer && state.lockedFor === engine.LOCKED_FOR_BOTH) {
+          button.title = label + " is locked for both players" + getLockRemainingText() + ".";
+        } else if (prelockedForOpponent) {
           button.title = label + " will lock for " + engine.PLAYER_LABELS[state.lockedFor] + " after this turn.";
         }
         button.disabled = !state.turnOpen || Boolean(state.winner) || state.draw || !landingPosition || (state.pendingPower && !columnPower && !pendingDropTool) || (!columnPower && legalColumns.indexOf(lane) === -1);
@@ -1058,11 +1076,19 @@
     }
 
     function isPrelockedLane(lane) {
-      return state.lockedColumn === lane && state.lockedFor !== null && state.lockedFor !== state.currentPlayer;
+      return state.lockedColumn === lane && state.lockedFor !== null && state.lockedFor !== state.currentPlayer && state.lockedFor !== engine.LOCKED_FOR_BOTH;
+    }
+
+    function isLockedLaneForCurrent(lane) {
+      return state.lockedColumn === lane && (state.lockedFor === state.currentPlayer || state.lockedFor === engine.LOCKED_FOR_BOTH);
     }
 
     function getDropButtonLabel(label, lockedForActivePlayer, prelockedForOpponent) {
       if (lockedForActivePlayer) {
+        if (state.lockedFor === engine.LOCKED_FOR_BOTH) {
+          return label + " locked for both players";
+        }
+
         return label + " locked";
       }
 
@@ -1166,7 +1192,7 @@
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
           var winning = isWinningCell(row, col);
-          var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
+          var lockedForActivePlayer = isLockedLaneForCurrent(lane);
 
           cell.type = "button";
           cell.className = "cfp-cell";
@@ -1914,6 +1940,9 @@
       if (power === "Lock") {
         return "Lock a non-full column for the opponent's next turn.";
       }
+      if (power === "2x Lock") {
+        return "Lock a non-full column for both players across two full rounds.";
+      }
       if (power === "Swap Top") {
         return "Swap the top two pieces in one column.";
       }
@@ -2133,11 +2162,11 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, bomb powerups, gravity, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, bomb and 2x lock powerups, gravity, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
       "Current variants use public board play with no private handoff screen.",
-      "Power Duel, Draft Duel, Token Hunt, and Hidden Objectives can award Bomb Piece as a one-use powerup.",
+      "Power Duel, Token Hunt, and Hidden Objectives can award Bomb Piece or 2x Lock as rarer one-use powerups.",
       "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, and Simultaneous Planning modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],
