@@ -173,22 +173,6 @@
       ]
     },
     {
-      id: "bomb-pieces",
-      title: "Bomb Pieces",
-      bestFor: "Tactical disruption",
-      summary: "Each player has two bomb pieces that clear unshielded pieces in a 3x3 blast area.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      bombs: true,
-      rules: [
-        "Each player gets two bombs for the game.",
-        "Instead of a normal piece, drop a bomb piece.",
-        "A bomb destroys every unshielded occupied square in its 3x3 blast area, including the bomb square.",
-        "Pieces fall before win checks resolve."
-      ]
-    },
-    {
       id: "wild-pieces",
       title: "Wild Pieces",
       bestFor: "Fork creation",
@@ -268,6 +252,21 @@
         "Yellow chooses a column for the round.",
         "Both moves resolve together.",
         "If both choose the same column, a Column Battle coin flip decides who drops first."
+      ]
+    },
+    {
+      id: "vanilla-mode",
+      title: "Vanilla Mode",
+      bestFor: "Classic Connect Four",
+      summary: "Plain Connect Four with no powerups, tools, gravity shifts, or extra rules.",
+      rows: 6,
+      cols: 7,
+      connect: 4,
+      rules: [
+        "Use a standard 7-column by 6-row board.",
+        "Players alternate dropping one piece into any non-full column.",
+        "First player to connect four pieces in a row wins.",
+        "No powerups, bombs, locks, tokens, wilds, or gravity changes are used."
       ]
     }
   ];

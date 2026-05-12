@@ -2477,13 +2477,13 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, preset power arsenals, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, preset power arsenals, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, simultaneous planning, and classic play.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
       "Current variants use public board play with no private handoff screen.",
       "Power Duel and Token Hunt can award Bomb Piece or 2x Lock as rarer one-use powerups.",
       "Preset Power Duel lets each player launch with a named custom arsenal.",
-      "Gravity, Bomb, Wild, Shrinking Board, Connect 5, Token Hunt, and Simultaneous Planning modes are selectable from the in-game mode picker.",
+      "Gravity, Wild, Shrinking Board, Connect 5, Token Hunt, Simultaneous Planning, and Vanilla modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],
     getLibraryMetrics: getPowerSummary,

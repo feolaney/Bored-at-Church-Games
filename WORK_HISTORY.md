@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-12 - Connect Four Vanilla Mode
+
+- Removed the standalone Bomb Pieces variant from the Connect Four Plus mode selector.
+- Kept Bomb Piece available as a powerup in Power Duel, Preset Power Duel, and Token Hunt.
+- Added Vanilla Mode at the end of the mode list for plain 7x6 Connect Four with no powerups or extra rules.
+- Updated Connect Four Plus library text so it no longer lists Bomb as a standalone mode and now lists Vanilla.
+
+What to test:
+- Open Connect Four Plus and confirm Bomb Pieces no longer appears in the mode picker.
+- Confirm Vanilla Mode appears as the final variant and launches as plain Connect Four.
+- Confirm Bomb Piece still appears as a selectable preset powerup and remains in the random power deck.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test confirming `bomb-pieces` is absent, `vanilla-mode` is last, and Bomb Piece remains available as a powerup.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-12 - Connect Four Preset Power Duel
 
 - Added a Preset Power Duel variant that opens an arsenal builder before the match starts.
