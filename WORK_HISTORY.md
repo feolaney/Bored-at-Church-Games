@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-11 - Connect Four Lock Stripe Timing
+
+- Removed board-cell striping from queued prelocks so the top drop button is the only prelock indicator.
+- Moved board-cell striping to the active locked state, when the current player cannot play that lane.
+- Kept the top button lock/prelock states separate: queued locks show the small prelock marker, active locks show `LOCK`.
+
+What to test:
+- Use Lock, choose a lane, and confirm the locking player sees only the top prelock marker with no board-cell striping.
+- Confirm the locking player can still play the prelocked lane on that same turn.
+- After the turn passes, confirm the opponent sees `LOCK` at the top and striped board cells in that lane.
+
+Verification:
+- `node --check games/connect-four-plus/ui.js`
+- `node --check games/connect-four-plus/logic.js`
+- Node targeted Connect Four Plus smoke test covering prelock legality, opponent lock enforcement, and lock clearing.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Prelock Indicator
 
 - Added a distinct prelock visual state for columns that have been locked for the opponent but are still playable by the locking player.

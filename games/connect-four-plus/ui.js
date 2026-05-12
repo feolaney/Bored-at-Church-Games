@@ -1166,7 +1166,7 @@
           var label = "Row " + (row + 1) + ", column " + (col + 1);
           var token = removed ? null : engine.getTokenAt(state, row, col);
           var winning = isWinningCell(row, col);
-          var prelockedForOpponent = isPrelockedLane(lane);
+          var lockedForActivePlayer = state.lockedFor === state.currentPlayer && state.lockedColumn === lane;
 
           cell.type = "button";
           cell.className = "cfp-cell";
@@ -1183,8 +1183,8 @@
           if (playableColumn) {
             cell.classList.add("is-playable-column");
           }
-          if (prelockedForOpponent) {
-            cell.classList.add("is-prelocked-column");
+          if (lockedForActivePlayer) {
+            cell.classList.add("is-locked-column");
           }
 
           if (displayPiece) {
