@@ -64,29 +64,6 @@
       ]
     },
     {
-      id: "draft-duel",
-      title: "Draft Duel",
-      bestFor: "Competitive mode",
-      summary: "Each player starts with a drafted three-power kit and uses each power once.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      powerups: true,
-      draft: true,
-      startHands: {
-        R: ["Bomb Piece", "Swap Top", "Pop"],
-        Y: ["Bomb Piece", "Shield", "Lock"]
-      },
-      rules: [
-        "Each player starts with three one-use drafted powers.",
-        "Use at most one drafted power before placing a piece.",
-        "Bomb Piece drops a bomb that clears unshielded pieces in a 3x3 blast area.",
-        "No 2x Lock powers are included in the fixed draft kits.",
-        "Used powers are logged publicly.",
-        "No random powerups are drawn during this mode."
-      ]
-    },
-    {
       id: "gravity-connect",
       title: "Gravity Connect",
       bestFor: "Visual arcade mode",

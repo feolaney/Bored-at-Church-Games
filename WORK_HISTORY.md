@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-12 - Connect Four Draft Duel Removal
+
+- Removed the Draft Duel variant from the Connect Four Plus mode selector.
+- Kept the normal Power Duel random powerup flow unchanged.
+
+What to test:
+- Open Connect Four Plus and confirm Draft Duel no longer appears in the mode picker.
+- Confirm Power Duel still launches and still grants normal random powerups.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test confirming `draft-duel`, `column-locks`, and `hidden-objectives` are absent while `power-duel` remains available.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Random Wild Turns
 
 - Converted the Wild Pieces variant from manual one-use wild pieces to random forced neutral wild turns.
