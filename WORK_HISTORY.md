@@ -1,5 +1,27 @@
 # Work History
 
+## 2026-05-12 - Connect Four Preset Power Duel
+
+- Added a Preset Power Duel variant that opens an arsenal builder before the match starts.
+- Let each player choose up to three unique powerup types, with up to five copies of each selected powerup.
+- Added named arsenal combinations for every one-, two-, and three-power combination, including `Bombtastic` for Bomb-only and `Locksmith` for Lock-only.
+- Started Preset Power Duel matches with the configured hands and reused the same preset hands for New Game until changing modes.
+- Added Bauhaus-styled preset loadout controls and displayed arsenal names in the builder, mode readout, and top hand summary.
+
+What to test:
+- Open Connect Four Plus, choose Preset Power Duel, and confirm the loadout builder replaces the mode list.
+- Confirm each player can select only three unique powerup types and no more than five of each type.
+- Start with different arsenals and confirm both players receive the selected powerup counts.
+- Confirm New Game keeps the same preset arsenals and Change Game returns to the mode picker.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering preset mode registration, all configured powerups, arsenal naming, oversized preset starting hands, and selecting a preset Bomb Piece.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-12 - Connect Four Draft Duel Removal
 
 - Removed the Draft Duel variant from the Connect Four Plus mode selector.

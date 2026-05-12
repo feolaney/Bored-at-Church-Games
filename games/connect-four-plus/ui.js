@@ -186,6 +186,9 @@
     var animatedColumnBattleKey = null;
     var columnBattleDropReadyKey = null;
     var tokenRevealAnimations = [];
+    var presetBuilderOpen = false;
+    var presetLoadouts = createEmptyPresetLoadouts();
+    var selectedPresetHands = null;
 
     function mount() {
       if (!mounted) {
@@ -218,6 +221,19 @@
             '<p>Select which public Connect Four Plus ruleset to launch.</p>' +
           '</div>' +
           '<div class="cfp-mode-list" data-role="mode-list"></div>' +
+          '<section class="cfp-preset-builder" data-role="preset-builder" hidden>' +
+            '<div class="cfp-preset-builder-head">' +
+              '<div>' +
+                '<p class="cfp-label">arsenal builder</p>' +
+                '<h3>Preset Power Duel</h3>' +
+              '</div>' +
+              '<div class="cfp-preset-actions">' +
+                '<button type="button" class="cfp-button cfp-button-yellow" data-preset-action="start">Start Preset</button>' +
+                '<button type="button" class="cfp-button cfp-button-outline" data-preset-action="back">Back</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="cfp-preset-loadouts" data-role="preset-loadouts"></div>' +
+          '</section>' +
         '</section>' +
         '<section class="cfp-handoff" data-role="handoff-panel" aria-live="polite" hidden>' +
           '<div class="cfp-shape-row" aria-hidden="true"><span class="cfp-circle"></span><span class="cfp-square"></span><span class="cfp-triangle"></span></div>' +
@@ -296,6 +312,8 @@
       [
         "mode-select",
         "mode-list",
+        "preset-builder",
+        "preset-loadouts",
         "handoff-panel",
         "handoff-title",
         "handoff-copy",
@@ -355,7 +373,28 @@
           return;
         }
 
+        if (engine.getMode(card.dataset.modeId).presetPowerups) {
+          openPresetBuilder();
+          return;
+        }
+
         startMode(card.dataset.modeId);
+      });
+
+      els.presetBuilder.addEventListener("click", function (event) {
+        var target = event.target;
+        var button;
+
+        if (!(target instanceof Element)) {
+          return;
+        }
+
+        button = target.closest("[data-preset-action]");
+        if (!button) {
+          return;
+        }
+
+        handlePresetAction(button);
       });
 
       els.startTurn.addEventListener("click", function () {
@@ -501,6 +540,8 @@
     function changeMode() {
       state = null;
       selectedModeId = null;
+      selectedPresetHands = null;
+      presetBuilderOpen = false;
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
@@ -515,8 +556,15 @@
     }
 
     function startMode(modeId) {
+      var presetHands = arguments.length > 1 && arguments[1] ? arguments[1].presetHands : null;
+
       selectedModeId = modeId;
-      state = engine.createInitialState({ modeId: selectedModeId });
+      selectedPresetHands = presetHands ? clonePresetHands(presetHands) : null;
+      presetBuilderOpen = false;
+      state = engine.createInitialState({
+        modeId: selectedModeId,
+        presetHands: selectedPresetHands
+      });
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
@@ -540,7 +588,10 @@
         return;
       }
 
-      state = engine.createInitialState({ modeId: selectedModeId });
+      state = engine.createInitialState({
+        modeId: selectedModeId,
+        presetHands: selectedPresetHands
+      });
       matchRecorded = false;
       lastRecordStatus = null;
       animatedDropKey = null;
@@ -552,6 +603,134 @@
       tokenRevealAnimations = [];
       render();
       scrollGameToTop();
+    }
+
+    function createEmptyPresetLoadouts() {
+      return {
+        R: {},
+        Y: {}
+      };
+    }
+
+    function clonePresetHands(hands) {
+      return {
+        R: hands && Array.isArray(hands.R) ? hands.R.slice() : [],
+        Y: hands && Array.isArray(hands.Y) ? hands.Y.slice() : []
+      };
+    }
+
+    function openPresetBuilder() {
+      selectedModeId = "preset-power-duel";
+      state = null;
+      selectedPresetHands = null;
+      presetBuilderOpen = true;
+      render();
+      scrollGameToTop();
+    }
+
+    function handlePresetAction(button) {
+      var action = button.dataset.presetAction;
+      var player = button.dataset.player;
+      var power = button.dataset.power;
+
+      if (action === "back") {
+        presetBuilderOpen = false;
+        render();
+        return;
+      }
+
+      if (action === "start") {
+        if (canStartPresetMatch()) {
+          startMode("preset-power-duel", {
+            presetHands: createPresetHands()
+          });
+        }
+        return;
+      }
+
+      if (!player || !power) {
+        return;
+      }
+
+      if (action === "add") {
+        addPresetPower(player, power);
+      } else if (action === "remove") {
+        removePresetPower(player, power);
+      }
+
+      render();
+    }
+
+    function getPresetCount(player, power) {
+      return Number(presetLoadouts[player] && presetLoadouts[player][power]) || 0;
+    }
+
+    function getPresetUniqueCount(player) {
+      return engine.PRESET_POWERUPS.reduce(function (total, power) {
+        return total + (getPresetCount(player, power) > 0 ? 1 : 0);
+      }, 0);
+    }
+
+    function addPresetPower(player, power) {
+      var count = getPresetCount(player, power);
+
+      if (count >= 5) {
+        return;
+      }
+
+      if (count === 0 && getPresetUniqueCount(player) >= 3) {
+        return;
+      }
+
+      presetLoadouts[player][power] = count + 1;
+    }
+
+    function removePresetPower(player, power) {
+      var count = getPresetCount(player, power);
+
+      if (count <= 0) {
+        return;
+      }
+
+      presetLoadouts[player][power] = count - 1;
+    }
+
+    function getPresetPowers(player) {
+      var powers = [];
+
+      engine.PRESET_POWERUPS.forEach(function (power) {
+        if (getPresetCount(player, power) > 0) {
+          powers.push(power);
+        }
+      });
+
+      return powers;
+    }
+
+    function createPresetHands() {
+      var hands = {
+        R: [],
+        Y: []
+      };
+
+      engine.PLAYERS.forEach(function (player) {
+        engine.PRESET_POWERUPS.forEach(function (power) {
+          var count = getPresetCount(player, power);
+          var index;
+
+          for (index = 0; index < count; index += 1) {
+            hands[player].push(power);
+          }
+        });
+      });
+
+      return hands;
+    }
+
+    function canStartPresetMatch() {
+      return engine.PLAYERS.every(function (player) {
+        return getPresetPowers(player).length > 0;
+      });
     }
 
     function scrollGameToTop() {
@@ -795,9 +974,92 @@
       });
 
       els.modeList.appendChild(fragment);
+      renderPresetBuilder();
       if (services.setSessionChip) {
         services.setSessionChip("MODE: SELECT");
       }
+    }
+
+    function renderPresetBuilder() {
+      var fragment = document.createDocumentFragment();
+      var startButton = els.presetBuilder.querySelector('[data-preset-action="start"]');
+
+      els.presetBuilder.hidden = !presetBuilderOpen;
+      els.modeList.hidden = presetBuilderOpen;
+      els.presetLoadouts.replaceChildren();
+
+      if (!presetBuilderOpen) {
+        return;
+      }
+
+      engine.PLAYERS.forEach(function (player) {
+        fragment.appendChild(createPresetPlayerPanel(player));
+      });
+
+      els.presetLoadouts.appendChild(fragment);
+
+      if (startButton) {
+        startButton.disabled = !canStartPresetMatch();
+      }
+    }
+
+    function createPresetPlayerPanel(player) {
+      var panel = document.createElement("section");
+      var heading = document.createElement("div");
+      var title = document.createElement("h4");
+      var subtitle = document.createElement("p");
+      var grid = document.createElement("div");
+      var powers = getPresetPowers(player);
+
+      panel.className = "cfp-preset-player " + (player === "R" ? "red" : "yellow");
+      heading.className = "cfp-preset-player-head";
+      grid.className = "cfp-preset-power-grid";
+
+      title.textContent = getPlayerLabel(player) + " | " + engine.getPresetArsenalName(powers);
+      subtitle.textContent = getPresetUniqueCount(player) + " / 3 types | " + createPresetHands()[player].length + " total";
+
+      engine.PRESET_POWERUPS.forEach(function (power) {
+        grid.appendChild(createPresetPowerControl(player, power));
+      });
+
+      heading.append(title, subtitle);
+      panel.append(heading, grid);
+      return panel;
+    }
+
+    function createPresetPowerControl(player, power) {
+      var row = document.createElement("div");
+      var name = document.createElement("span");
+      var controls = document.createElement("span");
+      var remove = document.createElement("button");
+      var count = document.createElement("strong");
+      var add = document.createElement("button");
+      var powerCount = getPresetCount(player, power);
+      var canAdd = powerCount < 5 && (powerCount > 0 || getPresetUniqueCount(player) < 3);
+
+      row.className = "cfp-preset-power";
+      controls.className = "cfp-preset-stepper";
+      name.textContent = power;
+
+      remove.type = "button";
+      remove.textContent = "-";
+      remove.dataset.presetAction = "remove";
+      remove.dataset.player = player;
+      remove.dataset.power = power;
+      remove.disabled = powerCount <= 0;
+
+      count.textContent = String(powerCount);
+
+      add.type = "button";
+      add.textContent = "+";
+      add.dataset.presetAction = "add";
+      add.dataset.player = player;
+      add.dataset.power = power;
+      add.disabled = !canAdd;
+
+      controls.append(remove, count, add);
+      row.append(name, controls);
+      return row;
     }
 
     function renderPrivacyState() {
@@ -823,7 +1085,7 @@
 
       els.statusLine.classList.toggle("is-error", Boolean(state.lastError));
       els.statusLine.textContent = getStatusText();
-      els.modeReadout.textContent = mode.title;
+      els.modeReadout.textContent = getModeReadout(mode);
       els.turnReadout.textContent = state.winner || state.draw ? "Ended" : getPlayerLabel(state.currentPlayer);
       els.lockReadout.textContent = getConstraintText(mode);
       els.turnCount.textContent = String(state.turnCount);
@@ -833,6 +1095,14 @@
       if (services.setSessionChip) {
         services.setSessionChip(state.winner || state.draw ? "SESSION: COMPLETE" : mode.title.toUpperCase());
       }
+    }
+
+    function getModeReadout(mode) {
+      if (mode.presetPowerups && state.presetArsenalNames) {
+        return state.presetArsenalNames.R + " / " + state.presetArsenalNames.Y;
+      }
+
+      return mode.title;
     }
 
     function getConstraintText(mode) {
@@ -924,7 +1194,7 @@
         row.classList.toggle("is-active", mark === state.currentPlayer && !state.winner && !state.draw);
 
         name.className = "cfp-hand-summary-player";
-        name.textContent = getPlayerLabel(mark);
+        name.textContent = getHandSummaryPlayerLabel(mark);
 
         tools.className = "cfp-hand-summary-tools";
         toolEntries.forEach(function (toolEntry) {
@@ -938,6 +1208,14 @@
       });
 
       els.handSummary.appendChild(fragment);
+    }
+
+    function getHandSummaryPlayerLabel(mark) {
+      if (state.presetArsenalNames && state.presetArsenalNames[mark]) {
+        return getPlayerLabel(mark) + " | " + state.presetArsenalNames[mark];
+      }
+
+      return getPlayerLabel(mark);
     }
 
     function getPlayerToolEntries(mark) {
@@ -2199,11 +2477,12 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, preset power arsenals, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, and simultaneous-planning variants.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
       "Current variants use public board play with no private handoff screen.",
       "Power Duel and Token Hunt can award Bomb Piece or 2x Lock as rarer one-use powerups.",
+      "Preset Power Duel lets each player launch with a named custom arsenal.",
       "Gravity, Bomb, Wild, Shrinking Board, Connect 5, Token Hunt, and Simultaneous Planning modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],

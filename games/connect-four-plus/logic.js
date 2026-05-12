@@ -41,6 +41,80 @@
     "Decoy",
     "Signal Jam"
   ];
+  var PRESET_POWERUPS = [
+    "Bomb Piece",
+    "Lock",
+    "2x Lock",
+    "Pop",
+    "Swap Top",
+    "Shield",
+    "Double Drop"
+  ];
+  var PRESET_ARSENAL_NAMES = {
+    "Bomb Piece": "Bombtastic",
+    "Lock": "Locksmith",
+    "2x Lock": "Deadbolt",
+    "Pop": "Pop Artist",
+    "Swap Top": "Switch Hitter",
+    "Shield": "Shield Wall",
+    "Double Drop": "Double Trouble",
+    "Bomb Piece|Lock": "Blast Lockdown",
+    "Bomb Piece|2x Lock": "Siege Charges",
+    "Bomb Piece|Pop": "Demolition Pop",
+    "Bomb Piece|Swap Top": "Blast Shuffle",
+    "Bomb Piece|Shield": "Armored Bomber",
+    "Bomb Piece|Double Drop": "Double Detonation",
+    "Lock|2x Lock": "Master Locksmith",
+    "Lock|Pop": "Pop and Lock",
+    "Lock|Swap Top": "Lock Switch",
+    "Lock|Shield": "Guarded Gate",
+    "Lock|Double Drop": "Double Deadlock",
+    "2x Lock|Pop": "Pressure Vault",
+    "2x Lock|Swap Top": "Vault Switch",
+    "2x Lock|Shield": "Fortified Lockdown",
+    "2x Lock|Double Drop": "Twin Deadbolt",
+    "Pop|Swap Top": "Shell Game",
+    "Pop|Shield": "Safe Pop",
+    "Pop|Double Drop": "Pop Pop",
+    "Swap Top|Shield": "Guarded Gambit",
+    "Swap Top|Double Drop": "Twin Switch",
+    "Shield|Double Drop": "Reinforced Double",
+    "Bomb Piece|Lock|2x Lock": "Siege Locksmith",
+    "Bomb Piece|Lock|Pop": "Breach and Lock",
+    "Bomb Piece|Lock|Swap Top": "Blast Gate Switch",
+    "Bomb Piece|Lock|Shield": "Armored Lockdown",
+    "Bomb Piece|Lock|Double Drop": "Double Breach",
+    "Bomb Piece|2x Lock|Pop": "Vault Breaker",
+    "Bomb Piece|2x Lock|Swap Top": "Siege Switch",
+    "Bomb Piece|2x Lock|Shield": "Fortified Siege",
+    "Bomb Piece|2x Lock|Double Drop": "Double Siege",
+    "Bomb Piece|Pop|Swap Top": "Demolition Shuffle",
+    "Bomb Piece|Pop|Shield": "Blast Shield Pop",
+    "Bomb Piece|Pop|Double Drop": "Firecracker Combo",
+    "Bomb Piece|Swap Top|Shield": "Armored Switch Charge",
+    "Bomb Piece|Swap Top|Double Drop": "Twin Blast Switch",
+    "Bomb Piece|Shield|Double Drop": "Reinforced Barrage",
+    "Lock|2x Lock|Pop": "Pop Lock Vault",
+    "Lock|2x Lock|Swap Top": "Master Key Switch",
+    "Lock|2x Lock|Shield": "Triple Deadbolt",
+    "Lock|2x Lock|Double Drop": "Double Lockdown",
+    "Lock|Pop|Swap Top": "Lock Pop Shuffle",
+    "Lock|Pop|Shield": "Guarded Pop Lock",
+    "Lock|Pop|Double Drop": "Double Pop Lock",
+    "Lock|Swap Top|Shield": "Shielded Switchlock",
+    "Lock|Swap Top|Double Drop": "Double Switchlock",
+    "Lock|Shield|Double Drop": "Reinforced Lockstep",
+    "2x Lock|Pop|Swap Top": "Vault Pop Switch",
+    "2x Lock|Pop|Shield": "Shielded Vault Pop",
+    "2x Lock|Pop|Double Drop": "Double Vault Pop",
+    "2x Lock|Swap Top|Shield": "Armored Vault Switch",
+    "2x Lock|Swap Top|Double Drop": "Double Vault Switch",
+    "2x Lock|Shield|Double Drop": "Reinforced Vault",
+    "Pop|Swap Top|Shield": "Protected Shell Game",
+    "Pop|Swap Top|Double Drop": "Double Shell Game",
+    "Pop|Shield|Double Drop": "Reinforced Pop Duo",
+    "Swap Top|Shield|Double Drop": "Guarded Double Switch"
+  };
   var MODES = [
     {
       id: "power-duel",
@@ -61,6 +135,24 @@
         "2x Lock powerups lock one column for both players across two full rounds.",
         "Bomb Piece and 2x Lock appear slightly less often than standard powers.",
         "After every fourth personal turn, draw one powerup unless your hand is full."
+      ]
+    },
+    {
+      id: "preset-power-duel",
+      title: "Preset Power Duel",
+      bestFor: "Custom loadouts",
+      summary: "Power Duel with preselected arsenals for each player before launch.",
+      rows: 6,
+      cols: 7,
+      connect: 4,
+      powerups: true,
+      presetPowerups: true,
+      rules: [
+        "Use a standard 7-column by 6-row board.",
+        "Choose up to three unique powerup types for each player before launch.",
+        "Each selected powerup type can start with up to five copies.",
+        "No random powerups are drawn during this mode.",
+        "The selected power combination receives an arsenal name."
       ]
     },
     {
@@ -209,7 +301,29 @@
     return turnCount + getRandomWildInterval(rng);
   }
 
-  function getStartingHand(mode, player, rng) {
+  function getPresetArsenalKey(powers) {
+    var unique = [];
+
+    PRESET_POWERUPS.forEach(function (power) {
+      if (powers.indexOf(power) !== -1) {
+        unique.push(power);
+      }
+    });
+
+    return unique.join("|");
+  }
+
+  function getPresetArsenalName(powers) {
+    var key = getPresetArsenalKey(Array.isArray(powers) ? powers : []);
+
+    return PRESET_ARSENAL_NAMES[key] || "Open Arsenal";
+  }
+
+  function getStartingHand(mode, player, rng, presetHands) {
+    if (mode.presetPowerups) {
+      return presetHands && Array.isArray(presetHands[player]) ? presetHands[player].slice() : [];
+    }
+
     if (mode.startHands === "random") {
       return [drawPowerup(rng)];
     }
@@ -227,6 +341,7 @@
 
   function createInitialState(options) {
     var rng = options && options.rng;
+    var presetHands = options && options.presetHands;
     var mode = getMode(options && options.modeId);
     var rows = mode.rows || DEFAULT_ROWS;
     var cols = mode.cols || DEFAULT_COLS;
@@ -273,9 +388,13 @@
         priority: "R"
       },
       publicLog: [mode.title + " mode selected."],
+      presetArsenalNames: mode.presetPowerups ? {
+        R: getPresetArsenalName(presetHands && presetHands.R),
+        Y: getPresetArsenalName(presetHands && presetHands.Y)
+      } : null,
       players: {
-        R: createPlayerState(mode, "R", rng),
-        Y: createPlayerState(mode, "Y", rng)
+        R: createPlayerState(mode, "R", rng, presetHands),
+        Y: createPlayerState(mode, "Y", rng, presetHands)
       }
     };
 
@@ -290,10 +409,10 @@
     return state;
   }
 
-  function createPlayerState(mode, player, rng) {
+  function createPlayerState(mode, player, rng, presetHands) {
     return {
       personalTurns: 0,
-      hand: getStartingHand(mode, player, rng),
+      hand: getStartingHand(mode, player, rng, presetHands),
       bombs: mode.bombs ? 2 : 0,
       wilds: mode.wilds ? 1 : 0,
       locks: mode.locks ? 2 : 0,
@@ -504,6 +623,7 @@
         priority: state.simultaneous.priority
       },
       publicLog: state.publicLog.slice(),
+      presetArsenalNames: state.presetArsenalNames ? Object.assign({}, state.presetArsenalNames) : null,
       players: {
         R: clonePlayer(state.players.R),
         Y: clonePlayer(state.players.Y)
@@ -2066,9 +2186,11 @@
     LOCKED_FOR_BOTH: LOCKED_FOR_BOTH,
     POWER_DECK: POWER_DECK,
     FOG_POWER_DECK: FOG_POWER_DECK,
+    PRESET_POWERUPS: PRESET_POWERUPS,
     MAX_HAND_SIZE: MAX_HAND_SIZE,
     MODES: MODES,
     getMode: getMode,
+    getPresetArsenalName: getPresetArsenalName,
     modeUsesHandoff: modeUsesHandoff,
     createInitialState: createInitialState,
     cloneState: cloneState,
