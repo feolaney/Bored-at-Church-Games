@@ -1,5 +1,27 @@
 # Work History
 
+## 2026-05-11 - Connect Four Random Wild Turns
+
+- Converted the Wild Pieces variant from manual one-use wild pieces to random forced neutral wild turns.
+- Scheduled neutral wild turns every 2-8 turns and forced whichever player receives that turn to place a wild piece.
+- Added forced-wild indicators in the status text, state readout, top tool summary, and mode tools panel.
+- Removed the standalone Column Locks and Hidden Objectives variants from the Connect Four Plus mode selector while keeping the Lock powerup available.
+- Updated Connect Four Plus library text so it no longer advertises removed variants.
+
+What to test:
+- Launch Wild Pieces and confirm neither player has a manual Wild tool.
+- Advance turns until the neutral wild indicator appears, then confirm the active player can only place a wild piece.
+- Confirm Column Locks and Hidden Objectives no longer appear in the Connect Four Plus mode picker.
+- Confirm the Lock powerup can still appear/use normally in powerup modes.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node targeted Connect Four Plus smoke test covering forced wild scheduling, forced wild placement, tool blocking on forced wild turns, no manual wild counts, and removed mode ids.
+- `git diff --check`
+
+Manual browser verification was not run in this pass.
+
 ## 2026-05-11 - Connect Four Double-Win Draws
 
 - Changed Connect Four Plus win resolution so if both players have a connect line after a move resolves, the match becomes a draw instead of awarding the active player.

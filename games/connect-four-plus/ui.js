@@ -712,6 +712,10 @@
         return "Fog board hidden for pass-and-play privacy.";
       }
 
+      if (engine.isForcedWildTurn(state)) {
+        return "Neutral wild turn. " + getPlayerLabel(state.currentPlayer) + " must place a wild piece.";
+      }
+
       if (state.simultaneous && mode.simultaneous && hasPlannedMove()) {
         return getPlayerLabel(state.currentPlayer) + " chooses the second planned column.";
       }
@@ -848,6 +852,14 @@
         return state.pendingDropKind.toUpperCase();
       }
 
+      if (mode.randomWilds) {
+        if (engine.isForcedWildTurn(state)) {
+          return "NEUTRAL WILD";
+        }
+
+        return "Wild in " + engine.getTurnsUntilForcedWild(state);
+      }
+
       if (mode.gravity) {
         return "Gravity " + state.gravityDirection + " | enter " + engine.getGravityEntrySide(state.gravityDirection);
       }
@@ -938,6 +950,13 @@
         };
       });
 
+      if (mark === state.currentPlayer && engine.isForcedWildTurn(state)) {
+        return [{
+          type: "forced",
+          name: "Neutral Wild"
+        }];
+      }
+
       if (player.bombs > 0) {
         tools.push({
           type: "special",
@@ -973,7 +992,7 @@
     }
 
     function createHandSummaryChip(mark, toolEntry) {
-      var chip = document.createElement(toolEntry.type === "empty" ? "span" : "button");
+      var chip = document.createElement(toolEntry.type === "empty" || toolEntry.type === "forced" ? "span" : "button");
       var selected = isSummaryToolSelected(toolEntry);
       var disabled = toolEntry.type === "empty" || mark !== state.currentPlayer || !canUseSummaryTool(toolEntry, selected);
 
@@ -981,7 +1000,9 @@
       chip.classList.toggle("is-selected", selected);
       chip.textContent = toolEntry.name;
 
-      if (toolEntry.type !== "empty") {
+      if (toolEntry.type === "forced") {
+        chip.title = "This turn must place a neutral wild piece.";
+      } else if (toolEntry.type !== "empty") {
         chip.type = "button";
         chip.dataset.summaryTool = "true";
         chip.dataset.player = mark;
@@ -1000,6 +1021,10 @@
     }
 
     function isSummaryToolSelected(toolEntry) {
+      if (toolEntry.type === "forced") {
+        return true;
+      }
+
       if (toolEntry.type === "hand") {
         return Boolean(state.pendingPower && state.pendingPower.handIndex === toolEntry.handIndex);
       }
@@ -1021,6 +1046,10 @@
       }
 
       if (!state.turnOpen || state.pendingHandoff || state.winner || state.draw) {
+        return false;
+      }
+
+      if (engine.isForcedWildTurn(state)) {
         return false;
       }
 
@@ -1862,6 +1891,14 @@
         return;
       }
 
+      if (engine.isForcedWildTurn(state)) {
+        var forced = document.createElement("p");
+        forced.className = "cfp-hand-empty";
+        forced.textContent = "Neutral wild required. Drop a wild piece in any legal column.";
+        els.hand.appendChild(forced);
+        return;
+      }
+
       if (player.bombs > 0) {
         fragment.appendChild(createSpecialCard("bomb", "Bomb Piece", player.bombs + " left", "Drop a bomb that clears unshielded pieces in a 3x3 blast area."));
         renderedTools = true;
@@ -1885,7 +1922,7 @@
       if (!renderedTools) {
         var empty = document.createElement("p");
         empty.className = "cfp-hand-empty";
-        empty.textContent = mode.powerups || mode.bombs || mode.wilds || mode.locks ? "No tools remaining." : "This mode uses the board only.";
+        empty.textContent = mode.powerups || mode.bombs || mode.wilds || mode.locks || mode.randomWilds ? "No tools remaining." : "This mode uses the board only.";
         els.hand.appendChild(empty);
         return;
       }
@@ -2162,12 +2199,12 @@
     duration: "8-25 min",
     type: "strategy / variants",
     themeLabel: "Bauhaus",
-    description: "A selectable Connect Four Plus collection with Power Duel, bomb and 2x lock powerups, gravity, wild pieces, locks, board-shift, token, objective, and simultaneous-planning variants.",
+    description: "A selectable Connect Four Plus collection with Power Duel, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, and simultaneous-planning variants.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
       "Current variants use public board play with no private handoff screen.",
-      "Power Duel, Token Hunt, and Hidden Objectives can award Bomb Piece or 2x Lock as rarer one-use powerups.",
-      "Gravity, Bomb, Wild, Column Lock, Shrinking Board, Connect 5, Token Hunt, Hidden Objective, and Simultaneous Planning modes are selectable from the in-game mode picker.",
+      "Power Duel and Token Hunt can award Bomb Piece or 2x Lock as rarer one-use powerups.",
+      "Gravity, Bomb, Wild, Shrinking Board, Connect 5, Token Hunt, and Simultaneous Planning modes are selectable from the in-game mode picker.",
       "Named players save match results and mode stats on this device."
     ],
     getLibraryMetrics: getPowerSummary,

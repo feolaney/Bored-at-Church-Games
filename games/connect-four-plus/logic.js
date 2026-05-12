@@ -12,6 +12,8 @@
   var MAX_HAND_SIZE = 3;
   var DRAW_EVERY_PERSONAL_TURNS = 4;
   var TWO_X_LOCK_TURN_SPAN = 4;
+  var WILD_TURN_MIN_INTERVAL = 2;
+  var WILD_TURN_MAX_INTERVAL = 8;
   var POWER_DECK = [
     "Pop",
     "Pop",
@@ -121,32 +123,17 @@
       id: "wild-pieces",
       title: "Wild Pieces",
       bestFor: "Fork creation",
-      summary: "Each player gets one neutral wild piece that counts for either player.",
+      summary: "Neutral wild pieces appear on random forced turns and count for either player.",
       rows: 6,
       cols: 7,
       connect: 4,
-      wilds: true,
+      randomWilds: true,
       rules: [
-        "Each player has one neutral wild piece.",
+        "A neutral wild turn is randomly scheduled every 2-8 turns.",
+        "When a neutral wild turn lands on a player, that player must place a wild piece.",
         "A wild counts as either color when checking lines.",
         "If both players have a connect line after a move resolves, the game is a draw.",
         "Wild pieces cannot be removed by Pop."
-      ]
-    },
-    {
-      id: "column-locks",
-      title: "Column Locks",
-      bestFor: "Clean control mode",
-      summary: "Public column locks create short-term tactical denial.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      locks: true,
-      rules: [
-        "Each player has two locks.",
-        "Before placing, lock a non-full column for the opponent's next turn.",
-        "The locking player may still place in that column on the same turn.",
-        "You cannot lock the only playable column or the same column twice in a row."
       ]
     },
     {
@@ -199,23 +186,6 @@
       ]
     },
     {
-      id: "hidden-objectives",
-      title: "Hidden Objectives",
-      bestFor: "Replayability",
-      summary: "Completing a side objective grants a powerup without replacing connect-four wins.",
-      rows: 6,
-      cols: 7,
-      connect: 4,
-      powerups: true,
-      objectives: true,
-      rules: [
-        "Each player receives one objective.",
-        "Completing the objective grants a powerup, including a small chance at Bomb Piece or 2x Lock.",
-        "The main connect-four win condition remains active.",
-        "Objectives reward alternate strategic routes."
-      ]
-    },
-    {
       id: "simultaneous-planning",
       title: "Simultaneous Planning",
       bestFor: "Prediction game",
@@ -249,6 +219,17 @@
     var random = typeof rng === "function" ? rng : Math.random;
     var powers = deck || POWER_DECK;
     return powers[Math.floor(random() * powers.length)];
+  }
+
+  function getRandomWildInterval(rng) {
+    var random = typeof rng === "function" ? rng : Math.random;
+    var range = WILD_TURN_MAX_INTERVAL - WILD_TURN_MIN_INTERVAL + 1;
+
+    return WILD_TURN_MIN_INTERVAL + Math.floor(random() * range);
+  }
+
+  function createNextWildTurn(turnCount, rng) {
+    return turnCount + getRandomWildInterval(rng);
   }
 
   function getStartingHand(mode, player, rng) {
@@ -303,6 +284,7 @@
       lastLockedColumn: null,
       removedColumns: [],
       gravityDirection: "down",
+      nextWildTurn: mode.randomWilds ? createNextWildTurn(0, rng) : null,
       tokenRespawn: 0,
       tokens: mode.tokens ? createStartingTokens(rows, cols, rng) : [],
       revealedColumns: {
@@ -322,6 +304,10 @@
 
     if (mode.puzzle) {
       seedPuzzle(state);
+    }
+
+    if (mode.randomWilds) {
+      state.publicLog = state.publicLog.concat(["First neutral wild turn scheduled for turn " + state.nextWildTurn + "."]);
     }
 
     return state;
@@ -529,6 +515,7 @@
       lastLockedColumn: state.lastLockedColumn,
       removedColumns: state.removedColumns.slice(),
       gravityDirection: state.gravityDirection,
+      nextWildTurn: state.nextWildTurn,
       tokenRespawn: state.tokenRespawn,
       tokens: state.tokens.map(function (token) { return Object.assign({}, token); }),
       revealedColumns: {
@@ -553,6 +540,18 @@
 
   function isLockActiveForPlayer(state, player) {
     return state.lockedColumn !== null && (state.lockedFor === player || state.lockedFor === LOCKED_FOR_BOTH);
+  }
+
+  function isForcedWildTurn(state) {
+    return Boolean(getCurrentMode(state).randomWilds && state.nextWildTurn !== null && state.turnCount + 1 >= state.nextWildTurn);
+  }
+
+  function getTurnsUntilForcedWild(state) {
+    if (!getCurrentMode(state).randomWilds || state.nextWildTurn === null) {
+      return null;
+    }
+
+    return Math.max(0, state.nextWildTurn - (state.turnCount + 1));
   }
 
   function getCurrentMode(state) {
@@ -903,6 +902,10 @@
       return { ok: false, reason: "Reveal the active player's turn first." };
     }
 
+    if (isForcedWildTurn(state)) {
+      return { ok: false, reason: "This turn must place a neutral wild piece." };
+    }
+
     if (state.powerUsedThisTurn) {
       return { ok: false, reason: "Only one powerup may be used each turn." };
     }
@@ -1000,6 +1003,11 @@
 
     if (!next.turnOpen || next.pendingHandoff) {
       next.lastError = "Reveal the active player's turn first.";
+      return next;
+    }
+
+    if (isForcedWildTurn(next)) {
+      next.lastError = "This turn must place a neutral wild piece.";
       return next;
     }
 
@@ -1496,11 +1504,17 @@
   function finishTurn(next, activePlayer) {
     var mode = getCurrentMode(next);
     var playerState = next.players[activePlayer];
+    var completedForcedWild = isForcedWildTurn(next);
     var gravityBefore;
 
     playerState.personalTurns += 1;
     next.turnCount += 1;
     next.gravityShift = null;
+
+    if (mode.randomWilds && completedForcedWild) {
+      next.nextWildTurn = createNextWildTurn(next.turnCount);
+      next.publicLog = next.publicLog.concat(["Next neutral wild turn scheduled for turn " + next.nextWildTurn + "."]);
+    }
 
     if (mode.randomPowerups && playerState.personalTurns % DRAW_EVERY_PERSONAL_TURNS === 0 && playerState.hand.length < MAX_HAND_SIZE) {
       playerState.hand.push(drawPowerup(null, mode.fog ? ["Scan Column", "Lock", "Shield", "Swap Top"] : POWER_DECK));
@@ -1545,6 +1559,10 @@
       firstColumn: null
     };
     next.revealedColumns[activePlayer] = [];
+
+    if (mode.randomWilds && isForcedWildTurn(next)) {
+      next.publicLog = next.publicLog.concat([PLAYER_LABELS[next.currentPlayer] + " must place a neutral wild piece this turn."]);
+    }
   }
 
   function completeTerminalTurn(next, activePlayer) {
@@ -1572,6 +1590,7 @@
     var activePlayer = next.currentPlayer;
     var result;
     var pendingDropPower = next.pendingPower && next.pendingPower.name === "Bomb Piece" && next.pendingDropKind === "bomb";
+    var dropKind = isForcedWildTurn(next) ? "wild" : next.pendingDropKind;
 
     next.gravityShift = null;
 
@@ -1599,7 +1618,7 @@
       return next;
     }
 
-    position = placePiece(next, activePlayer, col, next.pendingDropKind);
+    position = placePiece(next, activePlayer, col, dropKind);
     if (!position) {
       next.lastError = "That lane is not playable.";
       return next;
@@ -1658,6 +1677,7 @@
     var row = position && position.row;
     var landingCol = position && position.col;
     var dropKind = kind || "normal";
+    var forcedWildDrop = dropKind === "wild" && isForcedWildTurn(next);
     var pieceId;
     var finalPosition;
     var beforeCollapse;
@@ -1668,7 +1688,7 @@
 
     if (dropKind === "bomb" && !(next.pendingPower && next.pendingPower.name === "Bomb Piece")) {
       next.players[activePlayer].bombs -= 1;
-    } else if (dropKind === "wild") {
+    } else if (dropKind === "wild" && !forcedWildDrop) {
       next.players[activePlayer].wilds -= 1;
     }
 
@@ -2086,6 +2106,8 @@
     getNonFullColumns: getNonFullColumns,
     getDropLaneCount: getDropLaneCount,
     getDropLaneLabel: getDropLaneLabel,
+    isForcedWildTurn: isForcedWildTurn,
+    getTurnsUntilForcedWild: getTurnsUntilForcedWild,
     getGravityEntrySide: getGravityEntrySide,
     getLandingPosition: getLandingPosition,
     getTokenAt: getTokenAt,
