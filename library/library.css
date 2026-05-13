@@ -501,6 +501,103 @@ body.library-mode[data-active-view="menu"] #app-title {
   background: #ffffff;
 }
 
+.game-logo-dots-and-boxes {
+  --dab-start: 18%;
+  --dab-step: 21.333%;
+  border: 3px solid #f5f5f5;
+  background:
+    linear-gradient(135deg, rgba(240, 192, 32, 0.18), transparent 42%),
+    linear-gradient(315deg, rgba(224, 48, 48, 0.18), transparent 42%),
+    #17181f;
+  box-shadow: 4px 4px 0 0 #00ffff;
+}
+
+.game-logo-dots-and-boxes .logo-box,
+.game-logo-dots-and-boxes .logo-edge,
+.game-logo-dots-and-boxes .logo-dot {
+  position: absolute;
+}
+
+.game-logo-dots-and-boxes .row-1 {
+  top: var(--dab-start);
+}
+
+.game-logo-dots-and-boxes .row-2 {
+  top: calc(var(--dab-start) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .row-3 {
+  top: calc(var(--dab-start) + var(--dab-step) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .row-4 {
+  top: calc(var(--dab-start) + var(--dab-step) + var(--dab-step) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .col-1 {
+  left: var(--dab-start);
+}
+
+.game-logo-dots-and-boxes .col-2 {
+  left: calc(var(--dab-start) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .col-3 {
+  left: calc(var(--dab-start) + var(--dab-step) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .col-4 {
+  left: calc(var(--dab-start) + var(--dab-step) + var(--dab-step) + var(--dab-step));
+}
+
+.game-logo-dots-and-boxes .logo-box {
+  z-index: 1;
+  width: var(--dab-step);
+  height: var(--dab-step);
+  opacity: 0.38;
+}
+
+.game-logo-dots-and-boxes .logo-edge {
+  z-index: 2;
+  border: 1px solid #121212;
+  box-shadow: 1px 1px 0 0 #121212;
+}
+
+.game-logo-dots-and-boxes .logo-edge-h {
+  width: var(--dab-step);
+  height: 8%;
+  transform: translateY(-50%);
+}
+
+.game-logo-dots-and-boxes .logo-edge-v {
+  width: 8%;
+  height: var(--dab-step);
+  transform: translateX(-50%);
+}
+
+.game-logo-dots-and-boxes .is-player-one {
+  background: #f0c020;
+}
+
+.game-logo-dots-and-boxes .is-player-two {
+  background: #e03030;
+}
+
+.game-logo-dots-and-boxes .is-auto {
+  background: #2f7dff;
+}
+
+.game-logo-dots-and-boxes .logo-dot {
+  z-index: 3;
+  width: 11%;
+  aspect-ratio: 1;
+  border: 2px solid #121212;
+  border-radius: 50%;
+  background: #f5f5f5;
+  box-shadow: 1px 1px 0 0 #121212;
+  transform: translate(-50%, -50%);
+}
+
 .game-logo-connect-four-plus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));

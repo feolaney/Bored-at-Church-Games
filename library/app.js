@@ -180,6 +180,8 @@
       renderConnectFourLogo(logo);
     } else if (id === "gomoku") {
       renderGomokuLogo(logo);
+    } else if (id === "dots-and-boxes") {
+      renderDotsAndBoxesLogo(logo);
     } else {
       logo.classList.add("game-logo-fallback");
       logo.textContent = getGameInitials(game ? game.title : "Game");
@@ -223,6 +225,47 @@
       }
       logo.appendChild(point);
     });
+  }
+
+  function renderDotsAndBoxesLogo(logo) {
+    var boxes = [
+      "logo-box row-1 col-1 is-player-one",
+      "logo-box row-2 col-2 is-player-two"
+    ];
+    var edges = [
+      "logo-edge logo-edge-h row-1 col-1 is-player-one",
+      "logo-edge logo-edge-h row-2 col-1 is-player-one",
+      "logo-edge logo-edge-v row-1 col-1 is-player-one",
+      "logo-edge logo-edge-v row-1 col-2 is-player-one",
+      "logo-edge logo-edge-h row-2 col-2 is-player-two",
+      "logo-edge logo-edge-h row-3 col-2 is-player-two",
+      "logo-edge logo-edge-v row-2 col-2 is-player-two",
+      "logo-edge logo-edge-v row-2 col-3 is-player-two",
+      "logo-edge logo-edge-h row-4 col-1 is-auto",
+      "logo-edge logo-edge-v row-3 col-4 is-auto"
+    ];
+    var row;
+    var col;
+
+    boxes.forEach(function (className) {
+      var box = document.createElement("span");
+      box.className = className;
+      logo.appendChild(box);
+    });
+
+    edges.forEach(function (className) {
+      var edge = document.createElement("span");
+      edge.className = className;
+      logo.appendChild(edge);
+    });
+
+    for (row = 1; row <= 4; row += 1) {
+      for (col = 1; col <= 4; col += 1) {
+        var dot = document.createElement("span");
+        dot.className = "logo-dot row-" + row + " col-" + col;
+        logo.appendChild(dot);
+      }
+    }
   }
 
   function renderConnectFourLogo(logo) {

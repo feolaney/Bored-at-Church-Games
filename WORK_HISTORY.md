@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Library Logo
+
+- Added a custom Dots and Boxes logo to the library logo renderer so the game no longer uses the fallback initials.
+- Styled the logo as a compact dot grid with circular dots, yellow and red claimed boxes/edges, and blue auto-line accents.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the game library and confirm the Dots and Boxes card shows the new dot-grid logo.
+- Open the Dots and Boxes detail view and confirm the larger logo scales cleanly with round dots and aligned lines.
+
+Verification:
+- `node --check library/app.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped library logo pass.
+
 ## 2026-05-13 - Gomoku Library Logo
 
 - Added a custom Gomoku logo to the library logo renderer so Gomoku no longer uses the fallback initial.
