@@ -673,6 +673,15 @@ body.game-mode[data-active-game="connect-four-plus"] .terminal-button:active {
   background: #f0c020;
 }
 
+.cfp-floating-undo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 16;
+  min-width: 6rem;
+  box-shadow: 4px 4px 0 0 #121212;
+}
+
 .cfp-hand-summary {
   display: grid;
   gap: 8px;

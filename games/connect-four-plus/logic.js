@@ -394,7 +394,8 @@
       players: {
         R: createPlayerState(mode, "R", rng, presetHands),
         Y: createPlayerState(mode, "Y", rng, presetHands)
-      }
+      },
+      history: []
     };
 
     if (mode.puzzle) {
@@ -581,7 +582,19 @@
     return clone;
   }
 
+  function cloneHistory(history) {
+    return Array.isArray(history) ? history.map(snapshotState) : [];
+  }
+
   function cloneState(state) {
+    return cloneStateBase(state, true);
+  }
+
+  function snapshotState(state) {
+    return cloneStateBase(state, false);
+  }
+
+  function cloneStateBase(state, includeHistory) {
     return {
       modeId: state.modeId,
       rows: state.rows,
@@ -626,8 +639,13 @@
       players: {
         R: clonePlayer(state.players.R),
         Y: clonePlayer(state.players.Y)
-      }
+      },
+      history: includeHistory ? cloneHistory(state.history) : []
     };
+  }
+
+  function pushHistory(next, previous) {
+    next.history = cloneHistory(previous.history).concat([snapshotState(previous)]);
   }
 
   function otherPlayer(player) {
@@ -1058,6 +1076,7 @@
     next.lastError = null;
 
     if (power === "Double Drop") {
+      pushHistory(next, state);
       next.players[next.currentPlayer].hand.splice(handIndex, 1);
       next.powerUsedThisTurn = true;
       next.dropPlan = {
@@ -1210,6 +1229,7 @@
     }
 
     if (power === "Scan Column") {
+      pushHistory(next, state);
       if (next.revealedColumns[next.currentPlayer].indexOf(col) === -1) {
         next.revealedColumns[next.currentPlayer].push(col);
       }
@@ -1236,6 +1256,7 @@
         return next;
       }
 
+      pushHistory(next, state);
       next.lockedColumn = col;
       next.lockedFor = power === "2x Lock" ? LOCKED_FOR_BOTH : otherPlayer(next.currentPlayer);
       next.lockedTurnsRemaining = power === "2x Lock" ? TWO_X_LOCK_TURN_SPAN : 1;
@@ -1263,6 +1284,7 @@
         return next;
       }
 
+      pushHistory(next, state);
       popRow = next.rows - 1;
       poppedCell = next.board[popRow][col];
       next.board[popRow][col] = null;
@@ -1294,6 +1316,7 @@
 
       firstSwapRow = topRows[0];
       secondSwapRow = topRows[1];
+      pushHistory(next, state);
       temp = next.board[firstSwapRow][col];
       next.board[firstSwapRow][col] = next.board[secondSwapRow][col];
       next.board[secondSwapRow][col] = temp;
@@ -1355,6 +1378,7 @@
       return next;
     }
 
+    pushHistory(next, state);
     cell.shielded = true;
     consumePendingPower(next);
     next.lastError = null;
@@ -1688,11 +1712,11 @@
     var pendingDropPower = next.pendingPower && next.pendingPower.name === "Bomb Piece" && next.pendingDropKind === "bomb";
     var dropKind = isForcedWildTurn(next) ? "wild" : next.pendingDropKind;
 
-    next.gravityShift = null;
-
     if (mode.simultaneous) {
-      return planSimultaneousDrop(next, col);
+      return planSimultaneousDrop(state, col);
     }
+
+    next.gravityShift = null;
 
     if (next.winner || next.draw) {
       next.lastError = "The game is already complete.";
@@ -1720,6 +1744,7 @@
       return next;
     }
 
+    pushHistory(next, state);
     next.dropCount += 1;
     consumePendingDropPower(next, activePlayer);
     updateObjective(next, activePlayer, position.row, position.col);
@@ -1901,7 +1926,8 @@
     return cleared;
   }
 
-  function planSimultaneousDrop(next, col) {
+  function planSimultaneousDrop(state, col) {
+    var next = cloneState(state);
     var player = next.currentPlayer;
     var first;
     var second;
@@ -1927,6 +1953,7 @@
       return next;
     }
 
+    pushHistory(next, state);
     next.simultaneous.plans[player] = col;
     next.publicLog = next.publicLog.concat([PLAYER_LABELS[player] + " planned a column."]);
 
@@ -2021,6 +2048,29 @@
     next.pendingDropKind = "normal";
     next.lastError = null;
     return next;
+  }
+
+  function undoMove(state) {
+    var previous;
+    var restored;
+
+    if (state.winner || state.draw) {
+      restored = cloneState(state);
+      restored.lastError = "The final result is locked. Start a rematch instead.";
+      return restored;
+    }
+
+    if (!state.history || !state.history.length) {
+      restored = cloneState(state);
+      restored.lastError = "No move to undo.";
+      return restored;
+    }
+
+    previous = state.history[state.history.length - 1];
+    restored = cloneState(previous);
+    restored.history = cloneHistory(state.history.slice(0, -1));
+    restored.lastError = null;
+    return restored;
   }
 
   function getTokenAt(state, row, col) {
@@ -2200,6 +2250,7 @@
     applyPowerToColumn: applyPowerToColumn,
     applyPowerToCell: applyPowerToCell,
     dropPiece: dropPiece,
+    undoMove: undoMove,
     getLegalDropColumns: getLegalDropColumns,
     getNonFullColumns: getNonFullColumns,
     getDropLaneCount: getDropLaneCount,

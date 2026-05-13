@@ -9,6 +9,7 @@ This is a static web arcade ("Bored at Church Games") deployed to Vercel with no
 - All game registration happens through `window.ChurchGames.registerGame({ ... })` in the game's `ui.js`. See `games/README.md` for the required shape.
 - Design docs in `design/` describe the visual language (vaporwave + terminal aesthetic). New games should respect the overall theme but may introduce their own CSS within their game folder.
 - Do not expose design-system or visual style labels in user-facing game or library UI. Do not render labels like "Bauhaus", "Terminal CLI", "Minimalist Monochrome", design document names, or `themeLabel` values to players; use design direction internally through scoped CSS and keep visible metadata focused on gameplay.
+- Undo is a standard game control. Each playable game should provide engine-level undo state and an easily reachable Undo button near the top of the active board/game area without shifting the surrounding layout, unless the rules make undo impossible.
 - Game rule references (PDFs, markdown) go in `game_rules/`.
 
 ## Before Starting Work

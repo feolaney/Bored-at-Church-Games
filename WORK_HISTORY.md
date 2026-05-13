@@ -1,5 +1,26 @@
 # Work History
 
+## 2026-05-13 - Connect Four Plus Undo
+
+- Added engine-level undo history to Connect Four Plus, storing full state snapshots before successful drops, board-targeting powers, Double Drop activation, and simultaneous planning actions.
+- Added a floating `Undo` button above the Connect Four Plus board and wired it to the new `engine.undoMove(...)` path.
+- Documented Undo as a standard game control in `AGENTS.md` for future games.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open Connect Four Plus, make one or more drops, and confirm the top Undo button restores the previous board state.
+- Use a board-targeting power or Double Drop and confirm Undo restores the prior hand/tool/board/log state.
+- Try Simultaneous Planning and confirm Undo removes the last planned column before it resolves.
+
+Verification:
+- `node --check games/connect-four-plus/logic.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node undo smoke tests covering normal drops, multi-step undo, board powers, Double Drop, Simultaneous Planning, and all current modes.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped engine/UI undo pass.
+
 ## 2026-05-13 - Dots and Boxes Postgame Metrics
 
 - Added a Dots and Boxes postgame metrics section that appears after a match result.

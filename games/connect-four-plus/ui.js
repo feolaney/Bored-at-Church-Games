@@ -269,6 +269,7 @@
             '</div>' +
           '</aside>' +
           '<section class="cfp-board-panel" data-role="board-panel">' +
+            '<button type="button" class="cfp-button cfp-button-outline cfp-floating-undo" data-role="undo-move" aria-label="Undo last move">Undo</button>' +
             '<section class="cfp-hand-summary" data-role="hand-summary" aria-label="Player powerups"></section>' +
             '<div class="cfp-drop-row" data-role="drop-row" aria-label="Drop by column"></div>' +
             '<div class="cfp-win-banner" data-role="win-banner" aria-live="polite" hidden></div>' +
@@ -331,6 +332,7 @@
         "red-name-live",
         "yellow-name-live",
         "new-game",
+        "undo-move",
         "change-mode",
         "cancel-power",
         "board-panel",
@@ -408,6 +410,21 @@
 
       els.newGame.addEventListener("click", resetMatch);
       els.newGameInline.addEventListener("click", resetMatch);
+      els.undoMove.addEventListener("click", function () {
+        if (!state) {
+          return;
+        }
+
+        state = engine.undoMove(state);
+        animatedDropKey = null;
+        animatedPopKey = null;
+        animatedSwapKey = null;
+        animatedGravityShiftId = null;
+        animatedColumnBattleKey = null;
+        columnBattleDropReadyKey = null;
+        tokenRevealAnimations = [];
+        render();
+      });
       els.changeMode.addEventListener("click", changeMode);
       els.changeModeInline.addEventListener("click", changeMode);
       els.cancelPower.addEventListener("click", function () {
@@ -1090,6 +1107,7 @@
       els.lockReadout.textContent = getConstraintText(mode);
       els.turnCount.textContent = String(state.turnCount);
       els.dropCount.textContent = String(state.dropCount);
+      els.undoMove.disabled = !state.history || state.history.length === 0 || Boolean(state.winner) || state.draw;
       els.cancelPower.disabled = !state.pendingPower && state.pendingDropKind === "normal";
 
       if (services.setSessionChip) {
