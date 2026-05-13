@@ -1,5 +1,26 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Auto Solve Board Controls
+
+- Moved the Dots and Boxes auto preset controls above the board grid.
+- Renamed the presets to `Auto Solve small`, `Auto Solve medium`, and `Auto Solve large`, preserving their 30%, 38%, and 44% safe-line targets.
+- Hid the auto solve controls once any line has been placed, including after an auto solve preset is used.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Start a fresh Dots and Boxes match and confirm the three auto solve buttons appear above the board.
+- Click an auto solve preset or draw a player line and confirm the auto solve controls disappear from the board area.
+- Confirm blue auto lines still appear and no box is left ready to be claimed in one move.
+
+Verification:
+- `node --check games/dots-and-boxes/logic.js`
+- `node --check games/dots-and-boxes/ui.js`
+- Node auto-line smoke test covering 30%, 38%, and 44% targets with no three-sided boxes.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped UI placement pass.
+
 ## 2026-05-13 - Dots and Boxes Auto Line Presets
 
 - Replaced the single Dots and Boxes auto-safe button with three start-only presets: `Auto Safe 30%`, `Auto Safe 38%`, and `Auto Safe 44%`.

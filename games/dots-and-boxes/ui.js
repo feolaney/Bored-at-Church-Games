@@ -7,9 +7,9 @@
   var MAX_UI_SIZE = 20;
   var ZOOM_GATE_SIZE = 8;
   var AUTO_LINE_OPTIONS = [
-    { ratio: 0.3, label: "30%" },
-    { ratio: 0.38, label: "38%" },
-    { ratio: 0.44, label: "44%" }
+    { ratio: 0.3, label: "small" },
+    { ratio: 0.38, label: "medium" },
+    { ratio: 0.44, label: "large" }
   ];
   var PRESETS = [
     { width: 2, height: 2, label: "2 x 2" },
@@ -25,7 +25,7 @@
 
   function createAutoLineButtonMarkup() {
     return AUTO_LINE_OPTIONS.map(function (option) {
-      return '<button type="button" data-auto-ratio="' + option.ratio + '">Auto Safe ' + option.label + '</button>';
+      return '<button type="button" data-auto-ratio="' + option.ratio + '">Auto Solve ' + option.label + '</button>';
     }).join("");
   }
 
@@ -246,6 +246,9 @@
           '<div class="dab-board-tools" data-role="board-tools" hidden>' +
             '<button type="button" class="dab-zoom-out" data-role="zoom-out" aria-label="Zoom out" title="Zoom out"><span class="dab-zoom-icon" aria-hidden="true"></span></button>' +
           '</div>' +
+          '<div class="dab-action-row dab-auto-line-row" data-role="auto-line-options" aria-label="Auto solve line presets">' +
+            createAutoLineButtonMarkup() +
+          '</div>' +
           '<div class="dab-board-scroll" data-role="board-scroll">' +
             '<div class="dab-board-grid" data-role="board" role="grid" aria-label="Dots and Boxes board"></div>' +
           '</div>' +
@@ -278,9 +281,6 @@
                 '<label><span>width</span><input type="number" data-role="rect-width" min="2" max="20" step="1" value="4"></label>' +
                 '<label><span>height</span><input type="number" data-role="rect-height" min="2" max="20" step="1" value="4"></label>' +
                 '<button type="button" data-role="start-rectangle">Start Rectangle</button>' +
-              '</div>' +
-              '<div class="dab-action-row dab-auto-line-row" data-role="auto-line-options" aria-label="Auto safe line presets">' +
-                createAutoLineButtonMarkup() +
               '</div>' +
               '<details class="dab-shape-editor" data-role="shape-editor">' +
                 '<summary>Custom Shape</summary>' +
@@ -754,6 +754,7 @@
       var namesLocked = state.moveHistory.length > 0;
       var isPlayerOneTurn = !state.result && state.currentPlayer === engine.PLAYER_ONE;
       var isPlayerTwoTurn = !state.result && state.currentPlayer === engine.PLAYER_TWO;
+      var canAutoSolve = canUseAutoLines();
 
       els.statusLine.classList.toggle("error", Boolean(state.lastError));
       els.statusLine.classList.toggle("is-p1-turn", isPlayerOneTurn);
@@ -776,8 +777,9 @@
       els.p2Score.parentElement.classList.toggle("is-current-turn", isPlayerTwoTurn);
       els.p2Score.parentElement.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.undoMove.disabled = state.history.length === 0 || Boolean(state.result);
+      els.autoLineOptions.hidden = !canAutoSolve;
       Array.prototype.forEach.call(els.autoLineOptions.querySelectorAll("button[data-auto-ratio]"), function (button) {
-        button.disabled = !canUseAutoLines();
+        button.disabled = !canAutoSolve;
       });
       els.p1Name.disabled = namesLocked;
       els.p2Name.disabled = namesLocked;

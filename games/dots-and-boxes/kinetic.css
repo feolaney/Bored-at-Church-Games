@@ -277,6 +277,14 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   display: none;
 }
 
+.dab-auto-line-row {
+  margin: 0 14px 10px;
+}
+
+.dab-auto-line-row[hidden] {
+  display: none;
+}
+
 .dab-zoom-out {
   display: grid;
   place-items: center;
