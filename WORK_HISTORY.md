@@ -1,5 +1,30 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes
+
+- Added Dots and Boxes as a self-contained game module with a pure shared-edge rules engine, local two-player UI, move log, undo before final results, rectangular size presets, width/height custom rectangles, and a custom shape editor.
+- Implemented the rule-file behavior for legal playable edges, box captures, two-box captures, extra turns after scoring moves, score-based wins, tied-score draws, and custom boards where only selected boxes count.
+- Styled the game with the provided high-energy monochrome/accent design direction while keeping visual style labels out of player-facing UI.
+- Registered the game in `index.html` and included the provided Dots and Boxes rules PDF and design reference.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the library and confirm Dots and Boxes appears after Gomoku, then launch it.
+- Confirm the board is above the Match section, lines are large tap targets, boxes show owner initials/numbers, and the move log updates after each line.
+- Complete a box and confirm the scoring player keeps the turn; complete a shared final edge and confirm both boxes are claimed.
+- Try the 2 x 2 through 6 x 6 presets, a typed rectangle size, and the custom shape editor.
+
+Verification:
+- `node --check games/dots-and-boxes/logic.js`
+- `node --check games/dots-and-boxes/ui.js`
+- Node Dots and Boxes logic smoke test covering 1 x 1 capture/win flow, custom-shape edge generation, shared custom edges, and rejection of non-playable edges.
+- Node registration smoke test confirming `dots-and-boxes` registers with a controller, rules text, and no `themeLabel`.
+- `rg` check confirming no user-facing design label strings were added to the new game registration/UI.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this pass used static registration and engine checks.
+
 ## 2026-05-13 - Hide Design Style Labels
 
 - Removed user-visible design style labels from the shared library shell by replacing active-game header subtitles with gameplay metadata and removing the detail-page `theme` row.
