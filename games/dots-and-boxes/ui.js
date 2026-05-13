@@ -268,6 +268,9 @@
                 '<label><span>height</span><input type="number" data-role="rect-height" min="2" max="20" step="1" value="4"></label>' +
                 '<button type="button" data-role="start-rectangle">Start Rectangle</button>' +
               '</div>' +
+              '<div class="dab-action-row">' +
+                '<button type="button" data-role="auto-lines">Auto Safe 70%</button>' +
+              '</div>' +
               '<details class="dab-shape-editor" data-role="shape-editor">' +
                 '<summary>Custom Shape</summary>' +
                 '<div class="dab-shape-controls">' +
@@ -336,6 +339,7 @@
         "rect-width",
         "rect-height",
         "start-rectangle",
+        "auto-lines",
         "shape-editor",
         "shape-width",
         "shape-height",
@@ -405,6 +409,8 @@
           null
         );
       });
+
+      els.autoLines.addEventListener("click", applyAutoLines);
 
       els.shapeWidth.addEventListener("change", resizeCustomShapeFromInputs);
       els.shapeHeight.addEventListener("change", resizeCustomShapeFromInputs);
@@ -575,6 +581,43 @@
       }
     }
 
+    function canUseAutoLines() {
+      return state.status === "playing" && state.drawnEdgeCount === 0;
+    }
+
+    function createAutoLineSeed() {
+      return Date.now() + state.totalEdges * 31 + state.totalBoxes * 17;
+    }
+
+    function getAutoLineMessage(result) {
+      var message = "Auto placed " + result.placedCount + " random safe lines.";
+
+      if (result.safetyLimited) {
+        message += " Safety stopped before 70% to avoid one-move boxes.";
+      }
+
+      message += " " + getPlayerLabel(state.currentPlayer) + " opens.";
+      return message;
+    }
+
+    function applyAutoLines() {
+      var result;
+
+      if (!canUseAutoLines()) {
+        setupMessage = "Auto lines can only be placed before any lines are drawn.";
+        render();
+        return;
+      }
+
+      result = engine.autoPlaceSafeLines(state, {
+        targetRatio: 0.7,
+        seed: createAutoLineSeed()
+      });
+      state = result.state;
+      setupMessage = result.ok ? getAutoLineMessage(result) : result.reason;
+      render();
+    }
+
     function changeGame() {
       if (services.goToLibrary) {
         services.goToLibrary();
@@ -626,7 +669,7 @@
         return state.lastError;
       }
 
-      if (setupMessage && !state.result && (!state.drawnEdgeCount || setupMessage.indexOf("Zoomed") === 0)) {
+      if (setupMessage && !state.result && (!state.drawnEdgeCount || setupMessage.indexOf("Zoomed") === 0 || setupMessage.indexOf("Auto") === 0)) {
         return setupMessage;
       }
 
@@ -675,7 +718,7 @@
     }
 
     function renderStatus() {
-      var namesLocked = state.drawnEdgeCount > 0;
+      var namesLocked = state.moveHistory.length > 0;
       var isPlayerOneTurn = !state.result && state.currentPlayer === engine.PLAYER_ONE;
       var isPlayerTwoTurn = !state.result && state.currentPlayer === engine.PLAYER_TWO;
 
@@ -700,6 +743,7 @@
       els.p2Score.parentElement.classList.toggle("is-current-turn", isPlayerTwoTurn);
       els.p2Score.parentElement.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.undoMove.disabled = state.history.length === 0 || Boolean(state.result);
+      els.autoLines.disabled = !canUseAutoLines();
       els.p1Name.disabled = namesLocked;
       els.p2Name.disabled = namesLocked;
       els.setupMessage.textContent = setupMessage && setupMessage !== getStatusText() ? setupMessage : "";
@@ -939,7 +983,14 @@
       element.disabled = edge.drawn || state.status !== "playing";
 
       if (edge.drawn) {
-        element.classList.add("is-drawn", edge.drawnBy === engine.PLAYER_ONE ? "is-p1" : "is-p2");
+        element.classList.add("is-drawn");
+        if (edge.drawnBy === engine.PLAYER_ONE) {
+          element.classList.add("is-p1");
+        } else if (edge.drawnBy === engine.PLAYER_TWO) {
+          element.classList.add("is-p2");
+        } else {
+          element.classList.add("is-auto");
+        }
       }
 
       if (isLast) {
@@ -1021,7 +1072,7 @@
       if (!entries.length) {
         var empty = document.createElement("li");
         empty.className = "empty-log";
-        empty.textContent = "awaiting first line";
+        empty.textContent = state.autoLineSeed ? state.autoLineSeed.count + " auto lines placed / awaiting first player line" : "awaiting first line";
         els.moveLog.appendChild(empty);
         return;
       }

@@ -3,6 +3,7 @@
 
   var PLAYER_ONE = "P1";
   var PLAYER_TWO = "P2";
+  var AUTO = "AUTO";
   var DRAW = "DRAW";
   var DEFAULT_WIDTH = 4;
   var DEFAULT_HEIGHT = 4;
@@ -211,6 +212,7 @@
       lastMove: null,
       lastError: null,
       lastCapturedBoxIds: [],
+      autoLineSeed: null,
       result: null,
       history: []
     };
@@ -273,6 +275,10 @@
     return result ? Object.assign({}, result) : null;
   }
 
+  function cloneAutoLineSeed(seed) {
+    return seed ? Object.assign({}, seed) : null;
+  }
+
   function snapshotState(state) {
     return {
       status: state.status,
@@ -293,6 +299,7 @@
       lastMove: cloneMove(state.lastMove),
       lastError: state.lastError,
       lastCapturedBoxIds: state.lastCapturedBoxIds.slice(),
+      autoLineSeed: cloneAutoLineSeed(state.autoLineSeed),
       result: cloneResult(state.result)
     };
   }
@@ -317,11 +324,15 @@
       return "Player 2";
     }
 
+    if (player === AUTO) {
+      return "Auto line";
+    }
+
     return "Draw";
   }
 
   function playerShortLabel(player) {
-    return player === PLAYER_ONE ? "P1" : player === PLAYER_TWO ? "P2" : "D";
+    return player === PLAYER_ONE ? "P1" : player === PLAYER_TWO ? "P2" : player === AUTO ? "A" : "D";
   }
 
   function edgeLabel(edge) {
@@ -341,6 +352,74 @@
       edges[box.bottomEdge] && edges[box.bottomEdge].drawn &&
       edges[box.leftEdge] && edges[box.leftEdge].drawn
     );
+  }
+
+  function countDrawnBoxEdges(box, edges) {
+    return [
+      box.topEdge,
+      box.rightEdge,
+      box.bottomEdge,
+      box.leftEdge
+    ].reduce(function (count, id) {
+      return count + (edges[id] && edges[id].drawn ? 1 : 0);
+    }, 0);
+  }
+
+  function canDrawEdgeWithoutImmediateCapture(state, edge) {
+    return edge.adjacentBoxIds.every(function (boxIdValue) {
+      var box = state.boxes[boxIdValue];
+
+      return !box || box.owner || countDrawnBoxEdges(box, state.edges) < 2;
+    });
+  }
+
+  function createRandom(seed) {
+    var value = Math.floor(Number(seed));
+
+    if (!Number.isFinite(value)) {
+      value = 1;
+    }
+
+    value = value % 2147483647;
+    if (value <= 0) {
+      value += 2147483646;
+    }
+
+    return function random() {
+      value = value * 16807 % 2147483647;
+      return (value - 1) / 2147483646;
+    };
+  }
+
+  function shuffle(values, random) {
+    var copy = values.slice();
+    var i;
+    var j;
+    var temp;
+
+    for (i = copy.length - 1; i > 0; i -= 1) {
+      j = Math.floor(random() * (i + 1));
+      temp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = temp;
+    }
+
+    return copy;
+  }
+
+  function getRandomAutoLineCandidates(state, random) {
+    var boundary = [];
+    var interior = [];
+
+    state.edgeOrder.forEach(function (id) {
+      if (state.edges[id].adjacentBoxIds.length === 1) {
+        boundary.push(id);
+      } else {
+        interior.push(id);
+      }
+    });
+
+    return shuffle(boundary, random).concat(shuffle(interior, random));
   }
 
   function validateMove(state, edge, player) {
@@ -450,6 +529,70 @@
     return { ok: true, state: next };
   }
 
+  function autoPlaceSafeLines(state, options) {
+    var opts = options || {};
+    var targetRatio = Number(opts.targetRatio) || 0.7;
+    var targetEdgeCount = Math.floor(state.totalEdges * Math.max(0, Math.min(1, targetRatio)));
+    var random = createRandom(opts.seed);
+    var candidates = getRandomAutoLineCandidates(state, random);
+    var next;
+    var placedCount = 0;
+
+    if (state.status !== "playing") {
+      next = cloneState(state);
+      next.lastError = "Game has already ended.";
+      return { ok: false, reason: next.lastError, state: next };
+    }
+
+    if (state.drawnEdgeCount > 0) {
+      next = cloneState(state);
+      next.lastError = "Auto lines can only be placed before any lines are drawn.";
+      return { ok: false, reason: next.lastError, state: next };
+    }
+
+    next = cloneState(state);
+    next.lastError = null;
+    next.lastCapturedBoxIds = [];
+
+    candidates.some(function (edgeIdValue) {
+      var edge = next.edges[edgeIdValue];
+
+      if (placedCount >= targetEdgeCount) {
+        return true;
+      }
+
+      if (!edge.drawn && canDrawEdgeWithoutImmediateCapture(next, edge)) {
+        edge.drawn = true;
+        edge.drawnBy = AUTO;
+        next.drawnEdgeCount += 1;
+        placedCount += 1;
+      }
+
+      return false;
+    });
+
+    next.autoLineSeed = {
+      count: placedCount,
+      target: targetEdgeCount,
+      ratio: targetRatio,
+      safetyLimited: placedCount < targetEdgeCount,
+      seed: opts.seed || null
+    };
+
+    if (!placedCount) {
+      next.lastError = "No safe auto lines were available.";
+    }
+
+    return {
+      ok: placedCount > 0,
+      reason: placedCount > 0 ? "" : next.lastError,
+      placedCount: placedCount,
+      targetEdgeCount: targetEdgeCount,
+      safetyLimited: placedCount < targetEdgeCount,
+      state: next
+    };
+  }
+
   function undoMove(state) {
     var previous;
     var restored;
@@ -478,6 +621,7 @@
       lastMove: cloneMove(previous.lastMove),
       lastError: null,
       lastCapturedBoxIds: previous.lastCapturedBoxIds.slice(),
+      autoLineSeed: cloneAutoLineSeed(previous.autoLineSeed),
       result: cloneResult(previous.result),
       history: state.history.slice(0, -1)
     });
@@ -549,6 +693,7 @@
   var api = {
     PLAYER_ONE: PLAYER_ONE,
     PLAYER_TWO: PLAYER_TWO,
+    AUTO: AUTO,
     DRAW: DRAW,
     DEFAULT_WIDTH: DEFAULT_WIDTH,
     DEFAULT_HEIGHT: DEFAULT_HEIGHT,
@@ -561,6 +706,7 @@
     countShapeBoxes: countShapeBoxes,
     createInitialState: createInitialState,
     applyMove: applyMove,
+    autoPlaceSafeLines: autoPlaceSafeLines,
     undoMove: undoMove,
     validateMove: validateMove,
     parseEdgeId: parseEdgeId,
@@ -569,6 +715,8 @@
     boxId: boxId,
     boxLabel: boxLabel,
     isBoxComplete: isBoxComplete,
+    countDrawnBoxEdges: countDrawnBoxEdges,
+    canDrawEdgeWithoutImmediateCapture: canDrawEdgeWithoutImmediateCapture,
     isShapeConnected: isShapeConnected,
     getBoxOwnerSet: getBoxOwnerSet,
     otherPlayer: otherPlayer,

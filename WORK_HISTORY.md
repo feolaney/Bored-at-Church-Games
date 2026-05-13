@@ -1,5 +1,32 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Auto Safe Lines
+
+- Added an `Auto Safe 70%` button to Dots and Boxes board setup.
+- The button is available only while no lines have been drawn; after automatic placement or any player move, it disables until a new match starts.
+- Auto placement uses a randomized seed each time and targets 70% of playable edges.
+- The safety rule is enforced over the target: automatic lines never leave any playable box with three sides, so the next single move cannot complete a box.
+- Automatic lines are neutral gray, do not belong to either player, do not score boxes, and keep Player 1 as the opening player.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Start a fresh Dots and Boxes match and click `Auto Safe 70%`.
+- Confirm random neutral lines appear and the button disables.
+- Confirm no box has three sides immediately after auto placement.
+- Draw one player line and confirm it cannot capture a box on that first move.
+- Start a new match and confirm the button is available again and produces a different random layout.
+
+Verification:
+- `node --check games/dots-and-boxes/logic.js`
+- `node --check games/dots-and-boxes/ui.js`
+- Node auto-line smoke test covering randomized safe placement, no three-sided boxes, no first-move capture, and start-only blocking.
+- Node 20 x 20 auto-line smoke test covering safe neutral placement on a large board.
+- Node custom-shape auto-line smoke test covering safe neutral placement on a non-rectangular board.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this pass used static and engine checks.
+
 ## 2026-05-13 - Dots and Boxes Large Boards
 
 - Increased Dots and Boxes rectangular and custom board limits to 20 x 20 boxes.

@@ -498,6 +498,10 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   background: var(--dab-p2);
 }
 
+.dab-edge.is-drawn.is-auto::before {
+  background: #71717a;
+}
+
 .dab-edge.is-last::after {
   content: "";
   position: absolute;
