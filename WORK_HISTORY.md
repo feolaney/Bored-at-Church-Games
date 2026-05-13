@@ -1,5 +1,29 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Large Boards
+
+- Increased Dots and Boxes rectangular and custom board limits to 20 x 20 boxes.
+- Added 8 x 8, 12 x 12, and 20 x 20 board presets while keeping typed width/height controls.
+- Added large-board zoom gating for boards above 8 boxes in either direction: the first line tap zooms and centers that area; the next line tap draws the move.
+- Added a zoom-out icon button that appears only while zoomed into a large board.
+- Added compact overview sizing and zoomed sizing that targets an 8 x 8 playable area, with scrollable navigation for larger boards.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Launch Dots and Boxes, choose 20 x 20, and confirm the first edge tap zooms into that region without drawing a line.
+- Tap an edge while zoomed and confirm it draws the move.
+- Use the zoom-out button and confirm the next edge tap zooms in again instead of drawing.
+- Confirm smaller boards of 8 x 8 or below still draw on the first tap.
+
+Verification:
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/dots-and-boxes/logic.js`
+- Node 20 x 20 smoke test confirming 400 boxes, 840 playable edges, and oversized input clamping to 20 x 20.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this pass used static and engine checks.
+
 ## 2026-05-13 - Dots and Boxes Board Line Polish
 
 - Tightened Dots and Boxes board geometry so border lines extend to the dot centers instead of stopping away from the corners.

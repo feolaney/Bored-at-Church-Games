@@ -266,6 +266,68 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   margin: 0 14px 12px;
 }
 
+.dab-board-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 14px 10px;
+}
+
+.dab-board-tools[hidden] {
+  display: none;
+}
+
+.dab-zoom-out {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--dab-fg);
+  border-radius: 0;
+  background: var(--dab-bg);
+  color: var(--dab-fg);
+  cursor: pointer;
+}
+
+.dab-zoom-out:hover,
+.dab-zoom-out:focus-visible {
+  background: var(--dab-accent);
+  color: var(--dab-accent-fg);
+  outline: 2px solid var(--dab-fg);
+  outline-offset: 3px;
+}
+
+.dab-zoom-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 3px solid currentColor;
+  border-radius: 999px;
+}
+
+.dab-zoom-icon::before,
+.dab-zoom-icon::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+
+.dab-zoom-icon::before {
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+}
+
+.dab-zoom-icon::after {
+  width: 9px;
+  height: 3px;
+  right: -9px;
+  bottom: -5px;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
 .dab-action-row button,
 .dab-preset-row button,
 .dab-dimensions button,
@@ -315,6 +377,16 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   overflow: auto;
   padding: 0 14px 16px;
   scrollbar-color: var(--dab-accent) var(--dab-muted);
+}
+
+.is-large-board .dab-board-scroll {
+  max-height: min(72vh, 760px);
+  overscroll-behavior: contain;
+}
+
+.is-large-board.is-board-zoomed .dab-board-scroll {
+  border-top: 2px solid var(--dab-border);
+  padding-top: 14px;
 }
 
 .dab-board-grid {
@@ -683,6 +755,9 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   display: grid;
   gap: 4px;
   margin-top: 10px;
+  max-height: 360px;
+  overflow: auto;
+  scrollbar-color: var(--dab-accent) var(--dab-muted);
 }
 
 .dab-shape-grid button {

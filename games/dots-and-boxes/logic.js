@@ -7,7 +7,7 @@
   var DEFAULT_WIDTH = 4;
   var DEFAULT_HEIGHT = 4;
   var MIN_SIZE = 1;
-  var MAX_SIZE = 8;
+  var MAX_SIZE = 20;
   var PLAYERS = [PLAYER_ONE, PLAYER_TWO];
   var DIRECTIONS = [
     { name: "top", dr: -1, dc: 0 },

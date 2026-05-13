@@ -4,13 +4,17 @@
   var GAME_ID = "dots-and-boxes";
   var engine = global.DotsAndBoxesGame;
   var MIN_UI_SIZE = 2;
-  var MAX_UI_SIZE = 6;
+  var MAX_UI_SIZE = 20;
+  var ZOOM_GATE_SIZE = 8;
   var PRESETS = [
     { width: 2, height: 2, label: "2 x 2" },
     { width: 3, height: 3, label: "3 x 3" },
     { width: 4, height: 4, label: "4 x 4" },
     { width: 5, height: 5, label: "5 x 5" },
     { width: 6, height: 6, label: "6 x 6" },
+    { width: 8, height: 8, label: "8 x 8" },
+    { width: 12, height: 12, label: "12 x 12" },
+    { width: 20, height: 20, label: "20 x 20" },
     { width: 5, height: 3, label: "5 x 3" }
   ];
 
@@ -192,6 +196,9 @@
     var matchRecorded = false;
     var lastRecordStatus = null;
     var setupMessage = "";
+    var boardZoomed = false;
+    var zoomFocusEdgeId = null;
+    var handleResize = null;
 
     function mount() {
       if (!mounted) {
@@ -225,7 +232,10 @@
             '<button type="button" data-role="new-game-inline">New Game</button>' +
             '<button type="button" data-role="change-game">Library</button>' +
           '</div>' +
-          '<div class="dab-board-scroll">' +
+          '<div class="dab-board-tools" data-role="board-tools" hidden>' +
+            '<button type="button" class="dab-zoom-out" data-role="zoom-out" aria-label="Zoom out" title="Zoom out"><span class="dab-zoom-icon" aria-hidden="true"></span></button>' +
+          '</div>' +
+          '<div class="dab-board-scroll" data-role="board-scroll">' +
             '<div class="dab-board-grid" data-role="board" role="grid" aria-label="Dots and Boxes board"></div>' +
           '</div>' +
         '</section>' +
@@ -254,15 +264,15 @@
               '<h2 id="dab-board-setup-heading">Board</h2>' +
               '<div class="dab-preset-row" data-role="preset-list" aria-label="Board presets"></div>' +
               '<div class="dab-dimensions">' +
-                '<label><span>width</span><input type="number" data-role="rect-width" min="2" max="6" step="1" value="4"></label>' +
-                '<label><span>height</span><input type="number" data-role="rect-height" min="2" max="6" step="1" value="4"></label>' +
+                '<label><span>width</span><input type="number" data-role="rect-width" min="2" max="20" step="1" value="4"></label>' +
+                '<label><span>height</span><input type="number" data-role="rect-height" min="2" max="20" step="1" value="4"></label>' +
                 '<button type="button" data-role="start-rectangle">Start Rectangle</button>' +
               '</div>' +
               '<details class="dab-shape-editor" data-role="shape-editor">' +
                 '<summary>Custom Shape</summary>' +
                 '<div class="dab-shape-controls">' +
-                  '<label><span>wide</span><input type="number" data-role="shape-width" min="2" max="6" step="1" value="5"></label>' +
-                  '<label><span>high</span><input type="number" data-role="shape-height" min="2" max="6" step="1" value="4"></label>' +
+                  '<label><span>wide</span><input type="number" data-role="shape-width" min="2" max="20" step="1" value="5"></label>' +
+                  '<label><span>high</span><input type="number" data-role="shape-height" min="2" max="20" step="1" value="4"></label>' +
                 '</div>' +
                 '<div class="dab-shape-grid" data-role="shape-grid" aria-label="Select boxes included in the custom board"></div>' +
                 '<p class="dab-shape-note" data-role="shape-note"></p>' +
@@ -307,6 +317,9 @@
         "end-actions",
         "new-game-inline",
         "change-game",
+        "board-tools",
+        "zoom-out",
+        "board-scroll",
         "board",
         "status-line",
         "p1-name",
@@ -355,6 +368,11 @@
 
         edgeButton = event.target.closest(".dab-edge");
         if (!edgeButton || edgeButton.disabled) {
+          return;
+        }
+
+        if (shouldGateMoveWithZoom()) {
+          zoomIntoEdge(edgeButton);
           return;
         }
 
@@ -440,6 +458,7 @@
       els.newGame.addEventListener("click", resetMatch);
       els.newGameInline.addEventListener("click", resetMatch);
       els.changeGame.addEventListener("click", changeGame);
+      els.zoomOut.addEventListener("click", zoomOutBoard);
 
       els.undoMove.addEventListener("click", function () {
         state = engine.undoMove(state);
@@ -453,6 +472,15 @@
       els.p2Name.addEventListener("input", function () {
         updatePlayerName(engine.PLAYER_TWO, els.p2Name.value);
       });
+
+      if (typeof global.addEventListener === "function" && !handleResize) {
+        handleResize = function () {
+          if (mounted && els.board && root.contains(els.board)) {
+            syncZoomPresentation();
+          }
+        };
+        global.addEventListener("resize", handleResize);
+      }
     }
 
     function readBoardDimension(value, fallback) {
@@ -522,16 +550,22 @@
       currentBoard = createBoardConfig(width, height, "rectangle", null, label || width + " x " + height + " boxes");
       els.rectWidth.value = String(currentBoard.width);
       els.rectHeight.value = String(currentBoard.height);
+      boardZoomed = false;
+      zoomFocusEdgeId = null;
       resetMatch("Started " + currentBoard.label + ".");
     }
 
     function setCustomBoard() {
       currentBoard = createBoardConfig(customShape[0].length, customShape.length, "custom", customShape, engine.countShapeBoxes(customShape) + " box shape");
+      boardZoomed = false;
+      zoomFocusEdgeId = null;
       resetMatch("Started " + currentBoard.label + ".");
     }
 
     function resetMatch(message) {
       setupMessage = typeof message === "string" ? message : "";
+      boardZoomed = false;
+      zoomFocusEdgeId = null;
       state = engine.createInitialState({ shape: currentBoard.shape });
       matchRecorded = false;
       lastRecordStatus = null;
@@ -592,8 +626,12 @@
         return state.lastError;
       }
 
-      if (setupMessage && !state.drawnEdgeCount && !state.result) {
+      if (setupMessage && !state.result && (!state.drawnEdgeCount || setupMessage.indexOf("Zoomed") === 0)) {
         return setupMessage;
+      }
+
+      if (isLargeBoard() && !boardZoomed) {
+        return getPlayerLabel(state.currentPlayer) + " to draw. Tap a line to zoom into that area first.";
       }
 
       if (state.result && state.result.type === "win") {
@@ -622,6 +660,7 @@
       renderBoardPresets();
       renderBoard();
       renderShapeEditor();
+      syncZoomPresentation();
       renderLog();
     }
 
@@ -668,6 +707,121 @@
       if (services.setSessionChip) {
         services.setSessionChip(state.result ? "SESSION: COMPLETE" : "SESSION: ACTIVE");
       }
+    }
+
+    function isLargeBoard() {
+      return state.boxCols > ZOOM_GATE_SIZE || state.boxRows > ZOOM_GATE_SIZE;
+    }
+
+    function shouldGateMoveWithZoom() {
+      return isLargeBoard() && !boardZoomed && state.status === "playing";
+    }
+
+    function calculateBoardTracks() {
+      var panelWidth = Math.max(280, els.boardScroll ? els.boardScroll.clientWidth - 36 : 520);
+      var panelHeight = Math.max(280, Math.min((global.innerHeight || 760) * 0.72, 760) - 36);
+      var dotTrack;
+      var boxTrack;
+      var widthTrack;
+      var heightTrack;
+      var lineWeight;
+      var touchTrack;
+
+      if (!isLargeBoard()) {
+        return null;
+      }
+
+      if (boardZoomed) {
+        dotTrack = panelWidth < 420 ? 10 : 12;
+        widthTrack = Math.floor((panelWidth - (ZOOM_GATE_SIZE + 1) * dotTrack) / ZOOM_GATE_SIZE);
+        heightTrack = Math.floor((panelHeight - (ZOOM_GATE_SIZE + 1) * dotTrack) / ZOOM_GATE_SIZE);
+        boxTrack = Math.min(widthTrack, heightTrack);
+        boxTrack = Math.max(30, Math.min(66, boxTrack));
+        lineWeight = Math.max(5, Math.min(7, Math.round(boxTrack * 0.14)));
+        touchTrack = Math.max(38, Math.min(48, boxTrack + 8));
+      } else {
+        dotTrack = 8;
+        widthTrack = Math.floor((panelWidth - (state.boxCols + 1) * dotTrack) / state.boxCols);
+        heightTrack = Math.floor((panelHeight - (state.boxRows + 1) * dotTrack) / state.boxRows);
+        boxTrack = Math.min(widthTrack, heightTrack);
+        boxTrack = Math.max(14, Math.min(34, boxTrack));
+        lineWeight = 4;
+        touchTrack = Math.max(30, Math.min(40, boxTrack + 14));
+      }
+
+      return {
+        dotTrack: dotTrack,
+        boxTrack: boxTrack,
+        lineWeight: lineWeight,
+        touchTrack: touchTrack
+      };
+    }
+
+    function setBoardTrackVariable(name, value) {
+      root.style.setProperty(name, value + "px");
+    }
+
+    function clearBoardTrackVariables() {
+      root.style.removeProperty("--dab-dot-track");
+      root.style.removeProperty("--dab-box-track");
+      root.style.removeProperty("--dab-line-weight");
+      root.style.removeProperty("--dab-touch-track");
+    }
+
+    function syncZoomPresentation() {
+      var tracks = calculateBoardTracks();
+
+      root.classList.toggle("is-large-board", isLargeBoard());
+      root.classList.toggle("is-board-zoomed", isLargeBoard() && boardZoomed);
+      els.boardTools.hidden = !(isLargeBoard() && boardZoomed);
+
+      if (!tracks) {
+        clearBoardTrackVariables();
+        return;
+      }
+
+      setBoardTrackVariable("--dab-dot-track", tracks.dotTrack);
+      setBoardTrackVariable("--dab-box-track", tracks.boxTrack);
+      setBoardTrackVariable("--dab-line-weight", tracks.lineWeight);
+      setBoardTrackVariable("--dab-touch-track", tracks.touchTrack);
+    }
+
+    function scrollEdgeToCenter(edgeId) {
+      var edgeButton = edgeId ? els.board.querySelector('[data-edge-id="' + edgeId + '"]') : null;
+      var container;
+      var containerRect;
+      var edgeRect;
+
+      if (!edgeButton || !els.boardScroll) {
+        return;
+      }
+
+      container = els.boardScroll;
+      containerRect = container.getBoundingClientRect();
+      edgeRect = edgeButton.getBoundingClientRect();
+      container.scrollLeft += edgeRect.left - containerRect.left - container.clientWidth / 2 + edgeRect.width / 2;
+      container.scrollTop += edgeRect.top - containerRect.top - container.clientHeight / 2 + edgeRect.height / 2;
+    }
+
+    function zoomIntoEdge(edgeButton) {
+      boardZoomed = true;
+      zoomFocusEdgeId = edgeButton.dataset.edgeId;
+      setupMessage = "Zoomed in. Tap a line again to draw.";
+      syncZoomPresentation();
+      renderStatus();
+      (global.requestAnimationFrame || function (callback) {
+        callback();
+      })(function () {
+        scrollEdgeToCenter(zoomFocusEdgeId);
+      });
+    }
+
+    function zoomOutBoard() {
+      boardZoomed = false;
+      zoomFocusEdgeId = null;
+      setupMessage = "Zoomed out. Tap a line to zoom into that area.";
+      syncZoomPresentation();
+      renderStatus();
     }
 
     function renderResultBanner() {
