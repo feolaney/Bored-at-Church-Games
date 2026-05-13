@@ -178,6 +178,8 @@
       renderUltimateLogo(logo);
     } else if (id === "connect-four-plus") {
       renderConnectFourLogo(logo);
+    } else if (id === "gomoku") {
+      renderGomokuLogo(logo);
     } else {
       logo.classList.add("game-logo-fallback");
       logo.textContent = getGameInitials(game ? game.title : "Game");
@@ -198,6 +200,28 @@
         cell.textContent = mark;
       }
       logo.appendChild(cell);
+    });
+  }
+
+  function renderGomokuLogo(logo) {
+    var stones = [
+      "B", "", "W", "", "",
+      "", "B", "", "W", "",
+      "W", "", "B", "", "",
+      "", "", "W", "B", "",
+      "", "", "", "", "B"
+    ];
+
+    stones.forEach(function (stone) {
+      var point = document.createElement("span");
+
+      point.className = "logo-point";
+      if (stone === "B") {
+        point.classList.add("is-black");
+      } else if (stone === "W") {
+        point.classList.add("is-white");
+      }
+      logo.appendChild(point);
     });
   }
 

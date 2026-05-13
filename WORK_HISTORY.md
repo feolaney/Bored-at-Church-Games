@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-13 - Gomoku Library Logo
+
+- Added a custom Gomoku logo to the library logo renderer so Gomoku no longer uses the fallback initial.
+- Styled the logo as a monochrome 5 x 5 board with circular black and white stones and a five-stone black diagonal.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the game library and confirm the Gomoku card shows the new board-and-stones logo.
+- Open the Gomoku detail view and confirm the larger logo scales cleanly with round stones.
+
+Verification:
+- `node --check library/app.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped library logo pass.
+
 ## 2026-05-13 - Connect Four Plus Power Logo Token
 
 - Refined the Connect Four Plus library logo power token so the bottom-right circle uses the same circular shadow treatment as the other filled tokens.

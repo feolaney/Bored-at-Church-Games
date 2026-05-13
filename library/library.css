@@ -453,6 +453,54 @@ body.library-mode[data-active-view="menu"] #app-title {
   color: #ffb000;
 }
 
+.game-logo-gomoku {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  border: 3px solid #121212;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 0 #121212;
+  padding: 7px;
+}
+
+.game-logo-gomoku::before {
+  content: "";
+  position: absolute;
+  inset: 17%;
+  background-image:
+    linear-gradient(90deg, #121212 1px, transparent 1px),
+    linear-gradient(0deg, #121212 1px, transparent 1px);
+  background-size: 25% 25%;
+  border-right: 1px solid #121212;
+  border-bottom: 1px solid #121212;
+  opacity: 0.5;
+}
+
+.game-logo-gomoku .logo-point {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.game-logo-gomoku .logo-point.is-black::before,
+.game-logo-gomoku .logo-point.is-white::before {
+  content: "";
+  width: 74%;
+  aspect-ratio: 1;
+  border: 2px solid #121212;
+  border-radius: 50%;
+}
+
+.game-logo-gomoku .logo-point.is-black::before {
+  background: #121212;
+}
+
+.game-logo-gomoku .logo-point.is-white::before {
+  background: #ffffff;
+}
+
 .game-logo-connect-four-plus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
