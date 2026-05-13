@@ -448,6 +448,7 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   letter-spacing: 0;
   line-height: 1;
   overflow: visible;
+  -webkit-tap-highlight-color: transparent;
   z-index: 2;
 }
 
@@ -477,16 +478,6 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 .dab-edge-v::before {
   width: var(--dab-line-weight);
   height: calc(100% + var(--dab-dot-track));
-}
-
-.dab-edge:not(:disabled):hover::before,
-.dab-edge:not(:disabled):focus-visible::before {
-  background: var(--dab-accent);
-}
-
-.dab-edge:focus-visible {
-  outline: 2px solid var(--dab-accent);
-  outline-offset: -2px;
 }
 
 .dab-edge.is-drawn {
@@ -537,6 +528,29 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   width: calc(var(--dab-line-weight) + 14px);
   height: calc(100% + var(--dab-dot-track) + 10px);
   transform: translate(-50%, -50%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dab-edge:not(:disabled):hover::before,
+  .dab-edge:not(:disabled):focus-visible::before {
+    background: var(--dab-accent);
+  }
+
+  .dab-edge:focus-visible {
+    outline: 2px solid var(--dab-accent);
+    outline-offset: -2px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .dab-edge:not(:disabled):hover::before,
+  .dab-edge:not(:disabled):focus-visible::before {
+    background: #52525b;
+  }
+
+  .dab-edge:focus-visible {
+    outline: 0;
+  }
 }
 
 .dab-box {

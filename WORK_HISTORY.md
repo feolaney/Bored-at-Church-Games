@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Mobile Zoom Highlight
+
+- Removed undrawn edge hover/focus previews on coarse-pointer and no-hover devices so mobile taps do not leave a confusing pending-line highlight.
+- Kept desktop mouse hover and keyboard focus previews for Dots and Boxes on fine-pointer devices.
+- Blurred the tapped edge when the first tap zooms a large board, preventing the zoom target from retaining focus as if it were the next move.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- On mobile, open a Dots and Boxes board larger than 8 x 8 and tap a line to zoom in.
+- Confirm the tapped line does not stay highlighted after zooming, and dragging the zoomed board does not leave hover-like line previews behind.
+- On desktop, confirm moving the mouse over undrawn lines still previews the line.
+
+Verification:
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/dots-and-boxes/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped touch/focus styling pass.
+
 ## 2026-05-13 - Mobile Library Card Spacing
 
 - Removed the library intro sentence under `Choose Your Session`.

@@ -884,10 +884,17 @@
       container.scrollTop += edgeRect.top - containerRect.top - container.clientHeight / 2 + edgeRect.height / 2;
     }
 
+    function clearEdgeFocus(edgeButton) {
+      if (edgeButton && typeof edgeButton.blur === "function") {
+        edgeButton.blur();
+      }
+    }
+
     function zoomIntoEdge(edgeButton) {
       boardZoomed = true;
       zoomFocusEdgeId = edgeButton.dataset.edgeId;
       setupMessage = "Zoomed in. Tap a line again to draw.";
+      clearEdgeFocus(edgeButton);
       syncZoomPresentation();
       renderStatus();
       (global.requestAnimationFrame || function (callback) {
