@@ -1,5 +1,29 @@
 # Work History
 
+## 2026-05-13 - Floating Undo Controls
+
+- Moved the existing Undo controls for Ultimate Tic Tac Toe, Gomoku, and Dots and Boxes into floating controls at the top of each board panel.
+- Removed those Undo buttons from the side/status action rows so the primary board area has the easily reachable control.
+- Positioned the moved Undo controls absolutely so they do not take layout space or push the board, status, log, or setup panels around.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open Ultimate Tic Tac Toe, Gomoku, and Dots and Boxes and confirm Undo appears at the top of the board area.
+- Make a move, confirm the top Undo button enables, and confirm pressing it undoes the move.
+- Confirm the board and surrounding panels do not shift when Undo enables or disables.
+
+Verification:
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/gomoku/ui.js`
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/ultimate-tic-tac-toe/logic.js`
+- `node --check games/gomoku/logic.js`
+- `node --check games/dots-and-boxes/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped control-placement pass. Connect Four Plus does not currently expose an Undo control to move.
+
 ## 2026-05-13 - Dots and Boxes Mobile Zoom Highlight
 
 - Removed undrawn edge hover/focus previews on coarse-pointer and no-hover devices so mobile taps do not leave a confusing pending-line highlight.

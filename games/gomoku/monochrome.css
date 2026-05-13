@@ -280,6 +280,39 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
   opacity: 1;
 }
 
+.gomoku-floating-undo {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  min-width: 6rem;
+  min-height: 2.75rem;
+  border: 2px solid var(--gomoku-fg);
+  border-radius: 0;
+  background: var(--gomoku-fg);
+  color: var(--gomoku-bg);
+  font-family: var(--gomoku-font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.gomoku-floating-undo:hover:not(:disabled),
+.gomoku-floating-undo:focus-visible:not(:disabled) {
+  background: var(--gomoku-bg);
+  color: var(--gomoku-fg);
+  outline: 3px solid var(--gomoku-fg);
+  outline-offset: 3px;
+}
+
+.gomoku-floating-undo:disabled {
+  background: var(--gomoku-muted);
+  color: var(--gomoku-muted-fg);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 .gomoku-board-panel {
   position: relative;
   overflow: hidden;

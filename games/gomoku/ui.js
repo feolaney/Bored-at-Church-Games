@@ -184,11 +184,11 @@
             '</dl>' +
             '<div class="gomoku-action-row">' +
               '<button type="button" data-role="new-game">New Game</button>' +
-              '<button type="button" data-role="undo-move">Undo</button>' +
             '</div>' +
           '</div>' +
         '</aside>' +
         '<section class="gomoku-board-panel" aria-labelledby="gomoku-board-heading">' +
+          '<button type="button" class="gomoku-floating-undo" data-role="undo-move" aria-label="Undo last move">Undo</button>' +
           '<div class="gomoku-board-heading">' +
             '<div>' +
               '<p class="gomoku-kicker">15 x 15 / freestyle</p>' +

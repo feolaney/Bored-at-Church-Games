@@ -110,6 +110,7 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 
 .dab-board-panel {
   order: 1;
+  position: relative;
 }
 
 .dab-status-panel {
@@ -303,6 +304,45 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   color: var(--dab-accent-fg);
   outline: 2px solid var(--dab-fg);
   outline-offset: 3px;
+}
+
+.dab-floating-undo {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 8;
+  min-width: 6rem;
+  min-height: 2.55rem;
+  border: 2px solid var(--dab-fg);
+  border-radius: 0;
+  background: var(--dab-bg);
+  color: var(--dab-fg);
+  padding: 0 12px;
+  font-family: var(--dab-font-display);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.dab-floating-undo:hover:not(:disabled),
+.dab-floating-undo:focus-visible:not(:disabled) {
+  background: var(--dab-accent);
+  color: var(--dab-accent-fg);
+  outline: 2px solid var(--dab-fg);
+  outline-offset: 3px;
+}
+
+.dab-floating-undo:disabled {
+  border-color: var(--dab-border);
+  color: var(--dab-muted-fg);
+  cursor: not-allowed;
+}
+
+.dab-floating-undo:disabled:hover {
+  background: var(--dab-bg);
+  color: var(--dab-muted-fg);
+  outline: 0;
 }
 
 .dab-zoom-icon {

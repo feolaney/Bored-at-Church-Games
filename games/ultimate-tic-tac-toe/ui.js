@@ -186,11 +186,11 @@
             '</div>' +
             '<div class="terminal-control-row">' +
               '<button type="button" data-role="new-game">[ NEW GAME ]</button>' +
-              '<button type="button" data-role="undo-move">[ UNDO ]</button>' +
             '</div>' +
           '</div>' +
         '</aside>' +
         '<section class="terminal-panel board-panel" aria-labelledby="board-heading">' +
+          '<button type="button" class="terminal-floating-undo" data-role="undo-move" aria-label="Undo last move">[ UNDO ]</button>' +
           '<div class="terminal-panel-title terminal-board-title" id="board-heading">' +
             '<span>+-- BOARD MATRIX --+</span>' +
             '<span class="board-turn-callout" data-role="board-turn-callout" aria-live="polite">TURN: Player X</span>' +

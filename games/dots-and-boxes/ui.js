@@ -231,6 +231,7 @@
       wrapper.innerHTML =
         '<section class="dab-board-panel" aria-labelledby="dab-board-heading">' +
           '<div class="dab-marquee" aria-hidden="true"><span>DRAW THE LINE / CLAIM THE BOX / KEEP THE TURN /</span><span>DRAW THE LINE / CLAIM THE BOX / KEEP THE TURN /</span></div>' +
+          '<button type="button" class="dab-floating-undo" data-role="undo-move" aria-label="Undo last move">Undo</button>' +
           '<div class="dab-board-heading">' +
             '<div>' +
               '<p class="dab-kicker">shared edges / territory race</p>' +
@@ -272,7 +273,6 @@
             '</dl>' +
             '<div class="dab-action-row">' +
               '<button type="button" data-role="new-game">New Game</button>' +
-              '<button type="button" data-role="undo-move">Undo</button>' +
             '</div>' +
             '<section class="dab-board-setup" aria-labelledby="dab-board-setup-heading">' +
               '<h2 id="dab-board-setup-heading">Board</h2>' +
