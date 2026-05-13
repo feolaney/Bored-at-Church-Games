@@ -1,5 +1,31 @@
 # Work History
 
+## 2026-05-13 - Gomoku
+
+- Added Gomoku as a self-contained game module with a pure 15 x 15 freestyle rules engine, local two-player UI, move log, last-move marker, win-line highlighting, draw detection, local rematch, and local stats support for named players.
+- Styled the game with the provided Minimalist Monochrome design direction: black/white editorial layout, sharp borders, serif display type, line textures, and no accent colors.
+- Registered Gomoku in the static library by adding its CSS and scripts to `index.html`.
+- Included the provided Gomoku rules PDF and monochrome design doc as source/reference material for the implementation.
+- Marked PDFs as binary in `.gitattributes` so future rule references do not get text diff whitespace checks.
+
+What to test:
+- Open the library and confirm Gomoku appears in the picker after Ultimate Tic Tac Toe and Connect Four Plus.
+- Launch Gomoku and confirm the board has 15 x 15 intersections, Black moves first, occupied intersections cannot be reused, and the turn/readout/log update after each move.
+- Create five Black stones in a row and confirm the result banner, winning line, highlighted stones, and New Game/Library actions appear.
+- Try New Game and Library from the ended state.
+
+Verification:
+- `node --check games/gomoku/logic.js`
+- `node --check games/gomoku/ui.js`
+- Node Gomoku logic smoke test covering horizontal, vertical, both diagonal directions, gaps, opponent splits, freestyle overlines, exact-five overlines, occupied-point rejection, and post-game move rejection.
+- Node registration smoke test confirming the library registry includes `gomoku` with a controller and rules text.
+- `git diff --check`
+- `git diff --cached --check`
+
+Known limitations:
+- Automated Safari browser verification was blocked because Safari remote automation is disabled; enabling it would change a persistent local security setting and was not performed.
+- This first version implements the recommended default freestyle local mode only; exact-five, Swap2, AI, timers, and online play remain future options.
+
 ## 2026-05-12 - Ultimate Tic Tac Toe Turn Callout
 
 - Added a high-visibility pulsing current-turn indicator in the Board Matrix header.
