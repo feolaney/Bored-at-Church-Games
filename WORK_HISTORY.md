@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Auto Line Target 38
+
+- Changed Dots and Boxes automatic safe-line seeding from a 30% target to a 38% target.
+- Updated the board setup button text and safety-limit status message to say `Auto Safe 38%`.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Start a fresh Dots and Boxes match and click `Auto Safe 38%`.
+- Confirm random blue auto lines appear, the button disables, and no box is left ready to be claimed in one move.
+
+Verification:
+- `node --check games/dots-and-boxes/logic.js`
+- `node --check games/dots-and-boxes/ui.js`
+- Node auto-line smoke test confirming a 38% target and no three-sided boxes.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped target-value pass.
+
 ## 2026-05-13 - Dots and Boxes Auto Line Target 30
 
 - Changed Dots and Boxes automatic safe-line seeding from a 25% target to a 30% target.

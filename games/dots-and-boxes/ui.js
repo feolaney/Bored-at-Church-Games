@@ -6,7 +6,7 @@
   var MIN_UI_SIZE = 2;
   var MAX_UI_SIZE = 20;
   var ZOOM_GATE_SIZE = 8;
-  var AUTO_LINE_RATIO = 0.3;
+  var AUTO_LINE_RATIO = 0.38;
   var PRESETS = [
     { width: 2, height: 2, label: "2 x 2" },
     { width: 3, height: 3, label: "3 x 3" },
@@ -270,7 +270,7 @@
                 '<button type="button" data-role="start-rectangle">Start Rectangle</button>' +
               '</div>' +
               '<div class="dab-action-row">' +
-                '<button type="button" data-role="auto-lines">Auto Safe 30%</button>' +
+                '<button type="button" data-role="auto-lines">Auto Safe 38%</button>' +
               '</div>' +
               '<details class="dab-shape-editor" data-role="shape-editor">' +
                 '<summary>Custom Shape</summary>' +
@@ -594,7 +594,7 @@
       var message = "Auto placed " + result.placedCount + " random safe lines.";
 
       if (result.safetyLimited) {
-        message += " Safety stopped before 30% to avoid one-move boxes.";
+        message += " Safety stopped before 38% to avoid one-move boxes.";
       }
 
       message += " " + getPlayerLabel(state.currentPlayer) + " opens.";
