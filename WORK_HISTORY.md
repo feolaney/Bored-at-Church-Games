@@ -1,5 +1,27 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Board Line Polish
+
+- Tightened Dots and Boxes board geometry so border lines extend to the dot centers instead of stopping away from the corners.
+- Reduced visible dot size while preserving larger edge tap targets.
+- Made the active turn easier to read with current-player styling on the turn callout, status panel, and active score readout.
+- Changed Player 2 ownership, drawn lines, and active-turn styling to red.
+- Removed drawn-edge text from line buttons and centered the last-move outline on the actual line so selected lines stay aligned with the dot grid.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Launch Dots and Boxes and confirm the line segments visually meet the small corner dots.
+- Draw lines for both players and confirm Player 2's lines/boxes are red.
+- Confirm the turn callout and score readout clearly switch between Player 1 and Player 2.
+
+Verification:
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/dots-and-boxes/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped visual/CSS pass.
+
 ## 2026-05-13 - Dots and Boxes
 
 - Added Dots and Boxes as a self-contained game module with a pure shared-edge rules engine, local two-player UI, move log, undo before final results, rectangular size presets, width/height custom rectangles, and a custom shape editor.

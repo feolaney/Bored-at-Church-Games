@@ -637,17 +637,29 @@
 
     function renderStatus() {
       var namesLocked = state.drawnEdgeCount > 0;
+      var isPlayerOneTurn = !state.result && state.currentPlayer === engine.PLAYER_ONE;
+      var isPlayerTwoTurn = !state.result && state.currentPlayer === engine.PLAYER_TWO;
 
       els.statusLine.classList.toggle("error", Boolean(state.lastError));
+      els.statusLine.classList.toggle("is-p1-turn", isPlayerOneTurn);
+      els.statusLine.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.statusLine.textContent = getStatusText();
       els.turnReadout.textContent = state.result ? "Ended" : getPlayerLabel(state.currentPlayer);
       els.turnCallout.classList.toggle("ended", Boolean(state.result));
+      els.turnCallout.classList.toggle("is-p1-turn", isPlayerOneTurn);
+      els.turnCallout.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.turnCallout.textContent = state.result ? "Session complete" : getPlayerLabel(state.currentPlayer) + " to draw";
+      els.turnReadout.classList.toggle("is-p1-turn", isPlayerOneTurn);
+      els.turnReadout.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.boardSize.textContent = currentBoard.label;
       els.moveCount.textContent = state.drawnEdgeCount + " / " + state.totalEdges;
       els.linesLeft.textContent = String(state.totalEdges - state.drawnEdgeCount);
       els.p1Score.textContent = String(state.scores.P1);
       els.p2Score.textContent = String(state.scores.P2);
+      els.p1Score.parentElement.classList.toggle("is-current-turn", isPlayerOneTurn);
+      els.p1Score.parentElement.classList.toggle("is-p1-turn", isPlayerOneTurn);
+      els.p2Score.parentElement.classList.toggle("is-current-turn", isPlayerTwoTurn);
+      els.p2Score.parentElement.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.undoMove.disabled = state.history.length === 0 || Boolean(state.result);
       els.p1Name.disabled = namesLocked;
       els.p2Name.disabled = namesLocked;
@@ -774,7 +786,6 @@
 
       if (edge.drawn) {
         element.classList.add("is-drawn", edge.drawnBy === engine.PLAYER_ONE ? "is-p1" : "is-p2");
-        element.textContent = engine.playerShortLabel(edge.drawnBy);
       }
 
       if (isLast) {

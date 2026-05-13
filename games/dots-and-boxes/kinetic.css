@@ -5,11 +5,15 @@ body.game-mode[data-active-game="dots-and-boxes"] {
   --dab-muted-fg: #a1a1aa;
   --dab-accent: #dfe104;
   --dab-accent-fg: #000000;
+  --dab-p2: #ef1d2f;
+  --dab-p2-fg: #ffffff;
   --dab-border: #3f3f46;
   --dab-font-display: "Space Grotesk", "Inter", "Arial Black", Arial, sans-serif;
   --dab-font-body: "Inter", Arial, sans-serif;
-  --dab-dot-track: 42px;
-  --dab-box-track: 54px;
+  --dab-dot-track: 18px;
+  --dab-box-track: 58px;
+  --dab-line-weight: 7px;
+  --dab-touch-track: 42px;
   background: var(--dab-bg);
   color: var(--dab-fg);
   font-family: var(--dab-font-body);
@@ -218,9 +222,22 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   text-transform: uppercase;
 }
 
+.dab-turn-callout.is-p1-turn {
+  border-color: var(--dab-accent);
+  background: var(--dab-accent);
+  color: var(--dab-accent-fg);
+}
+
+.dab-turn-callout.is-p2-turn {
+  border-color: var(--dab-p2);
+  background: var(--dab-p2);
+  color: var(--dab-p2-fg);
+}
+
 .dab-turn-callout.ended {
   border-color: var(--dab-fg);
   background: var(--dab-fg);
+  color: var(--dab-accent-fg);
 }
 
 .dab-result-banner {
@@ -306,7 +323,7 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   min-width: min(100%, 320px);
   border: 2px solid var(--dab-fg);
   background: var(--dab-muted);
-  padding: 8px;
+  padding: 14px;
 }
 
 .dab-dot,
@@ -321,13 +338,14 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   display: grid;
   place-items: center;
   position: relative;
+  z-index: 4;
 }
 
 .dab-dot::before {
   content: "";
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--dab-fg);
+  width: 8px;
+  height: 8px;
+  border: 0;
   border-radius: 999px;
   background: var(--dab-fg);
 }
@@ -336,6 +354,8 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   position: relative;
   display: grid;
   place-items: center;
+  align-self: center;
+  justify-self: center;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -346,6 +366,20 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1;
+  overflow: visible;
+  z-index: 2;
+}
+
+.dab-edge-h {
+  width: 100%;
+  height: var(--dab-touch-track);
+  margin-block: calc((var(--dab-touch-track) - var(--dab-dot-track)) / -2);
+}
+
+.dab-edge-v {
+  width: var(--dab-touch-track);
+  height: 100%;
+  margin-inline: calc((var(--dab-touch-track) - var(--dab-dot-track)) / -2);
 }
 
 .dab-edge::before {
@@ -355,13 +389,13 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 }
 
 .dab-edge-h::before {
-  width: calc(100% - 10px);
-  height: 8px;
+  width: calc(100% + var(--dab-dot-track));
+  height: var(--dab-line-weight);
 }
 
 .dab-edge-v::before {
-  width: 8px;
-  height: calc(100% - 10px);
+  width: var(--dab-line-weight);
+  height: calc(100% + var(--dab-dot-track));
 }
 
 .dab-edge:not(:disabled):hover::before,
@@ -375,7 +409,7 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 }
 
 .dab-edge.is-drawn {
-  color: var(--dab-accent-fg);
+  color: transparent;
   cursor: default;
   opacity: 1;
 }
@@ -389,22 +423,41 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 }
 
 .dab-edge.is-drawn.is-p2::before {
-  background: var(--dab-fg);
+  background: var(--dab-p2);
 }
 
 .dab-edge.is-last::after {
   content: "";
   position: absolute;
-  inset: 8px;
   border: 2px solid var(--dab-accent);
   animation: dab-pulse 2.8s ease-in-out infinite;
   pointer-events: none;
 }
 
+.dab-edge.is-last.is-p2::after {
+  border-color: var(--dab-p2);
+}
+
+.dab-edge-h.is-last::after {
+  left: 50%;
+  top: 50%;
+  width: calc(100% + var(--dab-dot-track) + 10px);
+  height: calc(var(--dab-line-weight) + 14px);
+  transform: translate(-50%, -50%);
+}
+
+.dab-edge-v.is-last::after {
+  left: 50%;
+  top: 50%;
+  width: calc(var(--dab-line-weight) + 14px);
+  height: calc(100% + var(--dab-dot-track) + 10px);
+  transform: translate(-50%, -50%);
+}
+
 .dab-box {
   display: grid;
   place-items: center;
-  border: 1px solid #3f3f46;
+  border: 0;
   background: #18181b;
   color: var(--dab-fg);
   font-family: var(--dab-font-display);
@@ -422,9 +475,8 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 }
 
 .dab-box.is-owned.is-p2 {
-  border-color: var(--dab-fg);
-  background: var(--dab-fg);
-  color: var(--dab-accent-fg);
+  background: var(--dab-p2);
+  color: var(--dab-p2-fg);
 }
 
 .dab-box.is-last-capture {
@@ -446,6 +498,14 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.35;
+}
+
+.dab-status-line.is-p1-turn {
+  border-left-color: var(--dab-accent);
+}
+
+.dab-status-line.is-p2-turn {
+  border-left-color: var(--dab-p2);
 }
 
 .dab-status-line.error {
@@ -521,6 +581,16 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   padding: 10px;
 }
 
+.dab-readout-grid div.is-current-turn.is-p1-turn {
+  background: var(--dab-accent);
+  color: var(--dab-accent-fg);
+}
+
+.dab-readout-grid div.is-current-turn.is-p2-turn {
+  background: var(--dab-p2);
+  color: var(--dab-p2-fg);
+}
+
 .dab-readout-grid dt {
   color: var(--dab-muted-fg);
   font-family: var(--dab-font-display);
@@ -528,6 +598,11 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   font-weight: 900;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.dab-readout-grid div.is-current-turn dt,
+.dab-readout-grid div.is-current-turn dd {
+  color: inherit;
 }
 
 .dab-readout-grid dd {
@@ -540,6 +615,19 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   line-height: 1;
   overflow-wrap: anywhere;
   text-transform: uppercase;
+}
+
+.dab-readout-grid dd.is-p1-turn {
+  color: var(--dab-accent);
+}
+
+.dab-readout-grid dd.is-p2-turn {
+  color: var(--dab-p2);
+}
+
+.dab-readout-grid div.is-current-turn dd.is-p1-turn,
+.dab-readout-grid div.is-current-turn dd.is-p2-turn {
+  color: inherit;
 }
 
 .dab-board-setup {
@@ -684,12 +772,10 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   0%,
   100% {
     opacity: 0.35;
-    transform: scale(0.94);
   }
 
   50% {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -737,8 +823,9 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 
 @media (min-width: 980px) {
   .dots-boxes-game {
-    --dab-dot-track: 46px;
-    --dab-box-track: 68px;
+    --dab-dot-track: 20px;
+    --dab-box-track: 66px;
+    --dab-touch-track: 46px;
   }
 }
 
