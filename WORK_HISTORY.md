@@ -1,5 +1,26 @@
 # Work History
 
+## 2026-05-13 - Hide Design Style Labels
+
+- Removed user-visible design style labels from the shared library shell by replacing active-game header subtitles with gameplay metadata and removing the detail-page `theme` row.
+- Removed existing `themeLabel` registration values from Gomoku, Ultimate Tic Tac Toe, and Connect Four Plus.
+- Added an `AGENTS.md` rule that design-system/style labels must not be shown in player-facing game or library UI.
+
+What to test:
+- Open each game detail page and confirm there is no visible `theme` metadata row.
+- Launch Gomoku, Ultimate Tic Tac Toe, and Connect Four Plus and confirm the header subtitle describes gameplay metadata instead of a visual design style.
+
+Verification:
+- `node --check library/app.js`
+- `node --check games/gomoku/ui.js`
+- `node --check games/ultimate-tic-tac-toe/ui.js`
+- `node --check games/connect-four-plus/ui.js`
+- Node registration smoke test confirming no registered game exposes `themeLabel`.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run in this metadata-only pass.
+
 ## 2026-05-13 - Gomoku Board-First Layout
 
 - Moved the Gomoku board to a full-width top row so it appears above the Match panel on desktop and mobile.

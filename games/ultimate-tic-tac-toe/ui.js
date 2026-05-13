@@ -718,7 +718,6 @@
     players: "2 local",
     duration: "10-25 min",
     type: "strategy",
-    themeLabel: "Terminal CLI",
     description: "A recursive tic tac toe match where every square controls the next mini-board. Win small boards to claim the large board before your opponent can route you into a trap.",
     rules: [
       "X opens the match and may play anywhere.",

@@ -681,7 +681,6 @@
     players: "2 local",
     duration: "10-30 min",
     type: "abstract strategy",
-    themeLabel: "Minimalist Monochrome",
     description: "A stark 15 x 15 freestyle five-in-a-row match. Black opens, players place stones on intersections, and the first unbroken line of five or more wins.",
     rules: [
       "Black moves first on an empty 15 x 15 intersection grid.",

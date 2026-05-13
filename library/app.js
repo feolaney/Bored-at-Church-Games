@@ -281,7 +281,7 @@
 
     if (currentView === "game" && activeGame) {
       els.appTitle.textContent = activeGame.title;
-      els.appSubtitle.textContent = activeGame.themeLabel || "Game session";
+      els.appSubtitle.textContent = activeGame.players + " | " + activeGame.duration + " | " + activeGame.type;
       setCommand("> " + activeGame.command);
       els.sessionChip.textContent = "SESSION: ACTIVE";
       return;
@@ -417,8 +417,7 @@
       ["status", activeGame.status.toUpperCase()],
       ["players", activeGame.players],
       ["duration", activeGame.duration],
-      ["type", activeGame.type],
-      ["theme", activeGame.themeLabel || "custom"]
+      ["type", activeGame.type]
     ];
 
     els.detailCommand.textContent = "> " + activeGame.command + " --about";

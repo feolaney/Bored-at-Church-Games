@@ -2476,7 +2476,6 @@
     players: "2 local",
     duration: "8-25 min",
     type: "strategy / variants",
-    themeLabel: "Bauhaus",
     description: "A selectable Connect Four Plus collection with Power Duel, preset power arsenals, bomb and 2x lock powerups, gravity, forced wild pieces, board-shift, token, simultaneous planning, and classic play.",
     rules: [
       "Choose a Connect Four Plus variant before the match starts.",
