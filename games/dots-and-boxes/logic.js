@@ -531,7 +531,7 @@
 
   function autoPlaceSafeLines(state, options) {
     var opts = options || {};
-    var targetRatio = Number(opts.targetRatio) || 0.45;
+    var targetRatio = Number(opts.targetRatio) || 0.25;
     var targetEdgeCount = Math.floor(state.totalEdges * Math.max(0, Math.min(1, targetRatio)));
     var random = createRandom(opts.seed);
     var candidates = getRandomAutoLineCandidates(state, random);
