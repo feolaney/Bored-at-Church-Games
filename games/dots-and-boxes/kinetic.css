@@ -900,6 +900,171 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
   text-transform: uppercase;
 }
 
+.dab-metrics-panel {
+  margin: 0 14px 16px;
+  border-top: 2px solid var(--dab-border);
+  padding-top: 14px;
+}
+
+.dab-metrics-panel[hidden] {
+  display: none;
+}
+
+.dab-metrics-panel h2,
+.dab-metrics-block h3 {
+  margin: 0;
+  color: var(--dab-fg);
+  font-family: var(--dab-font-display);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dab-metrics-panel h2 {
+  font-size: 1.35rem;
+}
+
+.dab-metrics-block h3 {
+  margin-bottom: 10px;
+  color: var(--dab-accent);
+  font-size: 0.86rem;
+}
+
+.dab-metrics-summary {
+  margin: 8px 0 12px;
+  color: var(--dab-muted-fg);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.dab-metrics-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.25fr);
+  gap: 10px;
+}
+
+.dab-metrics-block {
+  min-width: 0;
+  border: 2px solid var(--dab-border);
+  background: #101014;
+  padding: 12px;
+}
+
+.dab-timeline-block {
+  grid-column: 1 / -1;
+}
+
+.dab-score-pie {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 180px);
+  aspect-ratio: 1;
+  margin: 0 auto 12px;
+  border: 2px solid var(--dab-fg);
+  border-radius: 999px;
+}
+
+.dab-score-pie::after {
+  content: "";
+  position: absolute;
+  inset: 24%;
+  border: 2px solid var(--dab-fg);
+  border-radius: 999px;
+  background: var(--dab-bg);
+}
+
+.dab-score-pie span {
+  position: relative;
+  z-index: 1;
+  color: var(--dab-fg);
+  font-family: var(--dab-font-display);
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.dab-score-legend,
+.dab-timeline-legend,
+.dab-metric-readouts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.dab-score-legend div,
+.dab-timeline-legend div,
+.dab-metric-readouts div {
+  min-width: 0;
+  border: 1px solid var(--dab-border);
+  background: var(--dab-bg);
+  padding: 8px;
+}
+
+.dab-score-legend dt,
+.dab-timeline-legend dt,
+.dab-metric-readouts dt {
+  color: var(--dab-muted-fg);
+  font-family: var(--dab-font-display);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.dab-score-legend dd,
+.dab-timeline-legend dd,
+.dab-metric-readouts dd {
+  margin: 4px 0 0;
+  color: var(--dab-fg);
+  font-family: var(--dab-font-display);
+  font-size: 0.94rem;
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.dab-timeline-chart {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.dab-timeline-chart svg {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+  border: 2px solid var(--dab-border);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 35%),
+    var(--dab-bg);
+}
+
+.dab-timeline-grid-line {
+  stroke: var(--dab-border);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.dab-timeline-line {
+  fill: none;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.dab-timeline-line.is-p1 {
+  stroke: var(--dab-accent);
+}
+
+.dab-timeline-line.is-p2 {
+  stroke: var(--dab-p2);
+}
+
 @keyframes dab-marquee {
   from {
     transform: translateX(0);
@@ -982,6 +1147,15 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 
   .dab-readout-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dab-metrics-grid,
+  .dab-timeline-chart {
+    grid-template-columns: 1fr;
+  }
+
+  .dab-timeline-block {
+    grid-column: auto;
   }
 }
 

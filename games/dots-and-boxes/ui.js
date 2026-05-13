@@ -253,6 +253,7 @@
           '<div class="dab-board-scroll" data-role="board-scroll">' +
             '<div class="dab-board-grid" data-role="board" role="grid" aria-label="Dots and Boxes board"></div>' +
           '</div>' +
+          '<section class="dab-metrics-panel" data-role="metrics-panel" aria-labelledby="dab-metrics-heading" hidden></section>' +
         '</section>' +
         '<aside class="dab-panel dab-status-panel" aria-labelledby="dab-status-heading">' +
           '<div class="dab-panel-title" id="dab-status-heading">Match</div>' +
@@ -335,6 +336,7 @@
         "zoom-out",
         "board-scroll",
         "board",
+        "metrics-panel",
         "status-line",
         "p1-name",
         "p2-name",
@@ -738,6 +740,7 @@
       renderShapeEditor();
       syncZoomPresentation();
       renderLog();
+      renderMetrics();
     }
 
     function syncPlayerInputs() {
@@ -930,6 +933,292 @@
       els.resultBanner.hidden = true;
       els.endActions.hidden = true;
       els.resultBanner.textContent = "";
+    }
+
+    function createMetricReadout(label, value) {
+      var item = document.createElement("div");
+      var term = document.createElement("dt");
+      var detail = document.createElement("dd");
+
+      term.textContent = label;
+      detail.textContent = value;
+      item.append(term, detail);
+      return item;
+    }
+
+    function formatPercentValue(value, total) {
+      if (!total) {
+        return "0%";
+      }
+
+      return Math.round((value / total) * 100) + "%";
+    }
+
+    function countLeadChanges(timeline) {
+      var previousLeader = null;
+      var changes = 0;
+
+      timeline.forEach(function (point) {
+        var leader = null;
+
+        if (point.p1 > point.p2) {
+          leader = engine.PLAYER_ONE;
+        } else if (point.p2 > point.p1) {
+          leader = engine.PLAYER_TWO;
+        }
+
+        if (leader && previousLeader && leader !== previousLeader) {
+          changes += 1;
+        }
+
+        if (leader) {
+          previousLeader = leader;
+        }
+      });
+
+      return changes;
+    }
+
+    function createMatchMetrics() {
+      var p1Score = 0;
+      var p2Score = 0;
+      var timeline = [{ move: 0, p1: 0, p2: 0 }];
+      var scoringMoves = [];
+      var biggestCapture = { count: 0, player: null, move: null };
+      var currentRun = { player: null, count: 0 };
+      var longestRun = { player: null, count: 0 };
+
+      state.moveHistory.forEach(function (move) {
+        var captured = move.completedBoxIds.length;
+
+        if (captured && move.player === engine.PLAYER_ONE) {
+          p1Score += captured;
+        } else if (captured && move.player === engine.PLAYER_TWO) {
+          p2Score += captured;
+        }
+
+        if (captured) {
+          scoringMoves.push(move);
+
+          if (captured > biggestCapture.count) {
+            biggestCapture = { count: captured, player: move.player, move: move };
+          }
+
+          if (currentRun.player === move.player) {
+            currentRun.count += captured;
+          } else {
+            currentRun = { player: move.player, count: captured };
+          }
+
+          if (currentRun.count > longestRun.count) {
+            longestRun = { player: currentRun.player, count: currentRun.count };
+          }
+        } else {
+          currentRun = { player: null, count: 0 };
+        }
+
+        timeline.push({
+          move: move.index,
+          p1: p1Score,
+          p2: p2Score
+        });
+      });
+
+      return {
+        p1Score: state.scores.P1,
+        p2Score: state.scores.P2,
+        totalBoxes: Math.max(0, state.totalBoxes),
+        totalMoves: state.moveHistory.length,
+        p1Lines: linesForPlayer(engine.PLAYER_ONE),
+        p2Lines: linesForPlayer(engine.PLAYER_TWO),
+        scoringMoves: scoringMoves,
+        biggestCapture: biggestCapture,
+        longestRun: longestRun,
+        leadChanges: countLeadChanges(timeline),
+        timeline: timeline
+      };
+    }
+
+    function createScoreShare(metrics) {
+      var block = document.createElement("section");
+      var heading = document.createElement("h3");
+      var chart = document.createElement("div");
+      var center = document.createElement("span");
+      var legend = document.createElement("dl");
+      var totalScore = metrics.p1Score + metrics.p2Score;
+      var p1Degrees = totalScore ? Math.round((metrics.p1Score / totalScore) * 360) : 180;
+
+      block.className = "dab-metrics-block dab-score-share";
+      heading.textContent = "Score Share";
+      chart.className = "dab-score-pie";
+      chart.style.background = "conic-gradient(var(--dab-accent) 0deg " + p1Degrees + "deg, var(--dab-p2) " + p1Degrees + "deg 360deg)";
+      chart.setAttribute("aria-label", getPlayerLabel(engine.PLAYER_ONE) + " " + metrics.p1Score + " boxes, " + getPlayerLabel(engine.PLAYER_TWO) + " " + metrics.p2Score + " boxes");
+      center.textContent = metrics.p1Score + "-" + metrics.p2Score;
+      chart.appendChild(center);
+
+      legend.className = "dab-score-legend";
+      legend.append(
+        createMetricReadout(getPlayerLabel(engine.PLAYER_ONE), metrics.p1Score + " boxes / " + formatPercentValue(metrics.p1Score, totalScore)),
+        createMetricReadout(getPlayerLabel(engine.PLAYER_TWO), metrics.p2Score + " boxes / " + formatPercentValue(metrics.p2Score, totalScore))
+      );
+
+      block.append(heading, chart, legend);
+      return block;
+    }
+
+    function createSvgElement(tagName) {
+      return document.createElementNS("http://www.w3.org/2000/svg", tagName);
+    }
+
+    function formatSvgPoint(x, y) {
+      return x.toFixed(2) + "," + y.toFixed(2);
+    }
+
+    function scoreTimelineY(score, maxScore) {
+      return 56 - (score / maxScore) * 46;
+    }
+
+    function scoreForPlayer(point, player) {
+      return player === engine.PLAYER_ONE ? point.p1 : point.p2;
+    }
+
+    function buildScorePolyline(metrics, player, maxScore) {
+      var totalMoves = Math.max(1, metrics.totalMoves);
+      var points = [formatSvgPoint(4, scoreTimelineY(0, maxScore))];
+      var previousScore = 0;
+
+      metrics.timeline.slice(1).forEach(function (point) {
+        var x = 4 + (point.move / totalMoves) * 92;
+        var nextScore = scoreForPlayer(point, player);
+
+        points.push(formatSvgPoint(x, scoreTimelineY(previousScore, maxScore)));
+        points.push(formatSvgPoint(x, scoreTimelineY(nextScore, maxScore)));
+        previousScore = nextScore;
+      });
+
+      points.push(formatSvgPoint(96, scoreTimelineY(previousScore, maxScore)));
+      return points.join(" ");
+    }
+
+    function appendTimelineGrid(svg, maxScore) {
+      [0, 0.5, 1].forEach(function (step) {
+        var line = createSvgElement("line");
+        var y = scoreTimelineY(maxScore * step, maxScore);
+
+        line.setAttribute("x1", "4");
+        line.setAttribute("x2", "96");
+        line.setAttribute("y1", String(y));
+        line.setAttribute("y2", String(y));
+        line.setAttribute("class", "dab-timeline-grid-line");
+        svg.appendChild(line);
+      });
+    }
+
+    function createScoreTimeline(metrics) {
+      var block = document.createElement("section");
+      var heading = document.createElement("h3");
+      var chartWrap = document.createElement("div");
+      var svg = createSvgElement("svg");
+      var p1Line = createSvgElement("polyline");
+      var p2Line = createSvgElement("polyline");
+      var legend = document.createElement("dl");
+      var maxScore = Math.max(1, metrics.p1Score, metrics.p2Score);
+
+      block.className = "dab-metrics-block dab-timeline-block";
+      heading.textContent = "Capture Timeline";
+      chartWrap.className = "dab-timeline-chart";
+      svg.setAttribute("viewBox", "0 0 100 64");
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", "Cumulative boxes captured over " + metrics.totalMoves + " player moves.");
+
+      appendTimelineGrid(svg, maxScore);
+
+      p1Line.setAttribute("points", buildScorePolyline(metrics, engine.PLAYER_ONE, maxScore));
+      p1Line.setAttribute("class", "dab-timeline-line is-p1");
+      p2Line.setAttribute("points", buildScorePolyline(metrics, engine.PLAYER_TWO, maxScore));
+      p2Line.setAttribute("class", "dab-timeline-line is-p2");
+      svg.append(p1Line, p2Line);
+
+      legend.className = "dab-timeline-legend";
+      legend.append(
+        createMetricReadout(engine.playerShortLabel(engine.PLAYER_ONE), metrics.p1Score + " boxes"),
+        createMetricReadout(engine.playerShortLabel(engine.PLAYER_TWO), metrics.p2Score + " boxes")
+      );
+
+      chartWrap.append(svg, legend);
+      block.append(heading, chartWrap);
+      return block;
+    }
+
+    function describeCaptureMove(capture) {
+      if (!capture.move) {
+        return "None";
+      }
+
+      return engine.playerShortLabel(capture.player) + " +" + capture.count + " on " + capture.move.label;
+    }
+
+    function describeCaptureRun(run) {
+      if (!run.player || !run.count) {
+        return "None";
+      }
+
+      return engine.playerShortLabel(run.player) + " +" + run.count + " boxes";
+    }
+
+    function createMetricSummary(metrics) {
+      var block = document.createElement("section");
+      var heading = document.createElement("h3");
+      var readouts = document.createElement("dl");
+
+      block.className = "dab-metrics-block dab-summary-block";
+      heading.textContent = "Match Readouts";
+      readouts.className = "dab-metric-readouts";
+      readouts.append(
+        createMetricReadout("player moves", String(metrics.totalMoves)),
+        createMetricReadout("scoring turns", String(metrics.scoringMoves.length)),
+        createMetricReadout("biggest turn", describeCaptureMove(metrics.biggestCapture)),
+        createMetricReadout("longest run", describeCaptureRun(metrics.longestRun)),
+        createMetricReadout("lead changes", String(metrics.leadChanges)),
+        createMetricReadout(engine.playerShortLabel(engine.PLAYER_ONE) + " yield", formatPercentValue(metrics.p1Score, metrics.p1Lines)),
+        createMetricReadout(engine.playerShortLabel(engine.PLAYER_TWO) + " yield", formatPercentValue(metrics.p2Score, metrics.p2Lines))
+      );
+
+      block.append(heading, readouts);
+      return block;
+    }
+
+    function renderMetrics() {
+      var metrics;
+      var heading;
+      var summary;
+      var grid;
+
+      els.metricsPanel.replaceChildren();
+
+      if (!state.result) {
+        els.metricsPanel.hidden = true;
+        return;
+      }
+
+      metrics = createMatchMetrics();
+      heading = document.createElement("h2");
+      summary = document.createElement("p");
+      grid = document.createElement("div");
+
+      els.metricsPanel.hidden = false;
+      heading.id = "dab-metrics-heading";
+      heading.textContent = "Match Metrics";
+      summary.className = "dab-metrics-summary";
+      summary.textContent = metrics.totalBoxes + " boxes closed across " + metrics.totalMoves + " player moves on " + currentBoard.label + ".";
+      grid.className = "dab-metrics-grid";
+      grid.append(
+        createScoreShare(metrics),
+        createMetricSummary(metrics),
+        createScoreTimeline(metrics)
+      );
+
+      els.metricsPanel.append(heading, summary, grid);
     }
 
     function renderBoardPresets() {

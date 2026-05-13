@@ -1,5 +1,25 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Postgame Metrics
+
+- Added a Dots and Boxes postgame metrics section that appears after a match result.
+- Generated a score-share pie chart, cumulative capture timeline, and match readouts from the existing move history and final scores.
+- Included scoring turns, biggest capture turn, longest box run, lead changes, and per-player box yield.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Finish a Dots and Boxes match and confirm the `Match Metrics` section appears below the board.
+- Confirm the pie chart matches the final score and the capture timeline rises when each player claims boxes.
+- Confirm starting a new game hides the metrics section again.
+
+Verification:
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/dots-and-boxes/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped postgame UI metrics pass.
+
 ## 2026-05-13 - Floating Undo Controls
 
 - Moved the existing Undo controls for Ultimate Tic Tac Toe, Gomoku, and Dots and Boxes into floating controls at the top of each board panel.
