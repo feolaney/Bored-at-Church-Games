@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-13 - Mobile Library Card Spacing
+
+- Removed the library intro sentence under `Choose Your Session`.
+- Changed homepage game cards from grid-based button layout to a flex layout with normalized button appearance to avoid mobile text overflow.
+- Let the mobile game list use page scrolling instead of a constrained nested scroller, with tighter mobile card typography and spacing.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the homepage on a phone-width viewport and confirm game cards stack without overlapping text or borders.
+- Confirm the `Choose Your Session` panel no longer shows the old game-registration sentence.
+- Select a game from the mobile homepage and confirm the game detail screen still opens.
+
+Verification:
+- `node --check library/app.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped homepage CSS/markup pass.
+
 ## 2026-05-13 - Dots and Boxes Auto Solve Board Controls
 
 - Moved the Dots and Boxes auto preset controls above the board grid.
