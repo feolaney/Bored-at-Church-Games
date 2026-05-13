@@ -1,5 +1,20 @@
 # Work History
 
+## 2026-05-13 - Gomoku Board-First Layout
+
+- Moved the Gomoku board to a full-width top row so it appears above the Match panel on desktop and mobile.
+- Kept Match and Rules / Log beneath the board in the same scoped Gomoku layout.
+
+What to test:
+- Launch Gomoku and confirm the board appears above the Match section.
+- Confirm the Match controls, Rules / Log panel, winning line, and pulsing winning rings still work after the layout change.
+
+Verification:
+- `node --check games/gomoku/logic.js`
+- `node --check games/gomoku/ui.js`
+- `git diff --check`
+- `git diff --cached --check`
+
 ## 2026-05-13 - Gomoku Winning Ring Pulse
 
 - Added a slow pulse animation to the outline rings around stones in the completed five-in-a-row.

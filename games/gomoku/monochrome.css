@@ -103,10 +103,23 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
 
 .gomoku-game {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(230px, 310px);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
   gap: 18px;
   align-items: start;
   font-family: var(--gomoku-font-body);
+}
+
+.gomoku-board-panel {
+  grid-column: 1 / -1;
+  order: 1;
+}
+
+.gomoku-status-panel {
+  order: 2;
+}
+
+.gomoku-log-panel {
+  order: 3;
 }
 
 .gomoku-panel,
@@ -584,19 +597,6 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
   .gomoku-game {
     grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
   }
-
-  .gomoku-status-panel {
-    order: 2;
-  }
-
-  .gomoku-board-panel {
-    grid-column: 1 / -1;
-    order: 1;
-  }
-
-  .gomoku-log-panel {
-    order: 3;
-  }
 }
 
 @media (max-width: 760px) {
@@ -618,12 +618,6 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
   .gomoku-game {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-
-  .gomoku-status-panel,
-  .gomoku-log-panel,
-  .gomoku-board-panel {
-    order: initial;
   }
 
   .gomoku-board-heading {
