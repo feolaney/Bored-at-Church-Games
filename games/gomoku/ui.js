@@ -504,6 +504,8 @@
       els.statusLine.textContent = getStatusText();
       els.turnReadout.textContent = state.result ? "Ended" : getPlayerLabel(state.currentPlayer);
       els.turnCallout.classList.toggle("ended", Boolean(state.result));
+      els.turnCallout.classList.toggle("is-black-turn", !state.result && state.currentPlayer === engine.BLACK);
+      els.turnCallout.classList.toggle("is-white-turn", !state.result && state.currentPlayer === engine.WHITE);
       els.turnCallout.textContent = state.result ? "Session complete" : getPlayerLabel(state.currentPlayer) + " to move";
       els.moveCount.textContent = state.occupiedCount + " / " + (state.boardSize * state.boardSize);
       els.lastMove.textContent = state.lastMove ? state.lastMove.coordinate : "--";

@@ -375,6 +375,11 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
   text-transform: uppercase;
 }
 
+.gomoku-turn-callout.is-white-turn {
+  background: var(--gomoku-bg);
+  color: var(--gomoku-fg);
+}
+
 .gomoku-turn-callout.ended {
   background: var(--gomoku-bg);
   color: var(--gomoku-fg);

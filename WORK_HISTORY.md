@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-13 - Gomoku White Turn Callout
+
+- Updated the Gomoku turn callout so White's turn renders as a white box with black text and border, while Black's turn keeps the black-filled treatment.
+- Kept completed matches on the existing neutral ended styling.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open Gomoku and confirm the opening `Black to move` callout is black-filled.
+- Place one black stone and confirm the `White to move` callout switches to a white box.
+- Finish or reset a match and confirm the callout/result states still render cleanly.
+
+Verification:
+- `node --check games/gomoku/ui.js`
+- `node --check games/gomoku/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped turn-callout styling pass.
+
 ## 2026-05-13 - Connect Four Plus Undo
 
 - Added engine-level undo history to Connect Four Plus, storing full state snapshots before successful drops, board-targeting powers, Double Drop activation, and simultaneous planning actions.
