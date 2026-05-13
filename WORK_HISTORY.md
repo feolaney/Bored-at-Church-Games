@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-13 - Connect Four Plus Logo Circles
+
+- Updated the library Connect Four Plus logo styling so the 4 x 4 token grid uses explicit equal rows and columns.
+- Made each logo token and empty hole a true 1:1 circle instead of allowing stretched or square cells.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the game library and confirm the Connect Four Plus card logo uses round token holes.
+- Open the Connect Four Plus detail view and confirm the larger logo also keeps round circles.
+
+Verification:
+- `node --check library/app.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped library logo CSS pass.
+
 ## 2026-05-13 - Gomoku White Turn Callout
 
 - Updated the Gomoku turn callout so White's turn renders as a white box with black text and border, while Black's turn keeps the black-filled treatment.

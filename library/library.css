@@ -455,6 +455,7 @@ body.library-mode[data-active-view="menu"] #app-title {
 
 .game-logo-connect-four-plus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
   gap: 4px;
   border: 3px solid #121212;
   background: #f0c020;
@@ -465,14 +466,18 @@ body.library-mode[data-active-view="menu"] #app-title {
 .game-logo-connect-four-plus .logo-token {
   display: grid;
   place-items: center;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  aspect-ratio: 1;
   min-width: 0;
   border: 2px solid #121212;
+  border-radius: 50%;
   background: #ffffff;
 }
 
 .game-logo-connect-four-plus .logo-token.is-red,
 .game-logo-connect-four-plus .logo-token.is-yellow {
-  border-radius: 50%;
   box-shadow: 2px 2px 0 0 #121212;
 }
 
