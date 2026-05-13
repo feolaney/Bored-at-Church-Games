@@ -6,7 +6,11 @@
   var MIN_UI_SIZE = 2;
   var MAX_UI_SIZE = 20;
   var ZOOM_GATE_SIZE = 8;
-  var AUTO_LINE_RATIO = 0.38;
+  var AUTO_LINE_OPTIONS = [
+    { ratio: 0.3, label: "30%" },
+    { ratio: 0.38, label: "38%" },
+    { ratio: 0.44, label: "44%" }
+  ];
   var PRESETS = [
     { width: 2, height: 2, label: "2 x 2" },
     { width: 3, height: 3, label: "3 x 3" },
@@ -18,6 +22,12 @@
     { width: 20, height: 20, label: "20 x 20" },
     { width: 5, height: 3, label: "5 x 3" }
   ];
+
+  function createAutoLineButtonMarkup() {
+    return AUTO_LINE_OPTIONS.map(function (option) {
+      return '<button type="button" data-auto-ratio="' + option.ratio + '">Auto Safe ' + option.label + '</button>';
+    }).join("");
+  }
 
   function createEmptyStats() {
     return {
@@ -269,8 +279,8 @@
                 '<label><span>height</span><input type="number" data-role="rect-height" min="2" max="20" step="1" value="4"></label>' +
                 '<button type="button" data-role="start-rectangle">Start Rectangle</button>' +
               '</div>' +
-              '<div class="dab-action-row">' +
-                '<button type="button" data-role="auto-lines">Auto Safe 38%</button>' +
+              '<div class="dab-action-row dab-auto-line-row" data-role="auto-line-options" aria-label="Auto safe line presets">' +
+                createAutoLineButtonMarkup() +
               '</div>' +
               '<details class="dab-shape-editor" data-role="shape-editor">' +
                 '<summary>Custom Shape</summary>' +
@@ -340,7 +350,7 @@
         "rect-width",
         "rect-height",
         "start-rectangle",
-        "auto-lines",
+        "auto-line-options",
         "shape-editor",
         "shape-width",
         "shape-height",
@@ -411,7 +421,20 @@
         );
       });
 
-      els.autoLines.addEventListener("click", applyAutoLines);
+      els.autoLineOptions.addEventListener("click", function (event) {
+        var button;
+
+        if (!(event.target instanceof Element)) {
+          return;
+        }
+
+        button = event.target.closest("button[data-auto-ratio]");
+        if (!button) {
+          return;
+        }
+
+        applyAutoLines(Number(button.dataset.autoRatio));
+      });
 
       els.shapeWidth.addEventListener("change", resizeCustomShapeFromInputs);
       els.shapeHeight.addEventListener("change", resizeCustomShapeFromInputs);
@@ -590,18 +613,23 @@
       return Date.now() + state.totalEdges * 31 + state.totalBoxes * 17;
     }
 
-    function getAutoLineMessage(result) {
+    function formatAutoLineRatio(targetRatio) {
+      return Math.round(targetRatio * 100) + "%";
+    }
+
+    function getAutoLineMessage(result, targetRatio) {
       var message = "Auto placed " + result.placedCount + " random safe lines.";
 
       if (result.safetyLimited) {
-        message += " Safety stopped before 38% to avoid one-move boxes.";
+        message += " Safety stopped before " + formatAutoLineRatio(targetRatio) + " to avoid one-move boxes.";
       }
 
       message += " " + getPlayerLabel(state.currentPlayer) + " opens.";
       return message;
     }
 
-    function applyAutoLines() {
+    function applyAutoLines(targetRatio) {
+      var ratio = Number(targetRatio);
       var result;
 
       if (!canUseAutoLines()) {
@@ -610,12 +638,16 @@
         return;
       }
 
+      if (!Number.isFinite(ratio)) {
+        ratio = AUTO_LINE_OPTIONS[1].ratio;
+      }
+
       result = engine.autoPlaceSafeLines(state, {
-        targetRatio: AUTO_LINE_RATIO,
+        targetRatio: ratio,
         seed: createAutoLineSeed()
       });
       state = result.state;
-      setupMessage = result.ok ? getAutoLineMessage(result) : result.reason;
+      setupMessage = result.ok ? getAutoLineMessage(result, ratio) : result.reason;
       render();
     }
 
@@ -744,7 +776,9 @@
       els.p2Score.parentElement.classList.toggle("is-current-turn", isPlayerTwoTurn);
       els.p2Score.parentElement.classList.toggle("is-p2-turn", isPlayerTwoTurn);
       els.undoMove.disabled = state.history.length === 0 || Boolean(state.result);
-      els.autoLines.disabled = !canUseAutoLines();
+      Array.prototype.forEach.call(els.autoLineOptions.querySelectorAll("button[data-auto-ratio]"), function (button) {
+        button.disabled = !canUseAutoLines();
+      });
       els.p1Name.disabled = namesLocked;
       els.p2Name.disabled = namesLocked;
       els.setupMessage.textContent = setupMessage && setupMessage !== getStatusText() ? setupMessage : "";

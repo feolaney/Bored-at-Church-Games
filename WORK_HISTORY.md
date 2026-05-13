@@ -1,5 +1,24 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Auto Line Presets
+
+- Replaced the single Dots and Boxes auto-safe button with three start-only presets: `Auto Safe 30%`, `Auto Safe 38%`, and `Auto Safe 44%`.
+- Kept all auto-safe presets on the existing random safe-line placement path, including the one-move box prevention guard and blue auto-line styling.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Start a fresh Dots and Boxes match and click each `Auto Safe` preset on separate new games.
+- Confirm each preset places random blue lines, disables the auto buttons after use, and leaves no box ready to be claimed in one move.
+
+Verification:
+- `node --check games/dots-and-boxes/logic.js`
+- `node --check games/dots-and-boxes/ui.js`
+- Node auto-line smoke test covering 30%, 38%, and 44% targets with no three-sided boxes.
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped UI wiring pass.
+
 ## 2026-05-13 - Dots and Boxes Auto Line Target 38
 
 - Changed Dots and Boxes automatic safe-line seeding from a 30% target to a 38% target.
