@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-13 - Connect Four Plus Power Logo Token
+
+- Refined the Connect Four Plus library logo power token so the bottom-right circle uses the same circular shadow treatment as the other filled tokens.
+- Replaced the font-rendered plus sign with a centered CSS-drawn plus inside the circle to prevent glyph spillover or distortion.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Open the library and confirm the Connect Four Plus logo's bottom-right blue power token reads as a clean circle.
+- Check both the card logo and larger detail logo sizes.
+
+Verification:
+- `node --check library/app.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped library logo CSS refinement.
+
 ## 2026-05-13 - Connect Four Plus Logo Circles
 
 - Updated the library Connect Four Plus logo styling so the 4 x 4 token grid uses explicit equal rows and columns.

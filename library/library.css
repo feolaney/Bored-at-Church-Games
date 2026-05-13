@@ -464,6 +464,7 @@ body.library-mode[data-active-view="menu"] #app-title {
 }
 
 .game-logo-connect-four-plus .logo-token {
+  position: relative;
   display: grid;
   place-items: center;
   align-self: center;
@@ -474,10 +475,12 @@ body.library-mode[data-active-view="menu"] #app-title {
   border: 2px solid #121212;
   border-radius: 50%;
   background: #ffffff;
+  overflow: hidden;
 }
 
 .game-logo-connect-four-plus .logo-token.is-red,
-.game-logo-connect-four-plus .logo-token.is-yellow {
+.game-logo-connect-four-plus .logo-token.is-yellow,
+.game-logo-connect-four-plus .logo-token.is-power {
   box-shadow: 2px 2px 0 0 #121212;
 }
 
@@ -491,15 +494,15 @@ body.library-mode[data-active-view="menu"] #app-title {
 
 .game-logo-connect-four-plus .logo-token.is-power {
   background: #1040c0;
-  color: #ffffff;
 }
 
 .game-logo-connect-four-plus .logo-token.is-power::before {
-  content: "+";
-  font-family: var(--font-display);
-  font-size: calc(var(--logo-size) * 0.16);
-  font-weight: 900;
-  line-height: 1;
+  content: "";
+  position: absolute;
+  inset: 28%;
+  background:
+    linear-gradient(#ffffff 0 0) center / 28% 100% no-repeat,
+    linear-gradient(#ffffff 0 0) center / 100% 28% no-repeat;
 }
 
 .game-logo-fallback {
