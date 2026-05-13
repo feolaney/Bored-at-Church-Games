@@ -5,6 +5,7 @@ body.game-mode[data-active-game="dots-and-boxes"] {
   --dab-muted-fg: #a1a1aa;
   --dab-accent: #dfe104;
   --dab-accent-fg: #000000;
+  --dab-auto: #38bdf8;
   --dab-p2: #ef1d2f;
   --dab-p2-fg: #ffffff;
   --dab-border: #3f3f46;
@@ -499,7 +500,7 @@ body.game-mode[data-active-game="dots-and-boxes"] .terminal-button:focus-visible
 }
 
 .dab-edge.is-drawn.is-auto::before {
-  background: #71717a;
+  background: var(--dab-auto);
 }
 
 .dab-edge.is-last::after {

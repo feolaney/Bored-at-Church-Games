@@ -1,5 +1,22 @@
 # Work History
 
+## 2026-05-13 - Dots and Boxes Auto Line Color
+
+- Changed automatically placed Dots and Boxes lines from neutral gray to blue.
+- Commit status: committed locally; final console response reports the resulting hash.
+
+What to test:
+- Start a fresh Dots and Boxes match and click `Auto Safe 70%`.
+- Confirm automatically placed lines are blue while Player 1 remains yellow and Player 2 remains red.
+
+Verification:
+- `node --check games/dots-and-boxes/ui.js`
+- `node --check games/dots-and-boxes/logic.js`
+- `git diff --check`
+- `git diff --cached --check`
+
+Manual browser verification was not run; this was a scoped CSS color pass.
+
 ## 2026-05-13 - Dots and Boxes Auto Safe Lines
 
 - Added an `Auto Safe 70%` button to Dots and Boxes board setup.
