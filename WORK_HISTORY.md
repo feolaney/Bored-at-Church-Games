@@ -1,5 +1,20 @@
 # Work History
 
+## 2026-05-13 - Gomoku Winning Ring Pulse
+
+- Added a slow pulse animation to the outline rings around stones in the completed five-in-a-row.
+- Kept the animation scoped to Gomoku winning stones and disabled it for `prefers-reduced-motion`.
+
+What to test:
+- Complete a Gomoku five-in-a-row and confirm the rings around the winning stones pulse slowly.
+- Confirm the main winning line and last-move marker still display correctly.
+
+Verification:
+- `node --check games/gomoku/logic.js`
+- `node --check games/gomoku/ui.js`
+- `git diff --check`
+- `git diff --cached --check`
+
 ## 2026-05-13 - Gomoku
 
 - Added Gomoku as a self-contained game module with a pure 15 x 15 freestyle rules engine, local two-player UI, move log, last-move marker, win-line highlighting, draw detection, local rematch, and local stats support for named players.

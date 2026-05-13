@@ -510,8 +510,22 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
 }
 
 .gomoku-point.is-winning::before {
+  animation: gomoku-winning-ring-pulse 2400ms ease-in-out infinite;
   outline: 4px solid var(--gomoku-fg);
   outline-offset: 2px;
+}
+
+@keyframes gomoku-winning-ring-pulse {
+  0%,
+  100% {
+    outline-width: 4px;
+    outline-offset: 2px;
+  }
+
+  50% {
+    outline-width: 7px;
+    outline-offset: 5px;
+  }
 }
 
 .gomoku-winning-overlay {
@@ -655,5 +669,11 @@ body.game-mode[data-active-game="gomoku"] .terminal-button:focus-visible {
   .gomoku-action-row,
   .gomoku-end-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gomoku-point.is-winning::before {
+    animation: none;
   }
 }
