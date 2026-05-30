@@ -1,5 +1,19 @@
 # Work History
 
+## 2026-05-22 - Future Two-Player Game Recommendations
+
+- Reviewed the current static arcade structure, game module contract, existing registered games, and `game_rules/` PDFs for Ultimate Tic Tac Toe, Connect Four Plus, Gomoku, and Dots and Boxes.
+- Identified the app's strongest fit as local two-player abstract strategy with compact boards, clear turn state, undo support, and one meaningful twist such as routing, board mutation, powerups, custom geometry, hidden information, or forced tradeoffs.
+- Produced a ranked recommendation list of ten future game candidates for the user to choose from.
+- Commit status: not committed; investigation/recommendation pass only.
+
+What to test:
+- Review the recommendation list and pick the next game candidate to implement.
+- No browser behavior changed in this pass.
+
+Verification:
+- Reviewed `games/README.md`, `design/terminal_design.md`, `design/vaporwave_design.md`, current `games/*` metadata, `index.html`, and the text extracted from all four `game_rules/` PDFs with the bundled Python `pypdf` dependency.
+
 ## 2026-05-13 - Dots and Boxes Library Logo
 
 - Added a custom Dots and Boxes logo to the library logo renderer so the game no longer uses the fallback initials.
