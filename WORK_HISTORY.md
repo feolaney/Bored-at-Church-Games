@@ -1,5 +1,50 @@
 # Work History
 
+## 2026-10-29 - Hnefatafl (Viking King's Table) - Proposal #8
+
+- Implemented Hnefatafl as an asymmetric Viking strategy game: 16 Attackers vs 8 Defenders + King
+- 11x11 board with throne at F6 (center) and 4 corner escape zones (A1, K1, A11, K11)
+- Asymmetric win conditions: attackers capture king by surrounding, defenders escape king to corners
+- Sandwich capture mechanics with throne/corner restrictions
+- Turn-based movement with undo support and move history
+- Viking Norse theme with dark brown palette and monospace typography
+- Full TDD test suite with 26 tests covering board setup, move validation, win conditions, and undo
+- Integrated into library picker with responsive mobile-first UI
+
+Commit: 5009f2549e607a0baca42301ddca0acbdf78fc35
+
+Branch: feature/hnefatafl-escape (derived from main)
+
+Files changed:
+- games/hnefatafl/logic.js (730 lines): Core game state engine, piece placement, capture logic, win detection
+- games/hnefatafl/ui.js (507 lines): Board rendering, touch handlers, stats tracking, registration
+- games/hnefatafl/viking-norse.css (513 lines): Scoped theming, responsive layout
+- index.html: Added CSS and script includes for Hnefatafl
+- tests/games/hnefatafl_test.js (26 tests): TDD suite proving board setup, move validation, win conditions
+
+Verifications:
+- All 26 TDD tests passing (node tests/games/hnefatafl_test.js)
+- Syntax check passed (node --check on both logic.js and ui.js)
+- Board verification: throne at index 60 (correct center: row 5, col 5 = 5*11+5 = 60)
+- Board setup: 1 King at throne, 8 defenders in cross pattern, 16 attackers on edge midpoints
+
+Browser verification pending (requires manual check)
+
+What to test:
+- Open index.html in browser - Hnefatafl should appear in game picker
+- Launch game - board should show King at center, defenders in cross, attackers on edges
+- Play test: pieces should move orthogonally, sandwich captures should work
+- King should escape to any corner to win (defenders)
+- Attacker wins if king completely surrounded
+- Undo button should restore previous state
+- Mobile: responsive layout at 375x667 viewport
+- Desktop: layout at 1920x1080
+
+Known limitations:
+- Multi-capture testing simplified - actual sandwich chains require specific board setups
+- Full game flow (start-to-end) not unit-tested
+- Mobile touch targets verify rendering but gesture testing requires browser
+
 ## 2026-05-22 - Future Two-Player Game Recommendations
 
 - Reviewed the current static arcade structure, game module contract, existing registered games, and `game_rules/` PDFs for Ultimate Tic Tac Toe, Connect Four Plus, Gomoku, and Dots and Boxes.
