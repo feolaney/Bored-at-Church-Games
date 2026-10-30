@@ -484,7 +484,14 @@
   // Register the game
   global.ChurchGames.registerGame({
     id: GAME_ID,
+    sortOrder: 50,
     title: "Hnefatafl",
+    version: "v1.0",
+    command: "./hnefatafl --asymmetric",
+    status: "installed",
+    players: "2 local",
+    duration: "15-30 min",
+    type: "asymmetric tactical",
     subtitle: "Viking King's Table",
     description: "Asymmetric Norse battle: Attackers hunt the King, Defenders guard his escape to the corners.",
     minPlayers: 2,
