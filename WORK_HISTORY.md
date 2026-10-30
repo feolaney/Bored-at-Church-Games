@@ -1,5 +1,29 @@
 # Work History
 
+## 2026-10-29 - Hnefatafl Repair Pass
+
+Commit: e6d3bb6
+
+**Fixed**:
+- Removed `window.prompt()` blocking modal from mount() - game now launches non-blockingly
+- Changed `renderBoard()` from `innerHTML=''` to `DocumentFragment + replaceChildren()` - fixes board-clearing bug
+- Board state now stable: 25 pieces remain after clicking any attacker piece
+
+**Known Issues**:
+- `.selected` CSS class not being applied when clicking pieces - selection highlighting broken
+- Move registration not verified - requires further debugging
+
+**Tests Passed**:
+- Board clearing fixed: pieces remain at 25 after click ✅
+- Game loads without browser blocking ✅
+- Hnefatafl appears in game picker ✅
+
+**Next Steps**:
+- Debug selection highlighting - `state.selectedPos` is being set correctly in console but `.selected` class not appearing in DOM
+- Test move registration by clicking empty squares after piece selection
+
+---
+
 ## 2026-10-29 - Hnefatafl (Viking King's Table) - Proposal #8
 
 - Implemented Hnefatafl as an asymmetric Viking strategy game: 16 Attackers vs 8 Defenders + King
