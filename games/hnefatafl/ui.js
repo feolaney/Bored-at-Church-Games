@@ -83,7 +83,6 @@
     var mounted = false;
     var els = {};
     var matchRecorded = false;
-    var currentPlayerPrompt = null;
 
     function mount() {
       if (!mounted) {
@@ -92,8 +91,6 @@
         bindEvents();
         mounted = true;
         render();
-        // Prompt for player names
-        promptForPlayerNames();
       }
     }
 
@@ -357,10 +354,9 @@
         els.boardWrapper.appendChild(boardEl);
       }
 
-      // Clear existing
-      boardEl.innerHTML = "";
+      // Build board with DocumentFragment to avoid intermediate renders
+      var fragment = document.createDocumentFragment();
 
-      // Render board squares
       for (var row = 0; row < 11; row++) {
         for (var col = 0; col < 11; col++) {
           var index = game.getIndex(row, col);
@@ -396,7 +392,7 @@
               // Add crown marker for king
               var crown = document.createElement("span");
               crown.className = "king-crown";
-              crown.textContent = "♔";
+              crown.textContent = "\u2654";
               pieceEl.appendChild(crown);
             }
             
@@ -416,9 +412,12 @@
             }
           }
 
-          boardEl.appendChild(square);
+          fragment.appendChild(square);
         }
       }
+
+      // Atomic replacement with fragment
+      boardEl.replaceChildren(fragment);
 
       // Add coordinate labels
       renderCoordinateLabels();
